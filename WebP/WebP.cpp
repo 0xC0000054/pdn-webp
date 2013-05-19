@@ -55,7 +55,6 @@ int WebPSave(void **output, size_t* outputSize, void *bitmap, int width, int hei
 		return errVersionMismatch; // WebP API version mismatch
 	}
 
-
 	if (params.fileSize > 0)
 	{
 		config.target_size = params.fileSize;
@@ -165,7 +164,7 @@ void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_
 	WebPDemuxDelete(demux);
 }
 
-void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize, int type)
+void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type)
 {
 	WebPData webpData;
 	webpData.bytes = data;
@@ -199,7 +198,7 @@ void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t
 		break;
 	}
 
-	memcpy_s(*outData, outSize, iter.chunk.bytes, outSize);
+	memcpy_s(outData, outSize, iter.chunk.bytes, outSize);
 
 	WebPDemuxReleaseChunkIterator(&iter);
 	WebPDemuxDelete(demux);

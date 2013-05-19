@@ -55,7 +55,7 @@ DLLEXPORT int WebPSave(void **output, size_t* outputSize, void *iBitmap, int iWi
 
 DLLEXPORT void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t *outSize);
 
-DLLEXPORT void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize, int type);
+DLLEXPORT void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type);
 
 DLLEXPORT WebPMuxError SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metadata);
 

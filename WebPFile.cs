@@ -37,20 +37,20 @@ namespace WebPFileType
 			NotEnoughData = -4
 		}
 
-		internal static class WebPEncodingError
+		internal enum WebPEncodingError : int
 		{
-			public const int ApiVersionMismatch = -1;
-			public const int VP8_ENC_OK = 0;
-			public const int VP8_ENC_ERROR_OUT_OF_MEMORY = 1;            // memory error allocating objects
-			public const int VP8_ENC_ERROR_BITSTREAM_OUT_OF_MEMORY = 2;  // memory error while flushing bits
-			public const int VP8_ENC_ERROR_NULL_PARAMETER = 3;          // a pointer parameter is NULL
-			public const int VP8_ENC_ERROR_INVALID_CONFIGURATION = 4;    // configuration is invalid
-			public const int VP8_ENC_ERROR_BAD_DIMENSION = 5;            // picture has invalid width/height
-			public const int VP8_ENC_ERROR_PARTITION0_OVERFLOW = 6;      // partition is bigger than 512k
-			public const int VP8_ENC_ERROR_PARTITION_OVERFLOW = 7;       // partition is bigger than 16M
-			public const int VP8_ENC_ERROR_BAD_WRITE = 8;                // error while flushing bytes
-			public const int VP8_ENC_ERROR_FILE_TOO_BIG = 9;             // file is bigger than 4G
-			public const int VP8_ENC_ERROR_USER_ABORT = 10;              // abort request by user
+			ApiVersionMismatch = -1,
+			Ok = 0,
+			OutOfMemory = 1,           // memory error allocating objects
+			BitStreamOutOfMemory = 2, // memory error while flushing bits
+			NullParameter = 3,         // a pointer parameter is NULL
+			InvalidConfiguration = 4,   // configuration is invalid
+			VP8_ENC_ERROR_BAD_DIMENSION = 5,           // picture has invalid width/height
+			PartitionZeroOverflow = 6,     // partition is bigger than 512k
+			PartitionOverflow = 7,      // partition is bigger than 16M
+			BadWrite = 8,               // error while flushing bytes
+			FileTooBig = 9,            // file is bigger than 4G
+			UserAbort = 10              // abort request by user
 		}
 
 		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -124,17 +124,17 @@ namespace WebPFileType
 			///iSharpness: int
 			///iPreset: WebPPreset->Anonymous_0f2b80ba_5d6f_409d_9e5a_ef9696863a72
 			[System.Runtime.InteropServices.DllImportAttribute("WebP_x86.dll", EntryPoint = "WebPSave")]
-			public static extern int WebPSave(ref IntPtr output, out uint outputSize, IntPtr iBitmap, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
+			public static extern WebPEncodingError WebPSave(ref IntPtr output, out uint outputSize, IntPtr iBitmap, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
 
 			[DllImport("WebP_x86.dll", EntryPoint = "GetMetaDataSize")]
 			public static unsafe extern void GetMetaDataSize(byte* iData, UIntPtr iDataSize, MetaDataType type, out uint metaDataSize);
 
 			[DllImport("WebP_x86.dll", EntryPoint = "ExtractMetaData")]
-			public static unsafe extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, ref byte* metaDataBytes, uint metaDataSize, MetaDataType type);
+			public static unsafe extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, byte* metaDataBytes, uint metaDataSize, MetaDataType type);
 
 
 			[DllImportAttribute("WebP_x86.dll", EntryPoint = "SetMetaData")]
-			public static unsafe extern WebPMuxError SetMetaData(byte* image, UIntPtr imageSize, ref System.IntPtr outImage, ref UIntPtr outImageSize, MetaDataParams metaData);
+			public static unsafe extern WebPMuxError SetMetaData(byte* image, UIntPtr imageSize, ref IntPtr outImage, ref UIntPtr outImageSize, MetaDataParams metaData);
 		}
 
 		[System.Security.SuppressUnmanagedCodeSecurity]
@@ -177,17 +177,17 @@ namespace WebPFileType
 			///iSharpness: int
 			///iPreset: WebPPreset->Anonymous_0f2b80ba_5d6f_409d_9e5a_ef9696863a72
 			[DllImport("WebP_x64.dll", EntryPoint = "WebPSave")]
-			public static unsafe extern int WebPSave(ref IntPtr output, out uint outputSize, IntPtr scan0, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
+			public static unsafe extern WebPEncodingError WebPSave(ref IntPtr output, out uint outputSize, IntPtr scan0, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
 
 			[DllImport("WebP_x64.dll", EntryPoint = "GetMetaDataSize")]
 			public static unsafe extern void GetMetaDataSize(byte* iData, UIntPtr iDataSize, MetaDataType type, out uint metaDataSize);
 
 			[DllImport("WebP_x64.dll", EntryPoint = "ExtractMetaData")]
-			public static unsafe extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, ref byte* metaDataBytes, uint metaDataSize, MetaDataType type);
+			public static unsafe extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, byte* metaDataBytes, uint metaDataSize, MetaDataType type);
 
 
 			[DllImportAttribute("WebP_x64.dll", EntryPoint = "SetMetaData")]
-			public static unsafe extern WebPMuxError SetMetaData(byte* image, UIntPtr imageSize, ref System.IntPtr outImage, ref UIntPtr outImageSize, MetaDataParams metaData);
+			public static unsafe extern WebPMuxError SetMetaData(byte* image, UIntPtr imageSize, ref IntPtr outImage, ref UIntPtr outImageSize, MetaDataParams metaData);
 		}
 
 		private static bool Is64Bit()
@@ -260,23 +260,23 @@ namespace WebPFileType
 
 
 
-        /// <summary>
-        /// The WebP save function.
-        /// </summary>
-        /// <param name="output">The output.</param>
-        /// <param name="scan0">The input bitmap.</param>
-        /// <param name="width">Width of the input bitmap.</param>
-        /// <param name="height">Height of the input bitmap.</param>
-        /// <param name="stride">The stride of the input bitmap.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <param name="callback">The callback.</param>
+		/// <summary>
+		/// The WebP save function.
+		/// </summary>
+		/// <param name="output">The output.</param>
+		/// <param name="scan0">The input bitmap.</param>
+		/// <param name="width">Width of the input bitmap.</param>
+		/// <param name="height">Height of the input bitmap.</param>
+		/// <param name="stride">The stride of the input bitmap.</param>
+		/// <param name="parameters">The parameters.</param>
+		/// <param name="callback">The callback.</param>
 		public static void WebPSave(out byte[] output, IntPtr scan0, int width, int height, long stride, EncodeParams parameters, WebPReportProgress callback)
 		{
 			if (width > WebPMaxDimension || height > WebPMaxDimension)
 				throw new FormatException(Resources.InvalidImageDimensions);
 
 
-			int retVal = 1;
+			WebPEncodingError retVal = WebPEncodingError.Ok;
 			IntPtr outPtr = IntPtr.Zero;
 			uint dataSize = 0;
 			output = null;
@@ -293,7 +293,7 @@ namespace WebPFileType
 					retVal = WebP_32.WebPSave(ref outPtr, out dataSize, scan0, width, height, (int)stride, parameters, callback);
 				}
 
-				if (retVal == WebPEncodingError.VP8_ENC_OK)
+				if (retVal == WebPEncodingError.Ok)
 				{
 					output = new byte[dataSize];
 					Marshal.Copy(outPtr, output, 0, output.Length);
@@ -303,16 +303,16 @@ namespace WebPFileType
 
 					switch (retVal)
 					{
-						case WebPEncodingError.VP8_ENC_ERROR_OUT_OF_MEMORY:
-						case WebPEncodingError.VP8_ENC_ERROR_BITSTREAM_OUT_OF_MEMORY:
+						case WebPEncodingError.OutOfMemory:
+						case WebPEncodingError.BitStreamOutOfMemory:
 							throw new OutOfMemoryException(Resources.InsufficientMemoryOnSave);
-						case WebPEncodingError.VP8_ENC_ERROR_NULL_PARAMETER:
-						case WebPEncodingError.VP8_ENC_ERROR_INVALID_CONFIGURATION:
-						case WebPEncodingError.VP8_ENC_ERROR_PARTITION0_OVERFLOW:
-						case WebPEncodingError.VP8_ENC_ERROR_PARTITION_OVERFLOW:
-						case WebPEncodingError.VP8_ENC_ERROR_BAD_WRITE:
+						case WebPEncodingError.NullParameter:
+						case WebPEncodingError.InvalidConfiguration:
+						case WebPEncodingError.PartitionZeroOverflow:
+						case WebPEncodingError.PartitionOverflow:
+						case WebPEncodingError.BadWrite:
 							throw new WebPException(Resources.EncoderGenericError);
-						case WebPEncodingError.VP8_ENC_ERROR_FILE_TOO_BIG:
+						case WebPEncodingError.FileTooBig:
 							throw new WebPException(Resources.EncoderFileTooBig);
 
 						case WebPEncodingError.ApiVersionMismatch:
@@ -350,16 +350,15 @@ namespace WebPFileType
 
 		public static unsafe void ExtractMetadata(byte[] data, uint dataSize, MetaDataType type, byte[] outData, uint outSize)
 		{
-			fixed (byte* ptr = data, output = outData)
+			fixed (byte* ptr = data, outPtr = outData)
 			{
-				byte* outPtr = output;
 				if (Is64Bit())
 				{
-					WebP_64.ExtractMetaData(ptr, (UIntPtr)dataSize, ref outPtr, outSize, type);
+					WebP_64.ExtractMetaData(ptr, (UIntPtr)dataSize, outPtr, outSize, type);
 				}
 				else
 				{
-					WebP_32.ExtractMetaData(ptr, (UIntPtr)dataSize, ref outPtr, outSize, type);
+					WebP_32.ExtractMetaData(ptr, (UIntPtr)dataSize, outPtr, outSize, type);
 				}
 			}
 		}
@@ -375,9 +374,9 @@ namespace WebPFileType
 				IntPtr outPtr = IntPtr.Zero; 
 				UIntPtr outSize = UIntPtr.Zero;
 
-				if ((Is64Bit()))
+				if (Is64Bit())
 				{
-				    error = WebP_64.SetMetaData(ptr, (UIntPtr)dataSize, ref outPtr, ref outSize, metaData);
+					error = WebP_64.SetMetaData(ptr, (UIntPtr)dataSize, ref outPtr, ref outSize, metaData);
 				}
 				else
 				{
@@ -413,5 +412,7 @@ namespace WebPFileType
 
 			}
 		}
+
+
 	}
 }
