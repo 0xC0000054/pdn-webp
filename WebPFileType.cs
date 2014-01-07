@@ -111,7 +111,6 @@ namespace WebPFileType
 
 					uint xmpSize = 0U;
 					WebPFile.GetMetaDataSize(bytes, length, WebPFile.MetaDataType.XMP, out xmpSize);
-
 					if (xmpSize > 0U)
 					{
 						string xmp = GetMetaDataBase64(bytes, length, WebPFile.MetaDataType.XMP, xmpSize);
@@ -138,7 +137,17 @@ namespace WebPFileType
 
 		protected override SaveConfigToken OnCreateDefaultSaveConfigToken()
 		{
-			return new WebPSaveConfigToken(WebPPreset.Photo, 95, 20, 0, WebPFilterType.Simple, 4, 0, true);
+			return new WebPSaveConfigToken(WebPPreset.Photo, 95, 4, 80, 30, 3, WebPFilterType.Strong, 0, true);
+		}
+
+		public override bool IsReflexive(SaveConfigToken token)
+		{
+			if (((WebPSaveConfigToken)token).Quality == 100)
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		private static void LoadProperties(Image dstImage, Document srcDoc)
@@ -200,12 +209,11 @@ namespace WebPFileType
 		}
 
 		/// <summary>
-		/// Reads the JPEG APP1 section to extract EXIF or XMP metadata.
+		/// Reads the JPEG APP1 section to extract the EXIF metadata.
 		/// </summary>
 		/// <param name="jpegData">The JPEG image byte array.</param>
-		/// <param name="exif">if set to <c>true</c> extract the EXIF metadata; otherwise extract the XMP metadata.</param>
 		/// <returns>The extracted data or null.</returns>
-		private static unsafe byte[] ReadJpegAPP1(byte[] jpegData, bool exif)
+		private static unsafe byte[] ReadJpegAPP1(byte[] jpegData)
 		{
 			byte[] bytes = null;
 			System.Text.Encoding windows1252Encoding = System.Text.Encoding.GetEncoding(1252);
@@ -219,7 +227,7 @@ namespace WebPFileType
 				p += 2;
 
 				ushort sectionLength = 0;
-				while (p[0] == 0xff && (p[1] >= 0xe0 && p[1] <= 0xef)) // APP sections
+				while ((p[0] == 0xff && (p[1] >= 0xe0 && p[1] <= 0xef)) && bytes == null) // APP sections
 				{
 
 					sectionLength = (ushort)((p[2] << 8) | p[3]); // JPEG uses big-endian   
@@ -228,38 +236,17 @@ namespace WebPFileType
 					{
 						p += 2; // skip the header bytes
 
-						string sig;
+						string sig = new string((sbyte*)p + 2, 0, 6, windows1252Encoding);
 
-						if (exif)
+						if (sig == "Exif\0\0")
 						{
-							sig = new string((sbyte*)p + 2, 0, 6, windows1252Encoding);
+							int exifLen = sectionLength - 8; // subtract the signature and section length size to get the data length. 
+							bytes = new byte[exifLen];
 
-							if (sig == "Exif\0\0")
-							{
-								int exifLen = sectionLength - 8; // subtract the signature and section length size to get the data length. 
-								bytes = new byte[exifLen];
-
-								Marshal.Copy((IntPtr)(p + 8), bytes, 0, exifLen);
-							}
-
-							p += sectionLength;
-
-						}
-						else
-						{
-							sig = new string((sbyte*)p + 2, 0, 29, windows1252Encoding);
-
-							if (sig == "http://ns.adobe.com/xap/1.0/\0")
-							{
-								int xmpLen = sectionLength - 31;
-								bytes = new byte[xmpLen];
-								Marshal.Copy((IntPtr)(p + 31), bytes, 0, xmpLen);
-
-							}
-
-							p += sectionLength;
+							Marshal.Copy((IntPtr)(p + 8), bytes, 0, exifLen);
 						}
 
+						p += sectionLength;
 					}
 					else
 					{
@@ -300,7 +287,7 @@ namespace WebPFileType
 						bmp.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
 					}
 
-					exifBytes = ReadJpegAPP1(stream.ToArray(), true);
+					exifBytes = ReadJpegAPP1(stream.GetBuffer());
 				}
 
 				if (exifBytes != null)
@@ -342,11 +329,13 @@ namespace WebPFileType
 
 			encParams.quality = (float)configToken.Quality;
 			encParams.preset = configToken.Preset;
+			encParams.method = configToken.Method;
+			encParams.noiseShaping = configToken.NoiseShaping;
 			encParams.filterType = configToken.FilterType;
 			encParams.filterStrength = configToken.FilterStrength;
 			encParams.sharpness = configToken.Sharpness;
-			encParams.method = configToken.Method;
 			encParams.fileSize = configToken.FileSize;
+		
 
 			using (RenderArgs ra = new RenderArgs(scratchSurface))
 			{
