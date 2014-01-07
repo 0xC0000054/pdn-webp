@@ -4,12 +4,10 @@ using WebPFileType.Properties;
 
 namespace WebPFileType
 {
-	class WebPFile
+	static class WebPFile
 	{
-
-		internal enum VP8StatusCode 
+		internal enum VP8StatusCode : int
 		{
-			/// VP8_STATUS_OK -> 0
 			Ok = 0,
 			OutOfMemory,
 			InvalidParam,
@@ -27,7 +25,7 @@ namespace WebPFileType
 			XMP
 		}
 
-		internal enum WebPMuxError
+		internal enum WebPMuxError : int
 		{
 			Ok = 1,
 			NotFound = 0,
@@ -45,7 +43,7 @@ namespace WebPFileType
 			BitStreamOutOfMemory = 2, // memory error while flushing bits
 			NullParameter = 3,         // a pointer parameter is NULL
 			InvalidConfiguration = 4,   // configuration is invalid
-			VP8_ENC_ERROR_BAD_DIMENSION = 5,           // picture has invalid width/height
+			BadDimension = 5,           // picture has invalid width/height
 			PartitionZeroOverflow = 6,     // partition is bigger than 512k
 			PartitionOverflow = 7,      // partition is bigger than 16M
 			BadWrite = 8,               // error while flushing bytes
@@ -62,12 +60,13 @@ namespace WebPFileType
 			[MarshalAs(UnmanagedType.R4)]
 			public float quality;
 			[MarshalAs(UnmanagedType.I4)]
-			public WebPPreset preset;
+			public WebPPreset preset;			
+			public int method;
+			public int noiseShaping;
 			[MarshalAs(UnmanagedType.I4)]
 			public WebPFilterType filterType;
 			public int filterStrength;
-			public int sharpness;	
-			public int method;
+			public int sharpness;
 			public int fileSize;
 		}
 
@@ -86,52 +85,24 @@ namespace WebPFileType
 		[System.Security.SuppressUnmanagedCodeSecurity]
 		private unsafe static class WebP_32
 		{
-
-			/// Return Type: int
-			///iData: uint8_t*
-			///iData_size: uint32_t->unsigned int
-			///oWidth: int*
-			///oHeight: int*
-			[System.Runtime.InteropServices.DllImportAttribute("WebP_x86.dll", EntryPoint = "WebPGetDimensions")]
+			[DllImport("WebP_x86.dll", EntryPoint = "WebPGetDimensions")]
 			[return: MarshalAs(UnmanagedType.I1)]
 			public static unsafe extern bool WebPGetDimensions(byte* data, UIntPtr dataSize, out int width, out int height);
 
-			/// Return Type: void
-			///mem: void*
-			[System.Runtime.InteropServices.DllImportAttribute("WebP_x86.dll", EntryPoint = "WebPFreeMemory")]
-			public static extern void WebPFreeMemory(System.IntPtr mem);
+			[DllImport("WebP_x86.dll", EntryPoint = "WebPFreeMemory")]
+			public static extern void WebPFreeMemory(IntPtr mem);
 
-
-			/// Return Type: uint8_t*
-			///iBitmap: void*
-			///iBitmapSize: int
-			///iStride: int
-			///iWebPFile: uint8_t*
-			///iWebPFileSize: uint32_t->unsigned int
-			[System.Runtime.InteropServices.DllImportAttribute("WebP_x86.dll", EntryPoint = "WebPLoad")]
+			[DllImport("WebP_x86.dll", EntryPoint = "WebPLoad")]
 			public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, ref byte* outData, int outSize, int outStride);
 
-			/// Return Type: int
-			///output: void**
-			///outputSize: uint32_t->unsigned int
-			///iBitmap: void*
-			///iBitmapSize: size_t->unsigned int
-			///iWidth: int
-			///iHeight: int
-			///iStride: int
-			///iQuality: float
-			///iMethod: int
-			///iSharpness: int
-			///iPreset: WebPPreset->Anonymous_0f2b80ba_5d6f_409d_9e5a_ef9696863a72
-			[System.Runtime.InteropServices.DllImportAttribute("WebP_x86.dll", EntryPoint = "WebPSave")]
-			public static extern WebPEncodingError WebPSave(ref IntPtr output, out uint outputSize, IntPtr iBitmap, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
+			[DllImport("WebP_x86.dll", EntryPoint = "WebPSave")]
+			public static extern WebPEncodingError WebPSave(out IntPtr output, out uint outputSize, IntPtr iBitmap, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
 
 			[DllImport("WebP_x86.dll", EntryPoint = "GetMetaDataSize")]
 			public static unsafe extern void GetMetaDataSize(byte* iData, UIntPtr iDataSize, MetaDataType type, out uint metaDataSize);
 
 			[DllImport("WebP_x86.dll", EntryPoint = "ExtractMetaData")]
 			public static unsafe extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, byte* metaDataBytes, uint metaDataSize, MetaDataType type);
-
 
 			[DllImportAttribute("WebP_x86.dll", EntryPoint = "SetMetaData")]
 			public static unsafe extern WebPMuxError SetMetaData(byte* image, UIntPtr imageSize, ref IntPtr outImage, ref UIntPtr outImageSize, MetaDataParams metaData);
@@ -140,51 +111,24 @@ namespace WebPFileType
 		[System.Security.SuppressUnmanagedCodeSecurity]
 		private unsafe static class WebP_64
 		{
-
-			/// Return Type: int
-			///iData: uint8_t*
-			///iData_size: uint32_t->unsigned int
-			///oWidth: int*
-			///oHeight: int*
 			[DllImport("WebP_x64.dll", EntryPoint = "WebPGetDimensions")]
 			[return: MarshalAs(UnmanagedType.I1)]
 			public static unsafe extern bool WebPGetDimensions(byte* data, UIntPtr dataSize, out int width, out int height);
 
-			/// Return Type: void
-			///mem: void*
 			[DllImport("WebP_x64.dll", EntryPoint = "WebPFreeMemory")]
 			public static extern void WebPFreeMemory(IntPtr mem);
 
-			/// Return Type: int
-			///iBitmap: void*
-			///iBitmapSize: int
-			///iStride: int
-			///iWebPFile: uint8_t*
-			///iWebPFileSize: uint32_t->unsigned int
 			[DllImport("WebP_x64.dll", EntryPoint = "WebPLoad")]
 			public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, ref byte* outData, int outSize, int outStride);
 
-			/// Return Type: int
-			///output: void**
-			///outputSize: uint32_t->unsigned int
-			///iBitmap: void*
-			///iBitmapSize: size_t->unsigned int
-			///iWidth: int
-			///iHeight: int
-			///iStride: int
-			///iQuality: float
-			///iMethod: int
-			///iSharpness: int
-			///iPreset: WebPPreset->Anonymous_0f2b80ba_5d6f_409d_9e5a_ef9696863a72
 			[DllImport("WebP_x64.dll", EntryPoint = "WebPSave")]
-			public static unsafe extern WebPEncodingError WebPSave(ref IntPtr output, out uint outputSize, IntPtr scan0, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
+			public static unsafe extern WebPEncodingError WebPSave(out IntPtr output, out uint outputSize, IntPtr scan0, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
 
 			[DllImport("WebP_x64.dll", EntryPoint = "GetMetaDataSize")]
 			public static unsafe extern void GetMetaDataSize(byte* iData, UIntPtr iDataSize, MetaDataType type, out uint metaDataSize);
 
 			[DllImport("WebP_x64.dll", EntryPoint = "ExtractMetaData")]
 			public static unsafe extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, byte* metaDataBytes, uint metaDataSize, MetaDataType type);
-
 
 			[DllImportAttribute("WebP_x64.dll", EntryPoint = "SetMetaData")]
 			public static unsafe extern WebPMuxError SetMetaData(byte* image, UIntPtr imageSize, ref IntPtr outImage, ref UIntPtr outImageSize, MetaDataParams metaData);
@@ -218,8 +162,8 @@ namespace WebPFileType
 		/// <param name="dataSize">The size of the input data.</param>
 		/// <param name="width">The output width of the image.</param>
 		/// <param name="height">The output height of the image.</param>
-		/// <returns>Zero on success, -1 on failure.</returns>
-		public static unsafe bool WebPGetDimensions(byte[] data, uint dataSize, out int width, out int height)
+		/// <returns>true on success, otherwise false.</returns>
+		internal static unsafe bool WebPGetDimensions(byte[] data, uint dataSize, out int width, out int height)
 		{
 			fixed (byte* ptr = data)
 			{
@@ -235,15 +179,15 @@ namespace WebPFileType
 		}
 
 		/// <summary>
-		/// The WepP load function.
+		/// The WebP load function.
 		/// </summary>
-		/// <param name="data">The input image data, this must be allocated with <see cref="WebPAllocateMemory"/>.</param>
+		/// <param name="data">The input image data</param>
 		/// <param name="dataSize">Size of the data.</param>
 		/// <param name="width">The width 0f the resulting image.</param>
 		/// <param name="outputStride">The height of the resulting image.</param>
 		/// <param name="outPtr">The output byte array.</param>
-		/// <returns>True on success; false on failure.</returns>
-		public static unsafe VP8StatusCode WebPLoad(byte[] data, uint dataSize, byte* outPtr, int outputSize, int outputStride)
+		/// <returns>VP8StatusCode.Ok on success.</returns>
+		internal static unsafe VP8StatusCode WebPLoad(byte[] data, uint dataSize, byte* outPtr, int outputSize, int outputStride)
 		{
 			fixed (byte* ptr = data)
 			{ 
@@ -258,8 +202,6 @@ namespace WebPFileType
 			}
 		}
 
-
-
 		/// <summary>
 		/// The WebP save function.
 		/// </summary>
@@ -270,15 +212,15 @@ namespace WebPFileType
 		/// <param name="stride">The stride of the input bitmap.</param>
 		/// <param name="parameters">The parameters.</param>
 		/// <param name="callback">The callback.</param>
-		public static void WebPSave(out byte[] output, IntPtr scan0, int width, int height, long stride, EncodeParams parameters, WebPReportProgress callback)
+		internal static void WebPSave(out byte[] output, IntPtr scan0, int width, int height, long stride, EncodeParams parameters, WebPReportProgress callback)
 		{
 			if (width > WebPMaxDimension || height > WebPMaxDimension)
 				throw new FormatException(Resources.InvalidImageDimensions);
 
 
 			WebPEncodingError retVal = WebPEncodingError.Ok;
-			IntPtr outPtr = IntPtr.Zero;
-			uint dataSize = 0;
+			IntPtr data = IntPtr.Zero;
+			uint dataSize = 0U;
 			output = null;
 
 			try
@@ -286,21 +228,23 @@ namespace WebPFileType
 				
 				if (Is64Bit())
 				{
-					retVal = WebP_64.WebPSave(ref outPtr, out dataSize, scan0, width, height, (int)stride, parameters, callback);
+					retVal = WebP_64.WebPSave(out data, out dataSize, scan0, width, height, (int)stride, parameters, callback);
 				}
 				else
 				{
-					retVal = WebP_32.WebPSave(ref outPtr, out dataSize, scan0, width, height, (int)stride, parameters, callback);
+					retVal = WebP_32.WebPSave(out data, out dataSize, scan0, width, height, (int)stride, parameters, callback);
 				}
 
 				if (retVal == WebPEncodingError.Ok)
 				{
+#if DEBUG
+					System.Diagnostics.Debug.Assert(data != IntPtr.Zero);
+#endif
 					output = new byte[dataSize];
-					Marshal.Copy(outPtr, output, 0, output.Length);
+					Marshal.Copy(data, output, 0, output.Length);
 				}
 				else
 				{
-
 					switch (retVal)
 					{
 						case WebPEncodingError.OutOfMemory:
@@ -318,21 +262,19 @@ namespace WebPFileType
 						case WebPEncodingError.ApiVersionMismatch:
 							throw new WebPException(Resources.ApiVersionMismatch);
 					}
-
-
 				}
 			}
 			finally
 			{
-				if (outPtr != IntPtr.Zero)
+				if (data != IntPtr.Zero)
 				{
-					WebPFreeMemory(outPtr);
-					outPtr = IntPtr.Zero;
+					WebPFreeMemory(data);
+					data = IntPtr.Zero;
 				}
 			}
 		}
 
-		public static unsafe void GetMetaDataSize(byte[] data, uint dataSize, MetaDataType type, out uint metaDataSize)
+		internal static unsafe void GetMetaDataSize(byte[] data, uint dataSize, MetaDataType type, out uint metaDataSize)
 		{
 			metaDataSize = 0;
 			fixed (byte* ptr = data)
@@ -348,7 +290,7 @@ namespace WebPFileType
 			}
 		}
 
-		public static unsafe void ExtractMetadata(byte[] data, uint dataSize, MetaDataType type, byte[] outData, uint outSize)
+		internal static unsafe void ExtractMetadata(byte[] data, uint dataSize, MetaDataType type, byte[] outData, uint outSize)
 		{
 			fixed (byte* ptr = data, outPtr = outData)
 			{
@@ -363,7 +305,7 @@ namespace WebPFileType
 			}
 		}
 
-		public static unsafe void SetMetaData(byte[] data, uint dataSize, out byte[] outImage, MetaDataParams metaData)
+		internal static unsafe void SetMetaData(byte[] data, uint dataSize, out byte[] outImage, MetaDataParams metaData)
 		{
 			outImage = null;
 

@@ -1,19 +1,7 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="WebPSaveConfigToken.cs" company="">
-// TODO: Update copyright text.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿using System;
 
 namespace WebPFileType
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-
-    /// <summary>
-    /// TODO: Update summary.
-    /// </summary>
     [Serializable]    
     public sealed class WebPSaveConfigToken : PaintDotNet.SaveConfigToken
     {
@@ -24,6 +12,18 @@ namespace WebPFileType
         }
 
         public int Quality
+        {
+            get;
+            internal set;
+        }
+        
+        public int Method
+        {
+            get; 
+            internal set; 
+        }
+
+        public int NoiseShaping
         {
             get;
             internal set;
@@ -47,12 +47,6 @@ namespace WebPFileType
             internal set;
         }
 
-        public int Method
-        {
-            get; 
-            internal set; 
-        }
-
         public int FileSize
         {
             get;
@@ -65,14 +59,15 @@ namespace WebPFileType
             internal set;
         }
 
-        public WebPSaveConfigToken(WebPPreset preset, int quality, int filterStrength, int sharpness, WebPFilterType filterType, int method, int fileSize, bool encodeMetaData)
+        public WebPSaveConfigToken(WebPPreset preset, int quality, int method, int noiseShaping, int filterStrength, int sharpness, WebPFilterType filterType, int fileSize, bool encodeMetaData)
         {
             this.Preset = preset;
             this.Quality = quality;
+            this.Method = method;
+            this.NoiseShaping = noiseShaping;
             this.FilterStrength = filterStrength;
             this.Sharpness = sharpness;
             this.FilterType = filterType;
-            this.Method = method;
             this.FileSize = fileSize;
             this.EncodeMetaData = encodeMetaData;
         }
@@ -81,10 +76,11 @@ namespace WebPFileType
         {
             this.Preset = copyMe.Preset;
             this.Quality = copyMe.Quality;
+            this.Method = copyMe.Method;
+            this.NoiseShaping = copyMe.NoiseShaping;
             this.FilterStrength = copyMe.FilterStrength;
             this.Sharpness = copyMe.Sharpness;
             this.FilterType = copyMe.FilterType;
-            this.Method = copyMe.Method;
             this.FileSize = copyMe.FileSize;
             this.EncodeMetaData = copyMe.EncodeMetaData;
         }
