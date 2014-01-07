@@ -21,10 +21,12 @@ typedef struct EncodeParams
 {
 	float quality;
 	int preset;
+	int method;
+	// The following are only used for lossy compression:
+	int noiseShaping;
 	int filterType;
 	int filterStrength;
 	int sharpness;	
-	int method;
 	int fileSize;
 }EncParams;
 
@@ -51,13 +53,13 @@ DLLEXPORT void WebPFreeMemory(void *mem);
 
 DLLEXPORT int WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize, int outStride);
 
-DLLEXPORT int WebPSave(void **output, size_t* outputSize, void *iBitmap, int iWidth, int iHeight, int iStride, EncodeParams params, ProgressFn callback);
+DLLEXPORT int WebPSave(void** output, size_t* outputSize, void* iBitmap, int iWidth, int iHeight, int iStride, EncodeParams params, ProgressFn callback);
 
 DLLEXPORT void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t *outSize);
 
 DLLEXPORT void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type);
 
-DLLEXPORT WebPMuxError SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metadata);
+DLLEXPORT int SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metadata);
 
 
 #define errVersionMismatch -1
