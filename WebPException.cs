@@ -2,6 +2,7 @@
 
 namespace WebPFileType
 {
+    [Serializable]
     public sealed class WebPException : FormatException
     {
         public WebPException() : base()
