@@ -33,6 +33,25 @@ int WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize
 	return WebPDecode(data, dataSize, &config);
 }
 
+static bool HasTransparency(void* data, int width, int height, int stride)
+{
+	uint8_t* scan0 = (uint8_t*)data; 
+	
+	for (int y = 0; y < height; y++)
+	{
+		uint8_t* ptr = scan0 + (y * stride); 
+		for (int x = 0; x < width; x++)
+		{
+			if (ptr[3] < 255)
+				return true;
+
+			ptr += 4;
+		}
+	}
+
+	return false;
+}
+
 static ProgressFn progressCallback;
 
 static int progressFunc(int percent, const WebPPicture* picture)
@@ -42,8 +61,7 @@ static int progressFunc(int percent, const WebPPicture* picture)
 	return 1;
 }
 
-
-int WebPSave(void **output, size_t* outputSize, void *bitmap, int width, int height, int stride, EncodeParams params, ProgressFn callback)
+int WebPSave(void** output, size_t* outputSize, void* bitmap, int width, int height, int stride, EncodeParams params, ProgressFn callback)
 {
 	WebPConfig config;
 	WebPPicture pic;
@@ -66,7 +84,9 @@ int WebPSave(void **output, size_t* outputSize, void *bitmap, int width, int hei
 	}
 	config.filter_type = params.filterType;
 	config.filter_sharpness = params.sharpness;
+	config.sns_strength = params.noiseShaping;
 	config.method = params.method;
+	config.thread_level = 1;
 
 	if (params.quality == 100)
 	{
@@ -90,14 +110,25 @@ int WebPSave(void **output, size_t* outputSize, void *bitmap, int width, int hei
 
 	pic.width = width;
 	pic.height = height;
+
+	WebPMemoryWriterInit(&wrt);
 	pic.writer = WebPMemoryWrite;
 	pic.custom_ptr = &wrt;
 		
-	WebPMemoryWriterInit(&wrt);
-
-	if (WebPPictureImportBGRA(&pic, (uint8_t*)bitmap, stride) == 0)
+	if (HasTransparency(bitmap, width, height, stride))
 	{
-		return VP8_ENC_ERROR_OUT_OF_MEMORY; 
+		if (WebPPictureImportBGRA(&pic, (uint8_t*)bitmap, stride) == 0)
+		{
+			return VP8_ENC_ERROR_OUT_OF_MEMORY; 
+		}
+	}
+	else
+	{
+		// If the image does not have any transparency import using the BGRX method which will ignore the alpha channel.
+		if (WebPPictureImportBGRX(&pic, (uint8_t*)bitmap, stride) == 0)
+		{
+			return VP8_ENC_ERROR_OUT_OF_MEMORY;
+		}
 	}
 
 	if (callback != NULL)
@@ -131,37 +162,41 @@ void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_
 	webpData.size = dataSize;
 
 	WebPDemuxer* demux = WebPDemux(&webpData);
-	uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
-
-	WebPChunkIterator iter;
-	memset(&iter, 0, sizeof(WebPChunkIterator));
-
-	switch (type)
+	if (demux != NULL)
 	{
-	case ColorProfile:
-		if ((flags & ICCP_FLAG) != 0)
+		uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
+
+		WebPChunkIterator iter;
+		memset(&iter, 0, sizeof(WebPChunkIterator));
+
+		switch (type)
 		{
-			WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
-		}
-	break;
-	case EXIF:
-		if ((flags & EXIF_FLAG) != 0)
-		{
-			WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
-		}
+		case ColorProfile:
+			if ((flags & ICCP_FLAG) != 0)
+			{
+				WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
+			}
 		break;
-	case XMP:
-		if ((flags & XMP_FLAG) != 0)
-		{
-			WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
+		case EXIF:
+			if ((flags & EXIF_FLAG) != 0)
+			{
+				WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
+			}
+			break;
+		case XMP:
+			if ((flags & XMP_FLAG) != 0)
+			{
+				WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
+			}
+			break;
 		}
-		break;
+
+		*outSize = (uint32_t)iter.chunk.size;
+
+		WebPDemuxReleaseChunkIterator(&iter);
+		WebPDemuxDelete(demux);
 	}
-
-	*outSize = (uint32_t)iter.chunk.size;
-
-	WebPDemuxReleaseChunkIterator(&iter);
-	WebPDemuxDelete(demux);
+	
 }
 
 void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type)
@@ -171,6 +206,7 @@ void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t 
 	webpData.size = dataSize;
 
 	WebPDemuxer* demux = WebPDemux(&webpData);
+
 	uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
 
 	WebPChunkIterator iter;
@@ -204,7 +240,7 @@ void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t 
 	WebPDemuxDelete(demux);
 }
 
-WebPMuxError SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metaData)
+int SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metaData)
 {
 	WebPMux *mux = WebPMuxNew();
 
