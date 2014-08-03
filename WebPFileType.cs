@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using PaintDotNet;
-using PaintDotNet.IndirectUI;
 using PaintDotNet.IO;
-using PaintDotNet.PropertySystem;
 using WebPFileType.Properties;
-using System.Drawing;
-using PaintDotNet.SystemLayer;
-using System.IO;
 
 namespace WebPFileType
 {
@@ -195,7 +191,7 @@ namespace WebPFileType
 			foreach (string key in metaData.GetKeys(Metadata.ExifSectionName))
 			{
 				string blob = metaData.GetValue(Metadata.ExifSectionName, key);
-				System.Drawing.Imaging.PropertyItem pi = PdnGraphics.DeserializePropertyItem(blob);
+				System.Drawing.Imaging.PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
 
 				try
 				{
@@ -243,7 +239,7 @@ namespace WebPFileType
 							int exifLen = sectionLength - 8; // subtract the signature and section length size to get the data length. 
 							bytes = new byte[exifLen];
 
-							Marshal.Copy((IntPtr)(p + 8), bytes, 0, exifLen);
+							Marshal.Copy(new IntPtr(p + 8), bytes, 0, exifLen);
 						}
 
 						p += sectionLength;
