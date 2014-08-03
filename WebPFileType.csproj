@@ -72,23 +72,21 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PaintDotNet.Base">
-      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\Refrences\PaintDotNet.Base.dll</HintPath>
+      <HintPath>..\PSFilterPdn\References\PaintDotNet.Base.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.Core">
-      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\Refrences\PaintDotNet.Core.dll</HintPath>
+      <HintPath>..\PSFilterPdn\References\PaintDotNet.Core.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.Data">
-      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\Refrences\PaintDotNet.Data.dll</HintPath>
+      <HintPath>..\PSFilterPdn\References\PaintDotNet.Data.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.SystemLayer">
-      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\Refrences\PaintDotNet.SystemLayer.dll</HintPath>
+      <HintPath>..\PSFilterPdn\References\PaintDotNet.SystemLayer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="WebPFilterType.cs" />
@@ -134,12 +132,12 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>Copy "$(TargetPath)" "C:\Program Files\Paint.NET\FileTypes" /y
-if "$(ConfigurationName)" == "Debug" copy "$(TargetDir)$(TargetName).pdb" "C:\Program Files\Paint.NET\FileTypes" /y
+    <PostBuildEvent>Copy "$(TargetPath)" "D:\Program Files\Paint.NET\FileTypes" /y
+if "$(ConfigurationName)" == "Debug" copy "$(TargetDir)$(TargetName).pdb" "D:\Program Files\Paint.NET\FileTypes" /y
 </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>del "C:\Program Files\Paint.NET\FileTypes\$(TargetName).pdb"</PreBuildEvent>
+    <PreBuildEvent>del "D:\Program Files\Paint.NET\FileTypes\$(TargetName).pdb"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
