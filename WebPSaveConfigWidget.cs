@@ -39,12 +39,22 @@ namespace WebPFileType
             configToken.EncodeMetaData = keepMetaDataCb.Checked;
         }
 
+        private void PushSuspendTokenUpdate()
+        {
+            this.suspendTokenUpdateCounter++;
+        }
+
+        private void PopSuspendTokenUpdate()
+        {
+            this.suspendTokenUpdateCounter--;
+        }
+
         protected override void InitWidgetFromToken(PaintDotNet.SaveConfigToken sourceToken)
         {
             WebPSaveConfigToken configToken = (WebPSaveConfigToken)sourceToken;
 
             // Disable the UpdateToken function, this fixes a race condition with the controls that are updated by the UpdatePresetSliders method.
-            this.suspendTokenUpdateCounter++;
+            PushSuspendTokenUpdate();
 
             this.presetCbo.SelectedIndex = (int)configToken.Preset;
             this.qualitySlider.Value = configToken.Quality;
@@ -56,7 +66,7 @@ namespace WebPFileType
             this.fileSizeTxt.Text = configToken.FileSize > 0 ? configToken.FileSize.ToString() : string.Empty;
             this.keepMetaDataCb.Checked = configToken.EncodeMetaData;
 
-            this.suspendTokenUpdateCounter--;
+            PopSuspendTokenUpdate();
         }
 
         private void UpdateConfigToken()
@@ -69,7 +79,7 @@ namespace WebPFileType
 
         private void UpdatePresetSliders(WebPPreset preset)
         {
-            this.suspendTokenUpdateCounter++;
+            PushSuspendTokenUpdate();
 
             switch (preset)
             {
@@ -106,7 +116,7 @@ namespace WebPFileType
                     break;
             }
 
-            this.suspendTokenUpdateCounter--;
+            PopSuspendTokenUpdate();
         }
 
         private void EnableLossyEncodingOptions(bool enabled)
