@@ -134,10 +134,7 @@ namespace WebPFileType
 			public static unsafe extern WebPMuxError SetMetaData(byte* image, UIntPtr imageSize, ref IntPtr outImage, ref UIntPtr outImageSize, MetaDataParams metaData);
 		}
 
-		private static bool Is64Bit()
-		{
-			return (IntPtr.Size == 8);
-		}
+		private static readonly bool Is64Bit = IntPtr.Size == 8;
 
 		/// <summary>
 		/// Frees the unmanaged memory allocates with <see cref="WebPAllocateMemory"/>.
@@ -145,7 +142,7 @@ namespace WebPFileType
 		/// <param name="memory">The memory to free.</param>
 		private static void WebPFreeMemory(IntPtr memory)
 		{
-			if (Is64Bit())
+			if (Is64Bit)
 			{
 				WebP_64.WebPFreeMemory(memory);
 			}
@@ -167,7 +164,7 @@ namespace WebPFileType
 		{
 			fixed (byte* ptr = data)
 			{
-				if (Is64Bit())
+				if (Is64Bit)
 				{
 					return WebP_64.WebPGetDimensions(ptr, (UIntPtr)dataSize, out width, out height);
 				}
@@ -191,7 +188,7 @@ namespace WebPFileType
 		{
 			fixed (byte* ptr = data)
 			{ 
-				if (Is64Bit())
+				if (Is64Bit)
 				{
 					return WebP_64.WebPLoad(ptr, (UIntPtr)dataSize, ref outPtr, outputSize, outputStride);
 				}
@@ -215,7 +212,9 @@ namespace WebPFileType
 		internal static void WebPSave(out byte[] output, IntPtr scan0, int width, int height, long stride, EncodeParams parameters, WebPReportProgress callback)
 		{
 			if (width > WebPMaxDimension || height > WebPMaxDimension)
+			{
 				throw new FormatException(Resources.InvalidImageDimensions);
+			}
 
 
 			WebPEncodingError retVal = WebPEncodingError.Ok;
@@ -226,7 +225,7 @@ namespace WebPFileType
 			try
 			{
 				
-				if (Is64Bit())
+				if (Is64Bit)
 				{
 					retVal = WebP_64.WebPSave(out data, out dataSize, scan0, width, height, (int)stride, parameters, callback);
 				}
@@ -279,7 +278,7 @@ namespace WebPFileType
 			metaDataSize = 0;
 			fixed (byte* ptr = data)
 			{
-				if (Is64Bit())
+				if (Is64Bit)
 				{
 					WebP_64.GetMetaDataSize(ptr, (UIntPtr)dataSize, type, out metaDataSize);
 				}
@@ -294,7 +293,7 @@ namespace WebPFileType
 		{
 			fixed (byte* ptr = data, outPtr = outData)
 			{
-				if (Is64Bit())
+				if (Is64Bit)
 				{
 					WebP_64.ExtractMetaData(ptr, (UIntPtr)dataSize, outPtr, outSize, type);
 				}
@@ -316,7 +315,7 @@ namespace WebPFileType
 				IntPtr outPtr = IntPtr.Zero; 
 				UIntPtr outSize = UIntPtr.Zero;
 
-				if (Is64Bit())
+				if (Is64Bit)
 				{
 					error = WebP_64.SetMetaData(ptr, (UIntPtr)dataSize, ref outPtr, ref outSize, metaData);
 				}
@@ -327,7 +326,7 @@ namespace WebPFileType
 
 				if (error == WebPMuxError.Ok)
 				{ 
-					uint size = outSize.ToUInt32();
+					int size = (int)outSize.ToUInt32();
 
 					outImage = new byte[size];
 					Marshal.Copy(outPtr, outImage, 0, outImage.Length);
