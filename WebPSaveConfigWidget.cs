@@ -4,7 +4,7 @@ using PaintDotNet;
 
 namespace WebPFileType
 {
-    public partial class WebPSaveConfigWidget : SaveConfigWidget
+    internal partial class WebPSaveConfigWidget : SaveConfigWidget
     {
         private int suspendTokenUpdateCounter;
 
