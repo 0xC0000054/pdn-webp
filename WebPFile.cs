@@ -209,7 +209,7 @@ namespace WebPFileType
 		/// <param name="stride">The stride of the input bitmap.</param>
 		/// <param name="parameters">The parameters.</param>
 		/// <param name="callback">The callback.</param>
-		internal static void WebPSave(out byte[] output, IntPtr scan0, int width, int height, long stride, EncodeParams parameters, WebPReportProgress callback)
+		internal static byte[] WebPSave(IntPtr scan0, int width, int height, long stride, EncodeParams parameters, WebPReportProgress callback)
 		{
 			if (width > WebPMaxDimension || height > WebPMaxDimension)
 			{
@@ -220,7 +220,7 @@ namespace WebPFileType
 			WebPEncodingError retVal = WebPEncodingError.Ok;
 			IntPtr data = IntPtr.Zero;
 			uint dataSize = 0U;
-			output = null;
+			byte[] output = null;
 
 			try
 			{
@@ -271,11 +271,14 @@ namespace WebPFileType
 					data = IntPtr.Zero;
 				}
 			}
+
+			return output;
 		}
 
-		internal static unsafe void GetMetaDataSize(byte[] data, uint dataSize, MetaDataType type, out uint metaDataSize)
+		internal static unsafe uint GetMetaDataSize(byte[] data, uint dataSize, MetaDataType type)
 		{
-			metaDataSize = 0;
+			uint metaDataSize = 0U;
+
 			fixed (byte* ptr = data)
 			{
 				if (Is64Bit)
@@ -287,6 +290,8 @@ namespace WebPFileType
 					WebP_32.GetMetaDataSize(ptr, (UIntPtr)dataSize, type, out metaDataSize);
 				}
 			}
+
+			return metaDataSize;
 		}
 
 		internal static unsafe void ExtractMetadata(byte[] data, uint dataSize, MetaDataType type, byte[] outData, uint outSize)
@@ -304,9 +309,9 @@ namespace WebPFileType
 			}
 		}
 
-		internal static unsafe void SetMetaData(byte[] data, uint dataSize, out byte[] outImage, MetaDataParams metaData)
+		internal static unsafe byte[] SetMetaData(byte[] data, uint dataSize, MetaDataParams metaData)
 		{
-			outImage = null;
+			byte[] outImage = null;
 
 			WebPMuxError error = WebPMuxError.Ok;
 
@@ -315,43 +320,53 @@ namespace WebPFileType
 				IntPtr outPtr = IntPtr.Zero; 
 				UIntPtr outSize = UIntPtr.Zero;
 
-				if (Is64Bit)
+				try
 				{
-					error = WebP_64.SetMetaData(ptr, (UIntPtr)dataSize, ref outPtr, ref outSize, metaData);
-				}
-				else
-				{
-					error = WebP_32.SetMetaData(ptr, (UIntPtr)dataSize, ref outPtr, ref outSize, metaData);
-				}
-
-				if (error == WebPMuxError.Ok)
-				{ 
-					int size = (int)outSize.ToUInt32();
-
-					outImage = new byte[size];
-					Marshal.Copy(outPtr, outImage, 0, outImage.Length);
-
-					WebPFreeMemory(outPtr);
-					outPtr = IntPtr.Zero;
-				}
-				else
-				{
-					switch (error)
+					if (Is64Bit)
 					{
-						case WebPMuxError.MemoryError:
-							throw new OutOfMemoryException(Resources.InsufficientMemoryOnSave);
-						case WebPMuxError.NotFound:
-						case WebPMuxError.InvalidArgument:
-						case WebPMuxError.BadData:
-						case WebPMuxError.NotEnoughData:
-							throw new WebPException(Resources.EncoderGenericError);
-						default:
-							break;
+						error = WebP_64.SetMetaData(ptr, (UIntPtr)dataSize, ref outPtr, ref outSize, metaData);
 					}
-					
+					else
+					{
+						error = WebP_32.SetMetaData(ptr, (UIntPtr)dataSize, ref outPtr, ref outSize, metaData);
+					}
+
+					if (error == WebPMuxError.Ok)
+					{
+						int size = (int)outSize.ToUInt32();
+
+						outImage = new byte[size];
+						Marshal.Copy(outPtr, outImage, 0, outImage.Length);
+					}
+					else
+					{
+						switch (error)
+						{
+							case WebPMuxError.MemoryError:
+								throw new OutOfMemoryException(Resources.InsufficientMemoryOnSave);
+							case WebPMuxError.NotFound:
+							case WebPMuxError.InvalidArgument:
+							case WebPMuxError.BadData:
+							case WebPMuxError.NotEnoughData:
+								throw new WebPException(Resources.EncoderGenericError);
+							default:
+								break;
+						}
+
+					}
+				}
+				finally
+				{
+					if (outPtr != IntPtr.Zero)
+					{
+						WebPFreeMemory(outPtr);
+						outPtr = IntPtr.Zero;
+					}
 				}
 
 			}
+
+			return outImage;
 		}
 
 
