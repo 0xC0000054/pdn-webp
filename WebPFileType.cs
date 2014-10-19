@@ -9,9 +9,9 @@ using WebPFileType.Properties;
 
 namespace WebPFileType
 {
-	public class WebPFileType : FileType, IFileTypeFactory
+	[PaintDotNet.PluginSupportInfo(typeof(PluginSupportInfo))]
+	public sealed class WebPFileType : FileType, IFileTypeFactory
 	{
-
 		private enum PropertyNames
 		{
 			FilterStrength,
@@ -27,8 +27,7 @@ namespace WebPFileType
 		private const string WebPEXIF = "WebPEXIF";
 		private const string WebPXMP = "WebPXMP";
 
-		public WebPFileType()
-			: base("WebP", FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress, new string[] { ".webp" })
+		public WebPFileType() : base("WebP", FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress, new string[] { ".webp" })
 		{
 			encParams = new WebPFile.EncodeParams();
 		}
@@ -88,25 +87,21 @@ namespace WebPFileType
 						}
 					}
 
-					uint colorProfileSize = 0U;
-					WebPFile.GetMetaDataSize(bytes, length, WebPFile.MetaDataType.ColorProfile, out colorProfileSize);
-
+					uint colorProfileSize = WebPFile.GetMetaDataSize(bytes, length, WebPFile.MetaDataType.ColorProfile);
 					if (colorProfileSize > 0U)
 					{
 						string icc = GetMetaDataBase64(bytes, length, WebPFile.MetaDataType.ColorProfile, colorProfileSize);
 						doc.Metadata.SetUserValue(WebPColorProfile, icc);
 					}
 
-					uint exifSize = 0U;
-					WebPFile.GetMetaDataSize(bytes, length, WebPFile.MetaDataType.EXIF, out exifSize);
+					uint exifSize = WebPFile.GetMetaDataSize(bytes, length, WebPFile.MetaDataType.EXIF);
 					if (exifSize > 0)
 					{
 						string exif = GetMetaDataBase64(bytes, length, WebPFile.MetaDataType.EXIF, exifSize);
 						doc.Metadata.SetUserValue(WebPEXIF, exif);
 					}
 
-					uint xmpSize = 0U;
-					WebPFile.GetMetaDataSize(bytes, length, WebPFile.MetaDataType.XMP, out xmpSize);
+					uint xmpSize = WebPFile.GetMetaDataSize(bytes, length, WebPFile.MetaDataType.XMP);
 					if (xmpSize > 0U)
 					{
 						string xmp = GetMetaDataBase64(bytes, length, WebPFile.MetaDataType.XMP, xmpSize);
@@ -303,9 +298,7 @@ namespace WebPFileType
 
 			if (metaData.iccProfileSize > 0U || metaData.exifSize > 0U || metaData.xmpSize > 0U)
 			{
-				byte[] outData = null;
-
-				WebPFile.SetMetaData(imageData, (uint)imageData.Length, out outData, metaData);
+				byte[] outData = WebPFile.SetMetaData(imageData, (uint)imageData.Length, metaData);
 
 				if (outData != null)
 				{
@@ -332,15 +325,13 @@ namespace WebPFileType
 			encParams.sharpness = configToken.Sharpness;
 			encParams.fileSize = configToken.FileSize;
 		
-
 			using (RenderArgs ra = new RenderArgs(scratchSurface))
 			{
 				input.Render(ra, true);
 			}
 
-			byte[] data = null;
-
-			WebPFile.WebPSave(out data, scratchSurface.Scan0.Pointer, scratchSurface.Width, scratchSurface.Height, scratchSurface.Stride, encParams, encProgress);
+			byte[] data = WebPFile.WebPSave(scratchSurface.Scan0.Pointer, scratchSurface.Width, scratchSurface.Height, scratchSurface.Stride, encParams, encProgress);
+			
 			if (data != null)
 			{
 				if (configToken.EncodeMetaData)
