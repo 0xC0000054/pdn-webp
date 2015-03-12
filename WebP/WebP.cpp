@@ -206,43 +206,49 @@ void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t 
 	webpData.size = dataSize;
 
 	WebPDemuxer* demux = WebPDemux(&webpData);
-
-	uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
-
-	WebPChunkIterator iter;
-	memset(&iter, 0, sizeof(WebPChunkIterator));
-
-	switch (type)
+	if (demux != NULL)
 	{
-	case ColorProfile:
-		if ((flags & ICCP_FLAG) != 0)
+		uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
+
+		WebPChunkIterator iter;
+		memset(&iter, 0, sizeof(WebPChunkIterator));
+
+		switch (type)
 		{
-			WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
-		}
-	break;
-	case EXIF:
-		if ((flags & EXIF_FLAG) != 0)
-		{
-			WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
-		}
+		case ColorProfile:
+			if ((flags & ICCP_FLAG) != 0)
+			{
+				WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
+			}
 		break;
-	case XMP:
-		if ((flags & XMP_FLAG) != 0)
-		{
-			WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
+		case EXIF:
+			if ((flags & EXIF_FLAG) != 0)
+			{
+				WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
+			}
+			break;
+		case XMP:
+			if ((flags & XMP_FLAG) != 0)
+			{
+				WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
+			}
+			break;
 		}
-		break;
+
+		memcpy_s(outData, outSize, iter.chunk.bytes, outSize);
+
+		WebPDemuxReleaseChunkIterator(&iter);
+		WebPDemuxDelete(demux);
 	}
-
-	memcpy_s(outData, outSize, iter.chunk.bytes, outSize);
-
-	WebPDemuxReleaseChunkIterator(&iter);
-	WebPDemuxDelete(demux);
 }
 
 int SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metaData)
 {
 	WebPMux *mux = WebPMuxNew();
+	if (mux == NULL)
+	{
+		return WEBP_MUX_MEMORY_ERROR;
+	}
 
 	WebPData imageData;
 	imageData.bytes = image;
