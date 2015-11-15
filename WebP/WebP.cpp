@@ -3,7 +3,7 @@
 #include <memory.h>
 #include "WebP.h"
 
-bool WebPGetDimensions(uint8_t* iData, size_t iDataSize, int *oWidth, int *oHeight)
+bool WebPGetDimensions(uint8_t* iData, size_t iDataSize, int* oWidth, int* oHeight)
 {
 	return (WebPGetInfo(iData, iDataSize, oWidth, oHeight) != 0);
 }
@@ -153,7 +153,7 @@ int WebPSave(void** output, size_t* outputSize, void* bitmap, int width, int hei
 	return error;
 }
 
-void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t *outSize)
+void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t* outSize)
 {
 	*outSize = 0;
 
@@ -244,7 +244,7 @@ void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t 
 
 int SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metaData)
 {
-	WebPMux *mux = WebPMuxNew();
+	WebPMux* mux = WebPMuxNew();
 	if (mux == NULL)
 	{
 		return WEBP_MUX_MEMORY_ERROR;

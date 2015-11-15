@@ -47,7 +47,7 @@ typedef struct MetaDataParams
 	uint32_t xmpSize;
 }MetaDataParams;
 
-DLLEXPORT bool WebPGetDimensions(uint8_t* iData, size_t iData_size, int *oWidth, int *oHeight);
+DLLEXPORT bool WebPGetDimensions(uint8_t* iData, size_t iData_size, int* oWidth, int* oHeight);
 
 DLLEXPORT void WebPFreeMemory(void *mem);
 
@@ -55,7 +55,7 @@ DLLEXPORT int WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32
 
 DLLEXPORT int WebPSave(void** output, size_t* outputSize, void* iBitmap, int iWidth, int iHeight, int iStride, EncodeParams params, ProgressFn callback);
 
-DLLEXPORT void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t *outSize);
+DLLEXPORT void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t* outSize);
 
 DLLEXPORT void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type);
 
