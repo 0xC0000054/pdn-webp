@@ -93,7 +93,7 @@ namespace WebPFileType
 			public static extern void WebPFreeMemory(IntPtr mem);
 
 			[DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
-			public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, ref byte* outData, int outSize, int outStride);
+			public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, int outSize, int outStride);
 
 			[DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
 			public static extern WebPEncodingError WebPSave(out IntPtr output, out uint outputSize, IntPtr iBitmap, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
@@ -119,7 +119,7 @@ namespace WebPFileType
 			public static extern void WebPFreeMemory(IntPtr mem);
 
 			[DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
-			public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, ref byte* outData, int outSize, int outStride);
+			public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, int outSize, int outStride);
 
 			[DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
 			public static unsafe extern WebPEncodingError WebPSave(out IntPtr output, out uint outputSize, IntPtr scan0, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
@@ -188,11 +188,11 @@ namespace WebPFileType
 			{ 
 				if (IntPtr.Size == 8)
 				{
-					return WebP_64.WebPLoad(ptr, (UIntPtr)dataSize, ref outPtr, outputSize, outputStride);
+					return WebP_64.WebPLoad(ptr, (UIntPtr)dataSize, outPtr, outputSize, outputStride);
 				}
 				else
 				{
-				   return WebP_32.WebPLoad(ptr, (UIntPtr)dataSize, ref outPtr, outputSize, outputStride);
+				   return WebP_32.WebPLoad(ptr, (UIntPtr)dataSize, outPtr, outputSize, outputStride);
 				}
 			}
 		}
