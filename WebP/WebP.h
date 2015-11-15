@@ -51,7 +51,7 @@ DLLEXPORT bool __stdcall WebPGetDimensions(uint8_t* iData, size_t iData_size, in
 
 DLLEXPORT void __stdcall WebPFreeMemory(void *mem);
 
-DLLEXPORT int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize, int outStride);
+DLLEXPORT int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int outStride);
 
 DLLEXPORT int __stdcall WebPSave(void** output, size_t* outputSize, void* iBitmap, int iWidth, int iHeight, int iStride, EncodeParams params, ProgressFn callback);
 

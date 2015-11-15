@@ -13,7 +13,7 @@ void __stdcall WebPFreeMemory(void *mem)
 	free(mem);
 }
 
-int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize, int outStride)
+int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int outStride)
 {
 	WebPDecoderConfig config;
 	WebPDecBuffer* const output_buffer = &config.output;
@@ -25,7 +25,7 @@ int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32
 	
 	output_buffer->colorspace = MODE_BGRA;
 	output_buffer->is_external_memory = 1;
-	output_buffer->u.RGBA.rgba = *outData;
+	output_buffer->u.RGBA.rgba = outData;
 	output_buffer->u.RGBA.size = outSize;
 	output_buffer->u.RGBA.stride = outStride;
 
