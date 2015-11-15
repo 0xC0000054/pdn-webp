@@ -3,17 +3,17 @@
 #include <memory.h>
 #include "WebP.h"
 
-bool WebPGetDimensions(uint8_t* iData, size_t iDataSize, int* oWidth, int* oHeight)
+bool __stdcall WebPGetDimensions(uint8_t* iData, size_t iDataSize, int* oWidth, int* oHeight)
 {
 	return (WebPGetInfo(iData, iDataSize, oWidth, oHeight) != 0);
 }
 
-void WebPFreeMemory(void *mem)
+void __stdcall WebPFreeMemory(void *mem)
 {
 	free(mem);
 }
 
-int WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize, int outStride)
+int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize, int outStride)
 {
 	WebPDecoderConfig config;
 	WebPDecBuffer* const output_buffer = &config.output;
@@ -61,7 +61,7 @@ static int progressFunc(int percent, const WebPPicture* picture)
 	return 1;
 }
 
-int WebPSave(void** output, size_t* outputSize, void* bitmap, int width, int height, int stride, EncodeParams params, ProgressFn callback)
+int __stdcall WebPSave(void** output, size_t* outputSize, void* bitmap, int width, int height, int stride, EncodeParams params, ProgressFn callback)
 {
 	WebPConfig config;
 	WebPPicture pic;
@@ -153,7 +153,7 @@ int WebPSave(void** output, size_t* outputSize, void* bitmap, int width, int hei
 	return error;
 }
 
-void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t* outSize)
+void __stdcall GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t* outSize)
 {
 	*outSize = 0;
 
@@ -199,7 +199,7 @@ void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_
 	
 }
 
-void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type)
+void __stdcall ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type)
 {
 	WebPData webpData;
 	webpData.bytes = data;
@@ -242,7 +242,7 @@ void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t 
 	}
 }
 
-int SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metaData)
+int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metaData)
 {
 	WebPMux* mux = WebPMuxNew();
 	if (mux == NULL)

@@ -47,19 +47,19 @@ typedef struct MetaDataParams
 	uint32_t xmpSize;
 }MetaDataParams;
 
-DLLEXPORT bool WebPGetDimensions(uint8_t* iData, size_t iData_size, int* oWidth, int* oHeight);
+DLLEXPORT bool __stdcall WebPGetDimensions(uint8_t* iData, size_t iData_size, int* oWidth, int* oHeight);
 
-DLLEXPORT void WebPFreeMemory(void *mem);
+DLLEXPORT void __stdcall WebPFreeMemory(void *mem);
 
-DLLEXPORT int WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize, int outStride);
+DLLEXPORT int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t** outData, uint32_t outSize, int outStride);
 
-DLLEXPORT int WebPSave(void** output, size_t* outputSize, void* iBitmap, int iWidth, int iHeight, int iStride, EncodeParams params, ProgressFn callback);
+DLLEXPORT int __stdcall WebPSave(void** output, size_t* outputSize, void* iBitmap, int iWidth, int iHeight, int iStride, EncodeParams params, ProgressFn callback);
 
-DLLEXPORT void GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t* outSize);
+DLLEXPORT void __stdcall GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t* outSize);
 
-DLLEXPORT void ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type);
+DLLEXPORT void __stdcall ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type);
 
-DLLEXPORT int SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metadata);
+DLLEXPORT int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metadata);
 
 
 #define errVersionMismatch -1
