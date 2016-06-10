@@ -8,11 +8,6 @@ bool __stdcall WebPGetDimensions(uint8_t* iData, size_t iDataSize, int* oWidth, 
 	return (WebPGetInfo(iData, iDataSize, oWidth, oHeight) != 0);
 }
 
-void __stdcall WebPFreeMemory(void *mem)
-{
-	free(mem);
-}
-
 int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int outStride)
 {
 	WebPDecoderConfig config;
@@ -61,8 +56,21 @@ static int progressFunc(int percent, const WebPPicture* picture)
 	return 1;
 }
 
-int __stdcall WebPSave(void** output, size_t* outputSize, void* bitmap, int width, int height, int stride, EncodeParams params, ProgressFn callback)
+int __stdcall WebPSave(
+	void** output,
+	OutputBufferAllocFn outputAllocator,
+	void* bitmap,
+	int width, 
+	int height,
+	int stride,
+	EncodeParams params,
+	ProgressFn callback)
 {
+	if (outputAllocator == nullptr)
+	{
+		return VP8_ENC_ERROR_NULL_PARAMETER;
+	}
+
 	WebPConfig config;
 	WebPPicture pic;
 	WebPMemoryWriter wrt;
@@ -140,14 +148,21 @@ int __stdcall WebPSave(void** output, size_t* outputSize, void* bitmap, int widt
 	int error = 0;
 	if (WebPEncode(&config, &pic) != 0) // C-style Boolean
 	{
-		*output = wrt.mem;
-		*outputSize = wrt.size;
+		*output = outputAllocator(wrt.size);
+		if (*output != nullptr)
+		{
+			memcpy_s(*output, wrt.size, wrt.mem, wrt.size);
+		}
+		else
+		{
+			error = VP8_ENC_ERROR_OUT_OF_MEMORY;
+		}
 	}
 	else
 	{	
-		free(wrt.mem);
 		error = static_cast<int>(pic.error_code);
 	}
+	WebPMemoryWriterClear(&wrt);
 	WebPPictureFree(&pic); // free the allocated memory and return the error code if necessary.
 
 	return error;
@@ -242,8 +257,13 @@ void __stdcall ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData,
 	}
 }
 
-int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metaData)
+int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, OutputBufferAllocFn outputAllocator, MetaDataParams metaData)
 {
+	if (outputAllocator == nullptr)
+	{
+		return WEBP_MUX_INVALID_ARGUMENT;
+	}
+
 	WebPMux* mux = WebPMuxNew();
 	if (mux == nullptr)
 	{
@@ -294,8 +314,7 @@ int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, siz
 
 			if (error == WEBP_MUX_OK)
 			{
-				*outImageSize = assembledData.size;
-				*outImage = malloc(assembledData.size);
+				*outImage = outputAllocator(assembledData.size);
 
 				if (*outImage == nullptr)
 				{
