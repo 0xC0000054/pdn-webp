@@ -81,18 +81,6 @@ int __stdcall WebPSave(
 		return errVersionMismatch; // WebP API version mismatch
 	}
 
-	if (params.fileSize > 0)
-	{
-		config.target_size = params.fileSize;
-	}
-
-	if (params.preset < WEBP_PRESET_ICON)
-	{
-		config.filter_strength = params.filterStrength;	
-	}
-	config.filter_type = params.filterType;
-	config.filter_sharpness = params.sharpness;
-	config.sns_strength = params.noiseShaping;
 	config.method = params.method;
 	config.thread_level = 1;
 
@@ -114,7 +102,21 @@ int __stdcall WebPSave(
 			break;
 		}
 	}
-	
+	else
+	{
+		if (params.fileSize > 0)
+		{
+			config.target_size = params.fileSize;
+		}
+
+		if (params.preset < WEBP_PRESET_ICON)
+		{
+			config.filter_strength = params.filterStrength;
+		}
+		config.filter_type = params.filterType;
+		config.filter_sharpness = params.sharpness;
+		config.sns_strength = params.noiseShaping;
+	}
 
 	pic.width = width;
 	pic.height = height;
