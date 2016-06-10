@@ -35,7 +35,7 @@ int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_
 
 static bool HasTransparency(void* data, int width, int height, int stride)
 {
-	uint8_t* scan0 = (uint8_t*)data; 
+	uint8_t* scan0 = reinterpret_cast<uint8_t*>(data);
 	
 	for (int y = 0; y < height; y++)
 	{
@@ -66,9 +66,9 @@ int __stdcall WebPSave(void** output, size_t* outputSize, void* bitmap, int widt
 	WebPConfig config;
 	WebPPicture pic;
 	WebPMemoryWriter wrt;
-	progressCallback = NULL;
+	progressCallback = nullptr;
 
-	if (!WebPConfigPreset(&config, (WebPPreset)params.preset, params.quality) || !WebPPictureInit(&pic)) 
+	if (!WebPConfigPreset(&config, static_cast<WebPPreset>(params.preset), params.quality) || !WebPPictureInit(&pic)) 
 	{
 		return errVersionMismatch; // WebP API version mismatch
 	}
@@ -117,7 +117,7 @@ int __stdcall WebPSave(void** output, size_t* outputSize, void* bitmap, int widt
 		
 	if (HasTransparency(bitmap, width, height, stride))
 	{
-		if (WebPPictureImportBGRA(&pic, (uint8_t*)bitmap, stride) == 0)
+		if (WebPPictureImportBGRA(&pic, reinterpret_cast<uint8_t*>(bitmap), stride) == 0)
 		{
 			return VP8_ENC_ERROR_OUT_OF_MEMORY; 
 		}
@@ -125,13 +125,13 @@ int __stdcall WebPSave(void** output, size_t* outputSize, void* bitmap, int widt
 	else
 	{
 		// If the image does not have any transparency import using the BGRX method which will ignore the alpha channel.
-		if (WebPPictureImportBGRX(&pic, (uint8_t*)bitmap, stride) == 0)
+		if (WebPPictureImportBGRX(&pic, reinterpret_cast<uint8_t*>(bitmap), stride) == 0)
 		{
 			return VP8_ENC_ERROR_OUT_OF_MEMORY;
 		}
 	}
 
-	if (callback != NULL)
+	if (callback != nullptr)
 	{
 		progressCallback = callback;
 		pic.progress_hook = progressFunc;
@@ -146,7 +146,7 @@ int __stdcall WebPSave(void** output, size_t* outputSize, void* bitmap, int widt
 	else
 	{	
 		free(wrt.mem);
-		error = (int)pic.error_code;
+		error = static_cast<int>(pic.error_code);
 	}
 	WebPPictureFree(&pic); // free the allocated memory and return the error code if necessary.
 
@@ -162,7 +162,7 @@ void __stdcall GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType typ
 	webpData.size = dataSize;
 
 	WebPDemuxer* demux = WebPDemux(&webpData);
-	if (demux != NULL)
+	if (demux != nullptr)
 	{
 		uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
 
@@ -191,7 +191,7 @@ void __stdcall GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType typ
 			break;
 		}
 
-		*outSize = (uint32_t)iter.chunk.size;
+		*outSize = static_cast<uint32_t>(iter.chunk.size);
 
 		WebPDemuxReleaseChunkIterator(&iter);
 		WebPDemuxDelete(demux);
@@ -206,7 +206,7 @@ void __stdcall ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData,
 	webpData.size = dataSize;
 
 	WebPDemuxer* demux = WebPDemux(&webpData);
-	if (demux != NULL)
+	if (demux != nullptr)
 	{
 		uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
 
@@ -245,7 +245,7 @@ void __stdcall ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData,
 int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, size_t* outImageSize, MetaDataParams metaData)
 {
 	WebPMux* mux = WebPMuxNew();
-	if (mux == NULL)
+	if (mux == nullptr)
 	{
 		return WEBP_MUX_MEMORY_ERROR;
 	}
@@ -290,14 +290,14 @@ int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, siz
 
 			error = WebPMuxAssemble(mux, &assembledData);
 			WebPMuxDelete(mux);
-			mux = NULL;
+			mux = nullptr;
 
 			if (error == WEBP_MUX_OK)
 			{
 				*outImageSize = assembledData.size;
 				*outImage = malloc(assembledData.size);
 
-				if (*outImage == NULL)
+				if (*outImage == nullptr)
 				{
 					error = WEBP_MUX_MEMORY_ERROR;
 				}
