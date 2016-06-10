@@ -3,12 +3,12 @@
 #include <memory.h>
 #include "WebP.h"
 
-bool __stdcall WebPGetDimensions(uint8_t* iData, size_t iDataSize, int* oWidth, int* oHeight)
+bool __stdcall WebPGetDimensions(const uint8_t* iData, size_t iDataSize, int* oWidth, int* oHeight)
 {
 	return (WebPGetInfo(iData, iDataSize, oWidth, oHeight) != 0);
 }
 
-int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int outStride)
+int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int outStride)
 {
 	WebPDecoderConfig config;
 	WebPDecBuffer* const output_buffer = &config.output;
@@ -28,13 +28,13 @@ int __stdcall WebPLoad(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_
 	return WebPDecode(data, dataSize, &config);
 }
 
-static bool HasTransparency(void* data, int width, int height, int stride)
+static bool HasTransparency(const void* data, int width, int height, int stride)
 {
-	uint8_t* scan0 = reinterpret_cast<uint8_t*>(data);
+	const uint8_t* scan0 = reinterpret_cast<const uint8_t*>(data);
 	
 	for (int y = 0; y < height; y++)
 	{
-		uint8_t* ptr = scan0 + (y * stride); 
+		const uint8_t* ptr = scan0 + (y * stride); 
 		for (int x = 0; x < width; x++)
 		{
 			if (ptr[3] < 255)
@@ -59,8 +59,8 @@ static int progressFunc(int percent, const WebPPicture* picture)
 int __stdcall WebPSave(
 	void** output,
 	OutputBufferAllocFn outputAllocator,
-	void* bitmap,
-	int width, 
+	const void* bitmap,
+	int width,
 	int height,
 	int stride,
 	const EncodeParams* params,
@@ -127,7 +127,7 @@ int __stdcall WebPSave(
 		
 	if (HasTransparency(bitmap, width, height, stride))
 	{
-		if (WebPPictureImportBGRA(&pic, reinterpret_cast<uint8_t*>(bitmap), stride) == 0)
+		if (WebPPictureImportBGRA(&pic, reinterpret_cast<const uint8_t*>(bitmap), stride) == 0)
 		{
 			return VP8_ENC_ERROR_OUT_OF_MEMORY; 
 		}
@@ -135,7 +135,7 @@ int __stdcall WebPSave(
 	else
 	{
 		// If the image does not have any transparency import using the BGRX method which will ignore the alpha channel.
-		if (WebPPictureImportBGRX(&pic, reinterpret_cast<uint8_t*>(bitmap), stride) == 0)
+		if (WebPPictureImportBGRX(&pic, reinterpret_cast<const uint8_t*>(bitmap), stride) == 0)
 		{
 			return VP8_ENC_ERROR_OUT_OF_MEMORY;
 		}
@@ -170,7 +170,7 @@ int __stdcall WebPSave(
 	return error;
 }
 
-void __stdcall GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t* outSize)
+void __stdcall GetMetaDataSize(const uint8_t* data, size_t dataSize, MetaDataType type, uint32_t* outSize)
 {
 	*outSize = 0;
 
@@ -216,7 +216,7 @@ void __stdcall GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType typ
 	
 }
 
-void __stdcall ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type)
+void __stdcall ExtractMetaData(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetaDataType type)
 {
 	WebPData webpData;
 	webpData.bytes = data;
@@ -259,7 +259,7 @@ void __stdcall ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData,
 	}
 }
 
-int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, OutputBufferAllocFn outputAllocator, const MetaDataParams* metaData)
+int __stdcall SetMetaData(const uint8_t* image, size_t imageSize, void** outImage, OutputBufferAllocFn outputAllocator, const MetaDataParams* metaData)
 {
 	if (outputAllocator == nullptr)
 	{
