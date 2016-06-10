@@ -60,14 +60,14 @@ DLLEXPORT int __stdcall WebPSave(
 	int iWidth,
 	int iHeight,
 	int iStride,
-	EncodeParams params,
+	const EncodeParams* params,
 	ProgressFn progressCallback);
 
 DLLEXPORT void __stdcall GetMetaDataSize(uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t* outSize);
 
 DLLEXPORT void __stdcall ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int type);
 
-DLLEXPORT int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, OutputBufferAllocFn outputAllocator, MetaDataParams metadata);
+DLLEXPORT int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, OutputBufferAllocFn outputAllocator, const MetaDataParams* metadata);
 
 
 #define errVersionMismatch -1

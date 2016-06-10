@@ -63,7 +63,7 @@ int __stdcall WebPSave(
 	int width, 
 	int height,
 	int stride,
-	EncodeParams params,
+	const EncodeParams* params,
 	ProgressFn callback)
 {
 	if (outputAllocator == nullptr)
@@ -76,20 +76,20 @@ int __stdcall WebPSave(
 	WebPMemoryWriter wrt;
 	progressCallback = nullptr;
 
-	if (!WebPConfigPreset(&config, static_cast<WebPPreset>(params.preset), params.quality) || !WebPPictureInit(&pic)) 
+	if (!WebPConfigPreset(&config, static_cast<WebPPreset>(params->preset), params->quality) || !WebPPictureInit(&pic))
 	{
 		return errVersionMismatch; // WebP API version mismatch
 	}
 
-	config.method = params.method;
+	config.method = params->method;
 	config.thread_level = 1;
 
-	if (params.quality == 100)
+	if (params->quality == 100)
 	{
 		config.lossless = 1;
 		pic.use_argb = 1;
 
-		switch (params.preset)
+		switch (params->preset)
 		{
 		case WEBP_PRESET_PHOTO:
 			config.image_hint = WEBP_HINT_PHOTO; 
@@ -104,18 +104,18 @@ int __stdcall WebPSave(
 	}
 	else
 	{
-		if (params.fileSize > 0)
+		if (params->fileSize > 0)
 		{
-			config.target_size = params.fileSize;
+			config.target_size = params->fileSize;
 		}
 
-		if (params.preset < WEBP_PRESET_ICON)
+		if (params->preset < WEBP_PRESET_ICON)
 		{
-			config.filter_strength = params.filterStrength;
+			config.filter_strength = params->filterStrength;
 		}
-		config.filter_type = params.filterType;
-		config.filter_sharpness = params.sharpness;
-		config.sns_strength = params.noiseShaping;
+		config.filter_type = params->filterType;
+		config.filter_sharpness = params->sharpness;
+		config.sns_strength = params->noiseShaping;
 	}
 
 	pic.width = width;
@@ -259,7 +259,7 @@ void __stdcall ExtractMetaData(uint8_t* data, size_t dataSize, uint8_t* outData,
 	}
 }
 
-int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, OutputBufferAllocFn outputAllocator, MetaDataParams metaData)
+int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, OutputBufferAllocFn outputAllocator, const MetaDataParams* metaData)
 {
 	if (outputAllocator == nullptr)
 	{
@@ -282,26 +282,26 @@ int __stdcall SetMetaData(uint8_t* image, size_t imageSize, void** outImage, Out
 	{
 		WebPData chunkData;
 
-		if (metaData.iccProfileSize > 0)
+		if (metaData->iccProfileSize > 0)
 		{
-			chunkData.bytes = metaData.iccProfile;
-			chunkData.size = metaData.iccProfileSize;
+			chunkData.bytes = metaData->iccProfile;
+			chunkData.size = metaData->iccProfileSize;
 			
 			error = WebPMuxSetChunk(mux, "ICCP", &chunkData, 1);
 		}
 		
-		if (error == WEBP_MUX_OK && metaData.exifSize > 0)
+		if (error == WEBP_MUX_OK && metaData->exifSize > 0)
 		{
-			chunkData.bytes = metaData.exif;
-			chunkData.size = metaData.exifSize;
+			chunkData.bytes = metaData->exif;
+			chunkData.size = metaData->exifSize;
 			
 			error = WebPMuxSetChunk(mux, "EXIF", &chunkData, 1);
 		}
 		
-		if (error == WEBP_MUX_OK && metaData.xmpSize > 0)
+		if (error == WEBP_MUX_OK && metaData->xmpSize > 0)
 		{
-			chunkData.bytes = metaData.xmp;
-			chunkData.size = metaData.xmpSize;
+			chunkData.bytes = metaData->xmp;
+			chunkData.size = metaData->xmpSize;
 			
 			error = WebPMuxSetChunk(mux, "XMP ", &chunkData, 1);
 		}
