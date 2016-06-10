@@ -198,57 +198,6 @@ namespace WebPFileType
 			}
 		}
 
-		/// <summary>
-		/// Reads the JPEG APP1 section to extract the EXIF metadata.
-		/// </summary>
-		/// <param name="jpegData">The JPEG image byte array.</param>
-		/// <returns>The extracted data or null.</returns>
-		private static unsafe byte[] ReadJpegAPP1(byte[] jpegData)
-		{
-			byte[] bytes = null;
-			System.Text.Encoding windows1252Encoding = System.Text.Encoding.GetEncoding(1252);
-			fixed (byte* ptr = jpegData)
-			{
-				byte* p = ptr;
-				if (p[0] != 0xff && p[1] != 0xd8) // JPEG file signature
-				{
-					return null;
-				}
-				p += 2;
-
-				ushort sectionLength = 0;
-				while ((p[0] == 0xff && (p[1] >= 0xe0 && p[1] <= 0xef)) && bytes == null) // APP sections
-				{
-
-					sectionLength = (ushort)((p[2] << 8) | p[3]); // JPEG uses big-endian   
-
-					if (p[0] == 0xff && p[1] == 0xe1) // APP1
-					{
-						p += 2; // skip the header bytes
-
-						string sig = new string((sbyte*)p + 2, 0, 6, windows1252Encoding);
-
-						if (sig == "Exif\0\0")
-						{
-							int exifLen = sectionLength - 8; // subtract the signature and section length size to get the data length. 
-							bytes = new byte[exifLen];
-
-							Marshal.Copy(new IntPtr(p + 8), bytes, 0, exifLen);
-						}
-
-						p += sectionLength;
-					}
-					else
-					{
-						p += sectionLength + 2;
-					}
-
-				}
-			}
-
-			return bytes;
-		}
-
 		private static IntPtr EncodeMetaData(Document doc, Surface scratchSurface, byte[] imageData, PinnedByteArrayAllocator output)
 		{
 			WebPFile.MetaDataParams metaData = new WebPFile.MetaDataParams();
@@ -277,7 +226,7 @@ namespace WebPFileType
 						bmp.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
 					}
 
-					exifBytes = ReadJpegAPP1(stream.GetBuffer());
+					exifBytes = JPEGReader.ExtractEXIF(stream.GetBuffer());
 				}
 
 				if (exifBytes != null)
