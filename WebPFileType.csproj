@@ -90,6 +90,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JPEGReader.cs" />
     <Compile Include="PinnedByteArrayAllocator.cs" />
     <Compile Include="PluginSupportInfo.cs" />
     <Compile Include="WebPFilterType.cs" />
