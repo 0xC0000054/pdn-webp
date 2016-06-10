@@ -132,21 +132,20 @@ namespace WebPFileType
         /// Gets the dimension of the WebP image.
         /// </summary>
         /// <param name="data">The input image data.</param>
-        /// <param name="dataSize">The size of the input data.</param>
         /// <param name="width">The output width of the image.</param>
         /// <param name="height">The output height of the image.</param>
         /// <returns>true on success, otherwise false.</returns>
-        internal static unsafe bool WebPGetDimensions(byte[] data, uint dataSize, out int width, out int height)
+        internal static unsafe bool WebPGetDimensions(byte[] data, out int width, out int height)
         {
             fixed (byte* ptr = data)
             {
                 if (IntPtr.Size == 8)
                 {
-                    return WebP_64.WebPGetDimensions(ptr, (UIntPtr)dataSize, out width, out height);
+                    return WebP_64.WebPGetDimensions(ptr, new UIntPtr((ulong)data.Length), out width, out height);
                 }
                 else
                 {
-                    return WebP_32.WebPGetDimensions(ptr, (UIntPtr)dataSize, out width, out height);
+                    return WebP_32.WebPGetDimensions(ptr, new UIntPtr((ulong)data.Length), out width, out height);
                 }
             }
         }
@@ -155,22 +154,21 @@ namespace WebPFileType
         /// The WebP load function.
         /// </summary>
         /// <param name="data">The input image data</param>
-        /// <param name="dataSize">Size of the data.</param>
         /// <param name="width">The width 0f the resulting image.</param>
         /// <param name="outputStride">The height of the resulting image.</param>
         /// <param name="outPtr">The output byte array.</param>
         /// <returns>VP8StatusCode.Ok on success.</returns>
-        internal static unsafe VP8StatusCode WebPLoad(byte[] data, uint dataSize, byte* outPtr, int outputSize, int outputStride)
+        internal static unsafe VP8StatusCode WebPLoad(byte[] data, byte* outPtr, int outputSize, int outputStride)
         {
             fixed (byte* ptr = data)
             {
                 if (IntPtr.Size == 8)
                 {
-                    return WebP_64.WebPLoad(ptr, (UIntPtr)dataSize, outPtr, outputSize, outputStride);
+                    return WebP_64.WebPLoad(ptr, new UIntPtr((ulong)data.Length), outPtr, outputSize, outputStride);
                 }
                 else
                 {
-                    return WebP_32.WebPLoad(ptr, (UIntPtr)dataSize, outPtr, outputSize, outputStride);
+                    return WebP_32.WebPLoad(ptr, new UIntPtr((ulong)data.Length), outPtr, outputSize, outputStride);
                 }
             }
         }
@@ -248,7 +246,7 @@ namespace WebPFileType
             return outPtr;
         }
 
-        internal static unsafe uint GetMetaDataSize(byte[] data, uint dataSize, MetaDataType type)
+        internal static unsafe uint GetMetaDataSize(byte[] data, MetaDataType type)
         {
             uint metaDataSize = 0U;
 
@@ -256,28 +254,28 @@ namespace WebPFileType
             {
                 if (IntPtr.Size == 8)
                 {
-                    WebP_64.GetMetaDataSize(ptr, (UIntPtr)dataSize, type, out metaDataSize);
+                    WebP_64.GetMetaDataSize(ptr, new UIntPtr((ulong)data.Length), type, out metaDataSize);
                 }
                 else
                 {
-                    WebP_32.GetMetaDataSize(ptr, (UIntPtr)dataSize, type, out metaDataSize);
+                    WebP_32.GetMetaDataSize(ptr, new UIntPtr((ulong)data.Length), type, out metaDataSize);
                 }
             }
 
             return metaDataSize;
         }
 
-        internal static unsafe void ExtractMetadata(byte[] data, uint dataSize, MetaDataType type, byte[] outData, uint outSize)
+        internal static unsafe void ExtractMetadata(byte[] data, MetaDataType type, byte[] outData, uint outSize)
         {
             fixed (byte* ptr = data, outPtr = outData)
             {
                 if (IntPtr.Size == 8)
                 {
-                    WebP_64.ExtractMetaData(ptr, (UIntPtr)dataSize, outPtr, outSize, type);
+                    WebP_64.ExtractMetaData(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
                 else
                 {
-                    WebP_32.ExtractMetaData(ptr, (UIntPtr)dataSize, outPtr, outSize, type);
+                    WebP_32.ExtractMetaData(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
             }
         }
