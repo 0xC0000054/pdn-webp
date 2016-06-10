@@ -55,7 +55,7 @@ namespace WebPFileType
         internal delegate void WebPReportProgress(int progress);
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct EncodeParams
+        internal sealed class EncodeParams
         {
             [MarshalAs(UnmanagedType.R4)]
             public float quality;
@@ -71,7 +71,7 @@ namespace WebPFileType
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct MetaDataParams
+        internal sealed class MetaDataParams
         {
             public byte[] iccProfile;
             public uint iccProfileSize;
