@@ -250,7 +250,7 @@ namespace WebPFileType
 			return bytes;
 		}
 
-		private static void EncodeMetaData(Document doc, Surface scratchSurface, ref byte[] imageData)
+		private static IntPtr EncodeMetaData(Document doc, Surface scratchSurface, byte[] imageData, PinnedByteArrayAllocator output)
 		{
 			WebPFile.MetaDataParams metaData = new WebPFile.MetaDataParams();
 
@@ -298,13 +298,10 @@ namespace WebPFileType
 
 			if (metaData.iccProfileSize > 0U || metaData.exifSize > 0U || metaData.xmpSize > 0U)
 			{
-				byte[] outData = WebPFile.SetMetaData(imageData, (uint)imageData.Length, metaData);
+				return WebPFile.SetMetaData(imageData, metaData, output);
+			}
 
-				if (outData != null)
-				{
-					imageData = outData;
-				}
-			}        
+			return IntPtr.Zero;
 		}
 
 		protected override void OnSave(Document input, System.IO.Stream output, SaveConfigToken token, Surface scratchSurface, ProgressEventHandler callback)
@@ -330,15 +327,32 @@ namespace WebPFileType
 				input.Render(ra, true);
 			}
 
-			byte[] data = WebPFile.WebPSave(scratchSurface.Scan0.Pointer, scratchSurface.Width, scratchSurface.Height, scratchSurface.Stride, encParams, encProgress);
-			
-			if (data != null)
+			using (PinnedByteArrayAllocator allocator = new PinnedByteArrayAllocator())
 			{
-				if (configToken.EncodeMetaData)
+				IntPtr pinnedArrayPtr = WebPFile.WebPSave(
+					allocator,
+					scratchSurface.Scan0.Pointer,
+					scratchSurface.Width,
+					scratchSurface.Height,
+					scratchSurface.Stride,
+					encParams, 
+					encProgress);
+
+				if (pinnedArrayPtr != IntPtr.Zero)
 				{
-					EncodeMetaData(input, scratchSurface, ref data);
-				}
-				output.Write(data, 0, data.Length);
+					IntPtr imageDataPtr = pinnedArrayPtr;
+					if (configToken.EncodeMetaData)
+					{
+						IntPtr metaDataPtr = EncodeMetaData(input, scratchSurface, allocator.GetManagedArray(pinnedArrayPtr), allocator);
+						if (metaDataPtr != IntPtr.Zero)
+						{
+							imageDataPtr = metaDataPtr;
+						}
+					}
+					byte[] data = allocator.GetManagedArray(imageDataPtr);
+
+					output.Write(data, 0, data.Length);
+				} 
 			}
 		}
 	}
