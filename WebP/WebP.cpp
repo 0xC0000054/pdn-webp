@@ -47,11 +47,10 @@ static bool HasTransparency(const void* data, int width, int height, int stride)
 	return false;
 }
 
-static ProgressFn progressCallback;
-
 static int progressFunc(int percent, const WebPPicture* picture)
 {
-	progressCallback(percent);
+	ProgressFn callback = reinterpret_cast<ProgressFn>(picture->user_data);
+	callback(percent);
 
 	return 1;
 }
@@ -74,7 +73,6 @@ int __stdcall WebPSave(
 	WebPConfig config;
 	WebPPicture pic;
 	WebPMemoryWriter wrt;
-	progressCallback = nullptr;
 
 	if (!WebPConfigPreset(&config, static_cast<WebPPreset>(params->preset), params->quality) || !WebPPictureInit(&pic))
 	{
@@ -143,7 +141,7 @@ int __stdcall WebPSave(
 
 	if (callback != nullptr)
 	{
-		progressCallback = callback;
+		pic.user_data = callback;
 		pic.progress_hook = progressFunc;
 	}
 
