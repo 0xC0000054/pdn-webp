@@ -25,18 +25,9 @@ namespace WebPFileType
             XMP
         }
 
-        internal enum WebPMuxError : int
-        {
-            Ok = 1,
-            NotFound = 0,
-            InvalidArgument = -1,
-            BadData = -2,
-            MemoryError = -3,
-            NotEnoughData = -4
-        }
-
         internal enum WebPEncodingError : int
         {
+            MetaDataEncoding = -2,
             ApiVersionMismatch = -1,
             Ok = 0,
             OutOfMemory = 1,           // memory error allocating objects
@@ -79,6 +70,27 @@ namespace WebPFileType
             public uint exifSize;
             public byte[] xmp;
             public uint xmpSize;
+
+            public MetaDataParams(byte[] iccProfileBytes, byte[] exifBytes, byte[] xmpBytes)
+            {
+                if (iccProfileBytes != null)
+                {
+                    this.iccProfile = (byte[])iccProfileBytes.Clone();
+                    this.iccProfileSize = (uint)iccProfileBytes.Length;
+                }
+
+                if (exifBytes != null)
+                {
+                    this.exif = (byte[])exifBytes.Clone();
+                    this.exifSize = (uint)exifBytes.Length;
+                }
+
+                if (xmpBytes != null)
+                {
+                    this.xmp = (byte[])xmpBytes.Clone();
+                    this.xmpSize = (uint)xmpBytes.Length;
+                }
+            }
         }
 
         private const int WebPMaxDimension = 16383;
@@ -93,16 +105,22 @@ namespace WebPFileType
             public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, int outSize, int outStride);
 
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
-            public static extern WebPEncodingError WebPSave(out IntPtr output, PinnedByteArrayAllocDelegate outputAllocator, IntPtr iBitmap, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
+            public static unsafe extern WebPEncodingError WebPSave(
+                out IntPtr output,
+                PinnedByteArrayAllocDelegate outputAllocator,
+                IntPtr scan0,
+                int width,
+                int height,
+                int stride,
+                EncodeParams parameters,
+                MetaDataParams metaData,
+                WebPReportProgress callback);
 
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetaDataSize")]
             public static unsafe extern void GetMetaDataSize(byte* iData, UIntPtr iDataSize, MetaDataType type, out uint metaDataSize);
 
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetaData")]
             public static unsafe extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, byte* metaDataBytes, uint metaDataSize, MetaDataType type);
-
-            [DllImportAttribute("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "SetMetaData")]
-            public static unsafe extern WebPMuxError SetMetaData(byte* image, UIntPtr imageSize, ref IntPtr outImage, PinnedByteArrayAllocDelegate outputAllocator, MetaDataParams metaData);
         }
 
         [System.Security.SuppressUnmanagedCodeSecurity]
@@ -116,16 +134,22 @@ namespace WebPFileType
             public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, int outSize, int outStride);
 
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
-            public static unsafe extern WebPEncodingError WebPSave(out IntPtr output, PinnedByteArrayAllocDelegate outputAllocator, IntPtr scan0, int iWidth, int iHeight, int iStride, EncodeParams parameters, WebPReportProgress callback);
+            public static unsafe extern WebPEncodingError WebPSave(
+                out IntPtr output,
+                PinnedByteArrayAllocDelegate outputAllocator,
+                IntPtr scan0,
+                int width,
+                int height,
+                int stride,
+                EncodeParams parameters,
+                MetaDataParams metaData,
+                WebPReportProgress callback);
 
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetaDataSize")]
             public static unsafe extern void GetMetaDataSize(byte* iData, UIntPtr iDataSize, MetaDataType type, out uint metaDataSize);
 
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetaData")]
             public static unsafe extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, byte* metaDataBytes, uint metaDataSize, MetaDataType type);
-
-            [DllImportAttribute("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "SetMetaData")]
-            public static unsafe extern WebPMuxError SetMetaData(byte* image, UIntPtr imageSize, ref IntPtr outImage, PinnedByteArrayAllocDelegate outputAllocator, MetaDataParams metaData);
         }
 
         /// <summary>
@@ -195,6 +219,7 @@ namespace WebPFileType
             int height,
             long stride,
             EncodeParams parameters,
+            MetaDataParams metaData,
             WebPReportProgress callback)
         {
             if (outputAllocator == null)
@@ -214,11 +239,11 @@ namespace WebPFileType
             PinnedByteArrayAllocDelegate allocateFn = new PinnedByteArrayAllocDelegate(outputAllocator.AllocateArray);
             if (IntPtr.Size == 8)
             {
-                retVal = WebP_64.WebPSave(out outPtr, allocateFn, scan0, width, height, (int)stride, parameters, callback);
+                retVal = WebP_64.WebPSave(out outPtr, allocateFn, scan0, width, height, (int)stride, parameters, metaData, callback);
             }
             else
             {
-                retVal = WebP_32.WebPSave(out outPtr, allocateFn, scan0, width, height, (int)stride, parameters, callback);
+                retVal = WebP_32.WebPSave(out outPtr, allocateFn, scan0, width, height, (int)stride, parameters, metaData, callback);
             }
             GC.KeepAlive(allocateFn);
 
@@ -240,6 +265,8 @@ namespace WebPFileType
 
                     case WebPEncodingError.ApiVersionMismatch:
                         throw new WebPException(Resources.ApiVersionMismatch);
+                    case WebPEncodingError.MetaDataEncoding:
+                        throw new WebPException(Resources.EncoderMetaDataError);
                 }
             }
 
@@ -279,69 +306,5 @@ namespace WebPFileType
                 }
             }
         }
-
-        /// <summary>
-        /// Sets the meta data for the WebP image.
-        /// </summary>
-        /// <param name="imageBytes">The existing WebP image.</param>
-        /// <param name="metaData">The meta data to embed into the image.</param>
-        /// <param name="outputAllocator">The allocator for the managed output buffer.</param>
-        /// <returns>
-        /// A pointer to the pinned managed array.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="imageBytes"/> is null.
-        /// -or-
-        /// <paramref name="outputAllocator"/> is null.
-        /// </exception>
-        internal static unsafe IntPtr SetMetaData(byte[] imageBytes, MetaDataParams metaData, PinnedByteArrayAllocator outputAllocator)
-        {
-            if (imageBytes == null)
-            {
-                throw new ArgumentNullException(nameof(imageBytes));
-            }
-            if (outputAllocator == null)
-            {
-                throw new ArgumentNullException(nameof(outputAllocator));
-            }
-
-            IntPtr outPtr = IntPtr.Zero;
-
-            fixed (byte* ptr = imageBytes)
-            {
-                WebPMuxError error = WebPMuxError.Ok;
-
-                PinnedByteArrayAllocDelegate allocateFn = new PinnedByteArrayAllocDelegate(outputAllocator.AllocateArray);
-                if (IntPtr.Size == 8)
-                {
-                    error = WebP_64.SetMetaData(ptr, new UIntPtr((ulong)imageBytes.Length), ref outPtr, allocateFn, metaData);
-                }
-                else
-                {
-                    error = WebP_32.SetMetaData(ptr, new UIntPtr((ulong)imageBytes.Length), ref outPtr, allocateFn, metaData);
-                }
-                GC.KeepAlive(allocateFn);
-
-                if (error != WebPMuxError.Ok)
-                {
-                    switch (error)
-                    {
-                        case WebPMuxError.MemoryError:
-                            throw new OutOfMemoryException(Resources.InsufficientMemoryOnSave);
-                        case WebPMuxError.NotFound:
-                        case WebPMuxError.InvalidArgument:
-                        case WebPMuxError.BadData:
-                        case WebPMuxError.NotEnoughData:
-                            throw new WebPException(Resources.EncoderGenericError);
-                        default:
-                            break;
-                    }
-                }
-            }
-
-            return outPtr;
-        }
-
-
     }
 }
