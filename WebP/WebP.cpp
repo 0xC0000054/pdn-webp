@@ -55,6 +55,108 @@ static int progressFunc(int percent, const WebPPicture* picture)
 	return 1;
 }
 
+static int EncodeImageMetaData(
+	const uint8_t* image,
+	const size_t imageSize,
+	const MetaDataParams* metaData,
+	const OutputBufferAllocFn outputAllocator,
+	void** output)
+{
+	if (image == nullptr || metaData == nullptr || outputAllocator == nullptr || output == nullptr)
+	{
+		return VP8_ENC_ERROR_NULL_PARAMETER;
+	}
+
+	WebPMux* mux = WebPMuxNew();
+	if (mux == nullptr)
+	{
+		return VP8_ENC_ERROR_OUT_OF_MEMORY;
+	}
+
+	WebPData imageData;
+	imageData.bytes = image;
+	imageData.size = imageSize;
+
+	WebPMuxError muxError = WebPMuxSetImage(mux, &imageData, 0);
+
+	if (muxError == WEBP_MUX_OK)
+	{
+		WebPData chunkData;
+
+		if (metaData->iccProfileSize > 0)
+		{
+			chunkData.bytes = metaData->iccProfile;
+			chunkData.size = metaData->iccProfileSize;
+
+			muxError = WebPMuxSetChunk(mux, "ICCP", &chunkData, 1);
+		}
+
+		if (muxError == WEBP_MUX_OK && metaData->exifSize > 0)
+		{
+			chunkData.bytes = metaData->exif;
+			chunkData.size = metaData->exifSize;
+
+			muxError = WebPMuxSetChunk(mux, "EXIF", &chunkData, 1);
+		}
+
+		if (muxError == WEBP_MUX_OK && metaData->xmpSize > 0)
+		{
+			chunkData.bytes = metaData->xmp;
+			chunkData.size = metaData->xmpSize;
+
+			muxError = WebPMuxSetChunk(mux, "XMP ", &chunkData, 1);
+		}
+
+		if (muxError == WEBP_MUX_OK)
+		{
+			WebPData assembledData;
+
+			muxError = WebPMuxAssemble(mux, &assembledData);
+
+			if (muxError == WEBP_MUX_OK)
+			{
+				*output = outputAllocator(assembledData.size);
+
+				if (*output == nullptr)
+				{
+					muxError = WEBP_MUX_MEMORY_ERROR;
+				}
+
+				if (muxError == WEBP_MUX_OK)
+				{
+					memcpy_s(*output, assembledData.size, assembledData.bytes, assembledData.size);
+				}
+
+				WebPDataClear(&assembledData);
+			}
+		}
+	}
+	WebPMuxDelete(mux);
+	mux = nullptr;
+
+	int encodeError = VP8_ENC_OK;
+
+	if (muxError != WEBP_MUX_OK)
+	{
+		switch (muxError)
+		{
+		case WEBP_MUX_MEMORY_ERROR:
+			encodeError = VP8_ENC_ERROR_OUT_OF_MEMORY;
+			break;
+
+		case WEBP_MUX_NOT_FOUND:
+		case WEBP_MUX_INVALID_ARGUMENT:
+		case WEBP_MUX_BAD_DATA:
+		case WEBP_MUX_NOT_ENOUGH_DATA:
+		default:
+			encodeError = errMuxEncodeMetaData;
+			break;
+		} 
+	}
+
+	return encodeError;
+}
+
 int __stdcall WebPSave(
 	void** output,
 	const OutputBufferAllocFn outputAllocator,
@@ -63,6 +165,7 @@ int __stdcall WebPSave(
 	const int height,
 	const int stride,
 	const EncodeParams* params,
+	const MetaDataParams* metaData,
 	ProgressFn callback)
 {
 	if (outputAllocator == nullptr)
@@ -148,14 +251,21 @@ int __stdcall WebPSave(
 	int error = 0;
 	if (WebPEncode(&config, &pic) != 0) // C-style Boolean
 	{
-		*output = outputAllocator(wrt.size);
-		if (*output != nullptr)
+		if (metaData != nullptr)
 		{
-			memcpy_s(*output, wrt.size, wrt.mem, wrt.size);
+			error = EncodeImageMetaData(wrt.mem, wrt.size, metaData, outputAllocator, output);
 		}
 		else
 		{
-			error = VP8_ENC_ERROR_OUT_OF_MEMORY;
+			*output = outputAllocator(wrt.size);
+			if (*output != nullptr)
+			{
+				memcpy_s(*output, wrt.size, wrt.mem, wrt.size);
+			}
+			else
+			{
+				error = VP8_ENC_ERROR_OUT_OF_MEMORY;
+			}
 		}
 	}
 	else
@@ -255,82 +365,4 @@ void __stdcall ExtractMetaData(const uint8_t* data, size_t dataSize, uint8_t* ou
 		WebPDemuxReleaseChunkIterator(&iter);
 		WebPDemuxDelete(demux);
 	}
-}
-
-int __stdcall SetMetaData(const uint8_t* image, size_t imageSize, void** outImage, OutputBufferAllocFn outputAllocator, const MetaDataParams* metaData)
-{
-	if (outputAllocator == nullptr)
-	{
-		return WEBP_MUX_INVALID_ARGUMENT;
-	}
-
-	WebPMux* mux = WebPMuxNew();
-	if (mux == nullptr)
-	{
-		return WEBP_MUX_MEMORY_ERROR;
-	}
-
-	WebPData imageData;
-	imageData.bytes = image;
-	imageData.size = imageSize;
-	
-	WebPMuxError error = WebPMuxSetImage(mux, &imageData, 0);
-
-	if (error == WEBP_MUX_OK)
-	{
-		WebPData chunkData;
-
-		if (metaData->iccProfileSize > 0)
-		{
-			chunkData.bytes = metaData->iccProfile;
-			chunkData.size = metaData->iccProfileSize;
-			
-			error = WebPMuxSetChunk(mux, "ICCP", &chunkData, 1);
-		}
-		
-		if (error == WEBP_MUX_OK && metaData->exifSize > 0)
-		{
-			chunkData.bytes = metaData->exif;
-			chunkData.size = metaData->exifSize;
-			
-			error = WebPMuxSetChunk(mux, "EXIF", &chunkData, 1);
-		}
-		
-		if (error == WEBP_MUX_OK && metaData->xmpSize > 0)
-		{
-			chunkData.bytes = metaData->xmp;
-			chunkData.size = metaData->xmpSize;
-			
-			error = WebPMuxSetChunk(mux, "XMP ", &chunkData, 1);
-		}
-
-		if (error == WEBP_MUX_OK)
-		{
-			WebPData assembledData;
-
-			error = WebPMuxAssemble(mux, &assembledData);
-			WebPMuxDelete(mux);
-			mux = nullptr;
-
-			if (error == WEBP_MUX_OK)
-			{
-				*outImage = outputAllocator(assembledData.size);
-
-				if (*outImage == nullptr)
-				{
-					error = WEBP_MUX_MEMORY_ERROR;
-				}
-
-				if (error == WEBP_MUX_OK)
-				{
-					memcpy_s(*outImage, assembledData.size, assembledData.bytes, assembledData.size);
-				}
-
-				WebPDataClear(&assembledData);
-			}
-		}
-
-	}
-
-	return error;
 }
