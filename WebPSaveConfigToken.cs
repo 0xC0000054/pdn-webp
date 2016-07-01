@@ -59,7 +59,16 @@ namespace WebPFileType
             internal set;
         }
 
-        public WebPSaveConfigToken(WebPPreset preset, int quality, int method, int noiseShaping, int filterStrength, int sharpness, WebPFilterType filterType, int fileSize, bool encodeMetaData)
+        public WebPSaveConfigToken(
+            WebPPreset preset,
+            int quality,
+            int method,
+            int noiseShaping,
+            int filterStrength,
+            int sharpness,
+            WebPFilterType filterType,
+            int fileSize,
+            bool encodeMetaData)
         {
             this.Preset = preset;
             this.Quality = quality;
