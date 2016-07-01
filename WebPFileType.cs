@@ -198,26 +198,25 @@ namespace WebPFileType
 			}
 		}
 
-		private static IntPtr EncodeMetaData(Document doc, Surface scratchSurface, byte[] imageData, PinnedByteArrayAllocator output)
+		private static WebPFile.MetaDataParams GetMetaData(Document doc, Surface scratchSurface)
 		{
-			WebPFile.MetaDataParams metaData = new WebPFile.MetaDataParams();
+			byte[] iccProfileBytes = null;
+			byte[] exifBytes = null;
+			byte[] xmpBytes = null;
 
 			string colorProfile = doc.Metadata.GetUserValue(WebPColorProfile);
 			if (!string.IsNullOrEmpty(colorProfile))
 			{
-				metaData.iccProfile = Convert.FromBase64String(colorProfile);
-				metaData.iccProfileSize = (uint)metaData.iccProfile.Length;
+				iccProfileBytes = Convert.FromBase64String(colorProfile);
 			}
 
 			string exif = doc.Metadata.GetUserValue(WebPEXIF);
 			if (!string.IsNullOrEmpty(exif))
 			{
-				metaData.exif = Convert.FromBase64String(exif);
-				metaData.exifSize = (uint)metaData.exif.Length;
+				exifBytes = Convert.FromBase64String(exif);
 			}
 			else if (doc.Metadata.GetKeys(Metadata.ExifSectionName).Length > 0)
 			{
-				byte[] exifBytes = null;
 				using (MemoryStream stream = new MemoryStream())
 				{
 					using (Bitmap bmp = scratchSurface.CreateAliasedBitmap())
@@ -228,28 +227,20 @@ namespace WebPFileType
 
 					exifBytes = JPEGReader.ExtractEXIF(stream.GetBuffer());
 				}
-
-				if (exifBytes != null)
-				{
-					metaData.exif = exifBytes;
-					metaData.exifSize = (uint)exifBytes.Length;
-				}
-				
 			}
 
 			string xmp = doc.Metadata.GetUserValue(WebPXMP);
 			if (!string.IsNullOrEmpty(xmp))
 			{
-				metaData.xmp = Convert.FromBase64String(xmp);
-				metaData.xmpSize = (uint)metaData.xmp.Length;
+				xmpBytes = Convert.FromBase64String(xmp);
 			}
 
-			if (metaData.iccProfileSize > 0U || metaData.exifSize > 0U || metaData.xmpSize > 0U)
+			if (iccProfileBytes != null || exifBytes != null || xmpBytes != null)
 			{
-				return WebPFile.SetMetaData(imageData, metaData, output);
+				return new WebPFile.MetaDataParams(iccProfileBytes, exifBytes, xmpBytes);
 			}
 
-			return IntPtr.Zero;
+			return null;
 		}
 
 		protected override void OnSave(Document input, System.IO.Stream output, SaveConfigToken token, Surface scratchSurface, ProgressEventHandler callback)
@@ -277,6 +268,12 @@ namespace WebPFileType
 
 			using (PinnedByteArrayAllocator allocator = new PinnedByteArrayAllocator())
 			{
+				WebPFile.MetaDataParams metaData = null;
+				if (configToken.EncodeMetaData)
+				{
+					metaData = GetMetaData(input, scratchSurface);
+				}
+
 				IntPtr pinnedArrayPtr = WebPFile.WebPSave(
 					allocator,
 					scratchSurface.Scan0.Pointer,
@@ -284,20 +281,12 @@ namespace WebPFileType
 					scratchSurface.Height,
 					scratchSurface.Stride,
 					encParams, 
+					metaData,
 					encProgress);
 
 				if (pinnedArrayPtr != IntPtr.Zero)
 				{
-					IntPtr imageDataPtr = pinnedArrayPtr;
-					if (configToken.EncodeMetaData)
-					{
-						IntPtr metaDataPtr = EncodeMetaData(input, scratchSurface, allocator.GetManagedArray(pinnedArrayPtr), allocator);
-						if (metaDataPtr != IntPtr.Zero)
-						{
-							imageDataPtr = metaDataPtr;
-						}
-					}
-					byte[] data = allocator.GetManagedArray(imageDataPtr);
+					byte[] data = allocator.GetManagedArray(pinnedArrayPtr);
 
 					output.Write(data, 0, data.Length);
 				} 
