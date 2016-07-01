@@ -55,11 +55,11 @@ DLLEXPORT int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* 
 
 DLLEXPORT int __stdcall WebPSave(
 	void** output,
-	OutputBufferAllocFn outputAllocator,
+	const OutputBufferAllocFn outputAllocator,
 	const void* iBitmap,
-	int iWidth,
-	int iHeight,
-	int iStride,
+	const int width,
+	const int height,
+	const int stride,
 	const EncodeParams* params,
 	ProgressFn progressCallback);
 

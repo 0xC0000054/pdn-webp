@@ -58,11 +58,11 @@ static int progressFunc(int percent, const WebPPicture* picture)
 
 int __stdcall WebPSave(
 	void** output,
-	OutputBufferAllocFn outputAllocator,
+	const OutputBufferAllocFn outputAllocator,
 	const void* bitmap,
-	int width,
-	int height,
-	int stride,
+	const int width,
+	const int height,
+	const int stride,
 	const EncodeParams* params,
 	ProgressFn callback)
 {
