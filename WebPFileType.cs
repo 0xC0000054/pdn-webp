@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using PaintDotNet;
 using PaintDotNet.IO;
@@ -9,19 +8,9 @@ using WebPFileType.Properties;
 
 namespace WebPFileType
 {
-	[PaintDotNet.PluginSupportInfo(typeof(PluginSupportInfo))]
+	[PluginSupportInfo(typeof(PluginSupportInfo))]
 	public sealed class WebPFileType : FileType, IFileTypeFactory
 	{
-		private enum PropertyNames
-		{
-			FilterStrength,
-			FilterType,
-			Method,			
-			Preset, 
-			Quality,
-			Sharpness,
-			FileSize
-		}
 		private WebPFile.EncodeParams encParams;
 		private const string WebPColorProfile = "WebPICC";
 		private const string WebPEXIF = "WebPEXIF";
@@ -45,7 +34,7 @@ namespace WebPFileType
 			return Convert.ToBase64String(bytes, Base64FormattingOptions.None);
 		}
 
-		protected override Document OnLoad(System.IO.Stream input)
+		protected override Document OnLoad(Stream input)
 		{
 			byte[] bytes = new byte[input.Length];
 
@@ -243,7 +232,7 @@ namespace WebPFileType
 			return null;
 		}
 
-		protected override void OnSave(Document input, System.IO.Stream output, SaveConfigToken token, Surface scratchSurface, ProgressEventHandler callback)
+		protected override void OnSave(Document input, Stream output, SaveConfigToken token, Surface scratchSurface, ProgressEventHandler callback)
 		{
 			WebPSaveConfigToken configToken = (WebPSaveConfigToken)token;
 
