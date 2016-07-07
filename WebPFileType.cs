@@ -11,14 +11,12 @@ namespace WebPFileType
 	[PluginSupportInfo(typeof(PluginSupportInfo))]
 	public sealed class WebPFileType : FileType, IFileTypeFactory
 	{
-		private WebPFile.EncodeParams encParams;
 		private const string WebPColorProfile = "WebPICC";
 		private const string WebPEXIF = "WebPEXIF";
 		private const string WebPXMP = "WebPXMP";
 
 		public WebPFileType() : base("WebP", FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress, new string[] { ".webp" })
 		{
-			encParams = new WebPFile.EncodeParams();
 		}
 
 		public FileType[] GetFileTypeInstances()
@@ -241,14 +239,17 @@ namespace WebPFileType
 				callback(this, new ProgressEventArgs(percent));
 			});
 
-			encParams.quality = (float)configToken.Quality;
-			encParams.preset = configToken.Preset;
-			encParams.method = configToken.Method;
-			encParams.noiseShaping = configToken.NoiseShaping;
-			encParams.filterType = configToken.FilterType;
-			encParams.filterStrength = configToken.FilterStrength;
-			encParams.sharpness = configToken.Sharpness;
-			encParams.fileSize = configToken.FileSize;
+			WebPFile.EncodeParams encParams = new WebPFile.EncodeParams
+			{
+				quality = (float)configToken.Quality,
+				preset = configToken.Preset,
+				method = configToken.Method,
+				noiseShaping = configToken.NoiseShaping,
+				filterType = configToken.FilterType,
+				filterStrength = configToken.FilterStrength,
+				sharpness = configToken.Sharpness,
+				fileSize = configToken.FileSize
+			};
 		
 			using (RenderArgs ra = new RenderArgs(scratchSurface))
 			{
