@@ -248,7 +248,7 @@ int __stdcall WebPSave(
 		pic.progress_hook = progressFunc;
 	}
 
-	int error = 0;
+	int error = VP8_ENC_OK;
 	if (WebPEncode(&config, &pic) != 0) // C-style Boolean
 	{
 		if (metaData != nullptr)
