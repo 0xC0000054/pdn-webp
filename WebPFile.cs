@@ -178,9 +178,9 @@ namespace WebPFileType
         /// The WebP load function.
         /// </summary>
         /// <param name="data">The input image data</param>
-        /// <param name="width">The width 0f the resulting image.</param>
-        /// <param name="outputStride">The height of the resulting image.</param>
-        /// <param name="outPtr">The output byte array.</param>
+        /// <param name="outPtr">The pointer to the output data.</param>
+        /// <param name="outputSize">The size in bytes of the <paramref name="outPtr"/> buffer.</param>
+        /// <param name="outputStride">The stride of the output data.</param>
         /// <returns>VP8StatusCode.Ok on success.</returns>
         internal static unsafe VP8StatusCode WebPLoad(byte[] data, byte* outPtr, int outputSize, int outputStride)
         {
