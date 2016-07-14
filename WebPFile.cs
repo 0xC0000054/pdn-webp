@@ -102,7 +102,7 @@ namespace WebPFileType
             public static unsafe extern bool WebPGetDimensions(byte* data, UIntPtr dataSize, out int width, out int height);
 
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
-            public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, int outSize, int outStride);
+            public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
 
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
             public static unsafe extern WebPEncodingError WebPSave(
@@ -131,7 +131,7 @@ namespace WebPFileType
             public static unsafe extern bool WebPGetDimensions(byte* data, UIntPtr dataSize, out int width, out int height);
 
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
-            public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, int outSize, int outStride);
+            public static unsafe extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
 
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
             public static unsafe extern WebPEncodingError WebPSave(
@@ -182,17 +182,17 @@ namespace WebPFileType
         /// <param name="outputSize">The size in bytes of the <paramref name="outPtr"/> buffer.</param>
         /// <param name="outputStride">The stride of the output data.</param>
         /// <returns>VP8StatusCode.Ok on success.</returns>
-        internal static unsafe VP8StatusCode WebPLoad(byte[] data, byte* outPtr, int outputSize, int outputStride)
+        internal static unsafe VP8StatusCode WebPLoad(byte[] data, byte* outPtr, long outputSize, int outputStride)
         {
             fixed (byte* ptr = data)
             {
                 if (IntPtr.Size == 8)
                 {
-                    return WebP_64.WebPLoad(ptr, new UIntPtr((ulong)data.Length), outPtr, outputSize, outputStride);
+                    return WebP_64.WebPLoad(ptr, new UIntPtr((ulong)data.Length), outPtr, new UIntPtr((ulong)outputSize), outputStride);
                 }
                 else
                 {
-                    return WebP_32.WebPLoad(ptr, new UIntPtr((ulong)data.Length), outPtr, outputSize, outputStride);
+                    return WebP_32.WebPLoad(ptr, new UIntPtr((ulong)data.Length), outPtr, new UIntPtr((ulong)outputSize), outputStride);
                 }
             }
         }
