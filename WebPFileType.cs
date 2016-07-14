@@ -51,7 +51,7 @@ namespace WebPFileType
 				BitmapLayer layer = Layer.CreateBackgroundLayer(width, height);
 
 				int stride = layer.Surface.Stride;
-				int bitmapSize = stride * layer.Surface.Height;
+				long bitmapSize = (long)stride * layer.Surface.Height;
 
 				unsafe
 				{
