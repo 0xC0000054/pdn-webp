@@ -8,7 +8,7 @@ bool __stdcall WebPGetDimensions(const uint8_t* iData, size_t iDataSize, int* oW
 	return (WebPGetInfo(iData, iDataSize, oWidth, oHeight) != 0);
 }
 
-int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, int outStride)
+int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride)
 {
 	WebPDecoderConfig config;
 	WebPDecBuffer* const output_buffer = &config.output;
