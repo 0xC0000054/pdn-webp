@@ -217,7 +217,7 @@ namespace WebPFileType
             IntPtr scan0,
             int width,
             int height,
-            long stride,
+            int stride,
             EncodeParams parameters,
             MetaDataParams metaData,
             WebPReportProgress callback)
@@ -239,11 +239,11 @@ namespace WebPFileType
             PinnedByteArrayAllocDelegate allocateFn = new PinnedByteArrayAllocDelegate(outputAllocator.AllocateArray);
             if (IntPtr.Size == 8)
             {
-                retVal = WebP_64.WebPSave(out outPtr, allocateFn, scan0, width, height, (int)stride, parameters, metaData, callback);
+                retVal = WebP_64.WebPSave(out outPtr, allocateFn, scan0, width, height, stride, parameters, metaData, callback);
             }
             else
             {
-                retVal = WebP_32.WebPSave(out outPtr, allocateFn, scan0, width, height, (int)stride, parameters, metaData, callback);
+                retVal = WebP_32.WebPSave(out outPtr, allocateFn, scan0, width, height, stride, parameters, metaData, callback);
             }
             GC.KeepAlive(allocateFn);
 
