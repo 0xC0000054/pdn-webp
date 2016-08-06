@@ -47,7 +47,7 @@ static bool HasTransparency(const void* data, int width, int height, int stride)
 	return false;
 }
 
-static int progressFunc(int percent, const WebPPicture* picture)
+static int ProgressReport(int percent, const WebPPicture* picture)
 {
 	ProgressFn callback = reinterpret_cast<ProgressFn>(picture->user_data);
 	callback(percent);
@@ -245,7 +245,7 @@ int __stdcall WebPSave(
 	if (callback != nullptr)
 	{
 		pic.user_data = callback;
-		pic.progress_hook = progressFunc;
+		pic.progress_hook = ProgressReport;
 	}
 
 	int error = VP8_ENC_OK;
