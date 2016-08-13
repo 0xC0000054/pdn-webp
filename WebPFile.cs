@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PaintDotNet;
+using System;
 using System.Runtime.InteropServices;
 using WebPFileType.Properties;
 
@@ -178,21 +179,21 @@ namespace WebPFileType
         /// The WebP load function.
         /// </summary>
         /// <param name="data">The input image data</param>
-        /// <param name="outPtr">The pointer to the output data.</param>
-        /// <param name="outputSize">The size in bytes of the <paramref name="outPtr"/> buffer.</param>
-        /// <param name="outputStride">The stride of the output data.</param>
+        /// <param name="output">The output surface.</param>
         /// <returns>VP8StatusCode.Ok on success.</returns>
-        internal static unsafe VP8StatusCode WebPLoad(byte[] data, byte* outPtr, long outputSize, int outputStride)
+        internal static unsafe VP8StatusCode WebPLoad(byte[] data, Surface output)
         {
             fixed (byte* ptr = data)
             {
+                int stride = output.Stride;
+                ulong outputSize = (ulong)stride * (ulong)output.Height;
                 if (IntPtr.Size == 8)
                 {
-                    return WebP_64.WebPLoad(ptr, new UIntPtr((ulong)data.Length), outPtr, new UIntPtr((ulong)outputSize), outputStride);
+                    return WebP_64.WebPLoad(ptr, new UIntPtr((ulong)data.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
                 }
                 else
                 {
-                    return WebP_32.WebPLoad(ptr, new UIntPtr((ulong)data.Length), outPtr, new UIntPtr((ulong)outputSize), outputStride);
+                    return WebP_32.WebPLoad(ptr, new UIntPtr((ulong)data.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
                 }
             }
         }
@@ -201,23 +202,21 @@ namespace WebPFileType
         /// The WebP save function.
         /// </summary>
         /// <param name="outputAllocator">The allocator for the managed output buffer.</param>
-        /// <param name="scan0">The input bitmap.</param>
-        /// <param name="width">Width of the input bitmap.</param>
-        /// <param name="height">Height of the input bitmap.</param>
-        /// <param name="stride">The stride of the input bitmap.</param>
+        /// <param name="input">The input surface.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="callback">The callback.</param>
         /// <returns>
         /// A pointer to the pinned managed array.
         /// </returns>
-        /// <exception cref="ArgumentNullException"><paramref name="outputAllocator"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="outputAllocator"/> is null.
+        /// or
+        /// <paramref name="input"/> is null.
+        /// </exception>
         /// <exception cref="FormatException">The image exceeds 16383 pixels in width and/or height.</exception>
         internal static IntPtr WebPSave(
             PinnedByteArrayAllocator outputAllocator,
-            IntPtr scan0,
-            int width,
-            int height,
-            int stride,
+            Surface input,
             EncodeParams parameters,
             MetaDataParams metaData,
             WebPReportProgress callback)
@@ -227,7 +226,12 @@ namespace WebPFileType
                 throw new ArgumentNullException(nameof(outputAllocator));
             }
 
-            if (width > WebPMaxDimension || height > WebPMaxDimension)
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (input.Width > WebPMaxDimension || input.Height > WebPMaxDimension)
             {
                 throw new FormatException(Resources.InvalidImageDimensions);
             }
@@ -239,11 +243,11 @@ namespace WebPFileType
             PinnedByteArrayAllocDelegate allocateFn = new PinnedByteArrayAllocDelegate(outputAllocator.AllocateArray);
             if (IntPtr.Size == 8)
             {
-                retVal = WebP_64.WebPSave(out outPtr, allocateFn, scan0, width, height, stride, parameters, metaData, callback);
+                retVal = WebP_64.WebPSave(out outPtr, allocateFn, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metaData, callback);
             }
             else
             {
-                retVal = WebP_32.WebPSave(out outPtr, allocateFn, scan0, width, height, stride, parameters, metaData, callback);
+                retVal = WebP_32.WebPSave(out outPtr, allocateFn, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metaData, callback);
             }
             GC.KeepAlive(allocateFn);
 

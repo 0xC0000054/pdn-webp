@@ -48,12 +48,9 @@ namespace WebPFileType
 			Document doc = new Document(width, height);
 			BitmapLayer layer = Layer.CreateBackgroundLayer(width, height);
 
-			int stride = layer.Surface.Stride;
-			long bitmapSize = (long)stride * layer.Surface.Height;
-
 			unsafe
 			{
-				WebPFile.VP8StatusCode status = WebPFile.WebPLoad(bytes, (byte*)layer.Surface.Scan0.VoidStar, bitmapSize, stride);
+				WebPFile.VP8StatusCode status = WebPFile.WebPLoad(bytes, layer.Surface);
 				if (status != WebPFile.VP8StatusCode.Ok)
 				{
 					switch (status)
@@ -255,15 +252,7 @@ namespace WebPFileType
 					metaData = GetMetaData(input, scratchSurface);
 				}
 
-				IntPtr pinnedArrayPtr = WebPFile.WebPSave(
-					allocator,
-					scratchSurface.Scan0.Pointer,
-					scratchSurface.Width,
-					scratchSurface.Height,
-					scratchSurface.Stride,
-					encParams, 
-					metaData,
-					encProgress);
+				IntPtr pinnedArrayPtr = WebPFile.WebPSave(allocator, scratchSurface, encParams, metaData, encProgress);
 
 				if (pinnedArrayPtr != IntPtr.Zero)
 				{
