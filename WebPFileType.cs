@@ -38,73 +38,64 @@ namespace WebPFileType
 
 			input.ProperRead(bytes, 0, (int)input.Length);
 
-			try
+			int width = 0;
+			int height = 0;
+			if (!WebPFile.WebPGetDimensions(bytes, out width, out height))
 			{
-				int width = 0;
-				int height = 0;
-				if (!WebPFile.WebPGetDimensions(bytes, out width, out height))
-				{
-					throw new WebPException(Resources.InvalidWebPImage);
-				}
-
-				Document doc = new Document(width, height);
-				BitmapLayer layer = Layer.CreateBackgroundLayer(width, height);
-
-				int stride = layer.Surface.Stride;
-				long bitmapSize = (long)stride * layer.Surface.Height;
-
-				unsafe
-				{
-					WebPFile.VP8StatusCode status = WebPFile.WebPLoad(bytes, (byte*)layer.Surface.Scan0.VoidStar, bitmapSize, stride);
-					if (status != WebPFile.VP8StatusCode.Ok)
-					{
-						switch (status)
-						{
-							case WebPFile.VP8StatusCode.OutOfMemory:
-								throw new OutOfMemoryException();
-							case WebPFile.VP8StatusCode.InvalidParam:
-								throw new WebPException(Resources.InvalidParameter);
-							case WebPFile.VP8StatusCode.BitStreamError:
-							case WebPFile.VP8StatusCode.UnsupportedFeature:
-							case WebPFile.VP8StatusCode.NotEnoughData:
-								throw new WebPException(Resources.InvalidWebPImage);
-							default:
-								break;
-						}
-					}
-
-					uint colorProfileSize = WebPFile.GetMetaDataSize(bytes, WebPFile.MetaDataType.ColorProfile);
-					if (colorProfileSize > 0U)
-					{
-						string icc = GetMetaDataBase64(bytes, WebPFile.MetaDataType.ColorProfile, colorProfileSize);
-						doc.Metadata.SetUserValue(WebPColorProfile, icc);
-					}
-
-					uint exifSize = WebPFile.GetMetaDataSize(bytes, WebPFile.MetaDataType.EXIF);
-					if (exifSize > 0)
-					{
-						string exif = GetMetaDataBase64(bytes, WebPFile.MetaDataType.EXIF, exifSize);
-						doc.Metadata.SetUserValue(WebPEXIF, exif);
-					}
-
-					uint xmpSize = WebPFile.GetMetaDataSize(bytes, WebPFile.MetaDataType.XMP);
-					if (xmpSize > 0U)
-					{
-						string xmp = GetMetaDataBase64(bytes, WebPFile.MetaDataType.XMP, xmpSize);
-						doc.Metadata.SetUserValue(WebPXMP, xmp);
-					}
-				}
-					   
-				doc.Layers.Add(layer);
-
-				return doc;
-			}
-			catch (WebPException ex)
-			{
-				MessageBox.Show(ex.Message, "Error loading WebP Image", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return null;
+				throw new WebPException(Resources.InvalidWebPImage);
 			}
 
+			Document doc = new Document(width, height);
+			BitmapLayer layer = Layer.CreateBackgroundLayer(width, height);
+
+			int stride = layer.Surface.Stride;
+			long bitmapSize = (long)stride * layer.Surface.Height;
+
+			unsafe
+			{
+				WebPFile.VP8StatusCode status = WebPFile.WebPLoad(bytes, (byte*)layer.Surface.Scan0.VoidStar, bitmapSize, stride);
+				if (status != WebPFile.VP8StatusCode.Ok)
+				{
+					switch (status)
+					{
+						case WebPFile.VP8StatusCode.OutOfMemory:
+							throw new OutOfMemoryException();
+						case WebPFile.VP8StatusCode.InvalidParam:
+							throw new WebPException(Resources.InvalidParameter);
+						case WebPFile.VP8StatusCode.BitStreamError:
+						case WebPFile.VP8StatusCode.UnsupportedFeature:
+						case WebPFile.VP8StatusCode.NotEnoughData:
+							throw new WebPException(Resources.InvalidWebPImage);
+						default:
+							break;
+					}
+				}
+
+				uint colorProfileSize = WebPFile.GetMetaDataSize(bytes, WebPFile.MetaDataType.ColorProfile);
+				if (colorProfileSize > 0U)
+				{
+					string icc = GetMetaDataBase64(bytes, WebPFile.MetaDataType.ColorProfile, colorProfileSize);
+					doc.Metadata.SetUserValue(WebPColorProfile, icc);
+				}
+
+				uint exifSize = WebPFile.GetMetaDataSize(bytes, WebPFile.MetaDataType.EXIF);
+				if (exifSize > 0)
+				{
+					string exif = GetMetaDataBase64(bytes, WebPFile.MetaDataType.EXIF, exifSize);
+					doc.Metadata.SetUserValue(WebPEXIF, exif);
+				}
+
+				uint xmpSize = WebPFile.GetMetaDataSize(bytes, WebPFile.MetaDataType.XMP);
+				if (xmpSize > 0U)
+				{
+					string xmp = GetMetaDataBase64(bytes, WebPFile.MetaDataType.XMP, xmpSize);
+					doc.Metadata.SetUserValue(WebPXMP, xmp);
+				}
+			}
+
+			doc.Layers.Add(layer);
+
+			return doc;
 		}
 
 		public override SaveConfigWidget CreateSaveConfigWidget()
