@@ -238,7 +238,7 @@ namespace WebPFileType
 				sharpness = configToken.Sharpness,
 				fileSize = configToken.FileSize
 			};
-		
+
 			using (RenderArgs ra = new RenderArgs(scratchSurface))
 			{
 				input.Render(ra, true);
@@ -259,7 +259,7 @@ namespace WebPFileType
 					byte[] data = allocator.GetManagedArray(pinnedArrayPtr);
 
 					output.Write(data, 0, data.Length);
-				} 
+				}
 			}
 		}
 	}

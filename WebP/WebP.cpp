@@ -15,24 +15,24 @@ int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, s
 	{
 		return errVersionMismatch;
 	}
-	
+
 	output_buffer->colorspace = MODE_BGRA;
 	output_buffer->is_external_memory = 1;
 	output_buffer->u.RGBA.rgba = outData;
 	output_buffer->u.RGBA.size = outSize;
 	output_buffer->u.RGBA.stride = outStride;
 
-	
+
 	return WebPDecode(data, dataSize, &config);
 }
 
 static bool HasTransparency(const void* data, int width, int height, int stride)
 {
 	const uint8_t* scan0 = reinterpret_cast<const uint8_t*>(data);
-	
+
 	for (int y = 0; y < height; y++)
 	{
-		const uint8_t* ptr = scan0 + (y * stride); 
+		const uint8_t* ptr = scan0 + (y * stride);
 		for (int x = 0; x < width; x++)
 		{
 			if (ptr[3] < 255)
@@ -149,7 +149,7 @@ static int EncodeImageMetaData(
 		default:
 			encodeError = errMuxEncodeMetaData;
 			break;
-		} 
+		}
 	}
 
 	return encodeError;
@@ -191,13 +191,13 @@ int __stdcall WebPSave(
 		switch (params->preset)
 		{
 		case WEBP_PRESET_PHOTO:
-			config.image_hint = WEBP_HINT_PHOTO; 
+			config.image_hint = WEBP_HINT_PHOTO;
 			break;
 		case WEBP_PRESET_PICTURE:
-			config.image_hint = WEBP_HINT_PICTURE; 
+			config.image_hint = WEBP_HINT_PICTURE;
 			break;
 		case WEBP_PRESET_DRAWING:
-			config.image_hint = WEBP_HINT_GRAPH; 
+			config.image_hint = WEBP_HINT_GRAPH;
 			break;
 		}
 	}
@@ -223,12 +223,12 @@ int __stdcall WebPSave(
 	WebPMemoryWriterInit(&wrt);
 	pic.writer = WebPMemoryWrite;
 	pic.custom_ptr = &wrt;
-		
+
 	if (HasTransparency(bitmap, width, height, stride))
 	{
 		if (WebPPictureImportBGRA(&pic, reinterpret_cast<const uint8_t*>(bitmap), stride) == 0)
 		{
-			return VP8_ENC_ERROR_OUT_OF_MEMORY; 
+			return VP8_ENC_ERROR_OUT_OF_MEMORY;
 		}
 	}
 	else
@@ -267,7 +267,7 @@ int __stdcall WebPSave(
 		}
 	}
 	else
-	{	
+	{
 		error = static_cast<int>(pic.error_code);
 	}
 	WebPMemoryWriterClear(&wrt);
@@ -319,7 +319,7 @@ void __stdcall GetMetaDataSize(const uint8_t* data, size_t dataSize, MetaDataTyp
 		WebPDemuxReleaseChunkIterator(&iter);
 		WebPDemuxDelete(demux);
 	}
-	
+
 }
 
 void __stdcall ExtractMetaData(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetaDataType type)

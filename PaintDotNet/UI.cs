@@ -16,7 +16,7 @@ using System.Windows.Forms.VisualStyles;
 
 namespace PaintDotNet
 {
-   
+
 
     /// <summary>
     /// Contains static methods related to the user interface.

@@ -28,7 +28,7 @@ typedef struct EncodeParams
 	int noiseShaping;
 	int filterType;
 	int filterStrength;
-	int sharpness;	
+	int sharpness;
 	int fileSize;
 }EncParams;
 

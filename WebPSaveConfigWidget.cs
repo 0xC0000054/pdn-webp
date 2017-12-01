@@ -20,8 +20,8 @@ namespace WebPFileType
 
         protected override void InitTokenFromWidget()
         {
-            WebPSaveConfigToken configToken = (WebPSaveConfigToken)base.token; 
-            
+            WebPSaveConfigToken configToken = (WebPSaveConfigToken)base.token;
+
             configToken.Preset = (WebPPreset)presetCbo.SelectedIndex;
             configToken.Quality = qualitySlider.Value;
             configToken.Method = encodeMethodSlider.Value;
@@ -231,7 +231,7 @@ namespace WebPFileType
 
         private void fileSizeTxt_KeyDown(object sender, KeyEventArgs e)
         {
-            if (((e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9 || e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9) && !e.Shift) 
+            if (((e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9 || e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9) && !e.Shift)
                 || e.KeyCode == Keys.Back || e.KeyCode == Keys.Left || e.KeyCode == Keys.Right || e.KeyCode == Keys.Delete)
             {
                 e.Handled = true;

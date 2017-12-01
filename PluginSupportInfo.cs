@@ -9,7 +9,7 @@ namespace WebPFileType
     {
         public string Author
         {
-            get 
+            get
             {
                 return "null54";
             }
@@ -17,7 +17,7 @@ namespace WebPFileType
 
         public string Copyright
         {
-            get 
+            get
             {
                 return ((AssemblyCopyrightAttribute)(typeof(PluginSupportInfo).Assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0])).Copyright;
             }
@@ -25,7 +25,7 @@ namespace WebPFileType
 
         public string DisplayName
         {
-            get 
+            get
             {
                 return "WebP FileType";
             }
@@ -33,7 +33,7 @@ namespace WebPFileType
 
         public Version Version
         {
-            get 
+            get
             {
                 return typeof(PluginSupportInfo).Assembly.GetName().Version;
             }

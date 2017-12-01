@@ -2,7 +2,7 @@
 
 namespace WebPFileType
 {
-    [Serializable]    
+    [Serializable]
     public sealed class WebPSaveConfigToken : PaintDotNet.SaveConfigToken
     {
         public WebPPreset Preset
@@ -16,11 +16,11 @@ namespace WebPFileType
             get;
             internal set;
         }
-        
+
         public int Method
         {
-            get; 
-            internal set; 
+            get;
+            internal set;
         }
 
         public int NoiseShaping
@@ -29,14 +29,14 @@ namespace WebPFileType
             internal set;
         }
 
-        public int FilterStrength 
-        { 
-            get; 
+        public int FilterStrength
+        {
+            get;
             internal set;
         }
 
-        public int Sharpness 
-        { 
+        public int Sharpness
+        {
             get;
             internal set;
         }
@@ -81,7 +81,7 @@ namespace WebPFileType
             this.EncodeMetaData = encodeMetaData;
         }
 
-        private WebPSaveConfigToken(WebPSaveConfigToken copyMe) 
+        private WebPSaveConfigToken(WebPSaveConfigToken copyMe)
         {
             this.Preset = copyMe.Preset;
             this.Quality = copyMe.Quality;

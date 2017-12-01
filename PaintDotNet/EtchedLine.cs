@@ -24,7 +24,7 @@ namespace PaintDotNet
         {
             // If we are Vista Aero, draw using a GroupBox
             // Else, use the "etched line via a label w/ a border style" trick
-            // We would use the "GroupBox" style w/ Luna, except that it wasn't 
+            // We would use the "GroupBox" style w/ Luna, except that it wasn't
             // working correctly for some reason.
 
             switch (UI.VisualStyleClass)
