@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 using PaintDotNet;
 
@@ -23,6 +24,28 @@ namespace WebPFileType
         public WebPSaveConfigWidget()
         {
             InitializeComponent();
+        }
+
+        protected override void OnBackColorChanged(EventArgs e)
+        {
+            base.OnBackColorChanged(e);
+
+            Color backColor = BackColor;
+            foreach (Control item in Controls)
+            {
+                item.BackColor = backColor;
+            }
+        }
+
+        protected override void OnForeColorChanged(EventArgs e)
+        {
+            base.OnForeColorChanged(e);
+
+            Color foreColor = ForeColor;
+            foreach (Control item in Controls)
+            {
+                item.ForeColor = foreColor;
+            }
         }
 
         protected override void InitFileType()
