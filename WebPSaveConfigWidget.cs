@@ -44,7 +44,23 @@ namespace WebPFileType
             Color foreColor = ForeColor;
             foreach (Control item in Controls)
             {
-                item.ForeColor = foreColor;
+                if (item is LinkLabel link)
+                {
+                    if (foreColor != DefaultForeColor)
+                    {
+                        link.LinkColor = foreColor;
+                    }
+                    else
+                    {
+                        // If the control is using the default foreground color set the link color
+                        // to Color.Empty so the LinkLabel will use its default colors.
+                        link.LinkColor = Color.Empty;
+                    }
+                }
+                else
+                {
+                    item.ForeColor = foreColor;
+                }
             }
         }
 
