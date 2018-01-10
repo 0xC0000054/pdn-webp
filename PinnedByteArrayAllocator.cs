@@ -17,6 +17,8 @@ using System.Runtime.InteropServices;
 
 namespace WebPFileType
 {
+    // Adapted from: https://blog.getpaint.net/2012/04/30/marshaling-native-arrays-back-as-managed-arrays-without-copying/
+
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     internal delegate IntPtr PinnedByteArrayAllocDelegate(UIntPtr sizeInBytes);
 
