@@ -305,8 +305,8 @@ namespace WebPFileType
             //
             // WebPSaveConfigWidget
             //
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.Controls.Add(this.strengthLbl);
             this.Controls.Add(this.noiseShapingUpDown);
             this.Controls.Add(this.noiseShapingSlider);
