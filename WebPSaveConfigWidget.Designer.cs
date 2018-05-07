@@ -228,6 +228,7 @@ namespace WebPFileType
             this.strengthLbl.ForeColor = System.Drawing.SystemColors.Highlight;
             this.strengthLbl.Location = new System.Drawing.Point(0, 206);
             this.strengthLbl.Name = "strengthLbl";
+            this.strengthLbl.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.strengthLbl.Size = new System.Drawing.Size(144, 14);
             this.strengthLbl.TabIndex = 5;
             this.strengthLbl.TabStop = false;
@@ -238,6 +239,7 @@ namespace WebPFileType
             this.noiseShapingLbl.ForeColor = System.Drawing.SystemColors.Highlight;
             this.noiseShapingLbl.Location = new System.Drawing.Point(0, 155);
             this.noiseShapingLbl.Name = "noiseShapingLbl";
+            this.noiseShapingLbl.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.noiseShapingLbl.Size = new System.Drawing.Size(144, 14);
             this.noiseShapingLbl.TabIndex = 23;
             this.noiseShapingLbl.TabStop = false;
@@ -248,6 +250,7 @@ namespace WebPFileType
             this.encodeMethodLbl.ForeColor = System.Drawing.SystemColors.Highlight;
             this.encodeMethodLbl.Location = new System.Drawing.Point(5, 104);
             this.encodeMethodLbl.Name = "encodeMethodLbl";
+            this.encodeMethodLbl.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.encodeMethodLbl.Size = new System.Drawing.Size(144, 14);
             this.encodeMethodLbl.TabIndex = 16;
             this.encodeMethodLbl.TabStop = false;
@@ -258,6 +261,7 @@ namespace WebPFileType
             this.fileSizeLbl.ForeColor = System.Drawing.SystemColors.Highlight;
             this.fileSizeLbl.Location = new System.Drawing.Point(5, 354);
             this.fileSizeLbl.Name = "fileSizeLbl";
+            this.fileSizeLbl.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.fileSizeLbl.Size = new System.Drawing.Size(144, 14);
             this.fileSizeLbl.TabIndex = 19;
             this.fileSizeLbl.TabStop = false;
@@ -268,6 +272,7 @@ namespace WebPFileType
             this.filterTypeLbl.ForeColor = System.Drawing.SystemColors.Highlight;
             this.filterTypeLbl.Location = new System.Drawing.Point(2, 310);
             this.filterTypeLbl.Name = "filterTypeLbl";
+            this.filterTypeLbl.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.filterTypeLbl.Size = new System.Drawing.Size(144, 14);
             this.filterTypeLbl.TabIndex = 14;
             this.filterTypeLbl.TabStop = false;
@@ -278,6 +283,7 @@ namespace WebPFileType
             this.sharpnessLbl.ForeColor = System.Drawing.SystemColors.Highlight;
             this.sharpnessLbl.Location = new System.Drawing.Point(3, 259);
             this.sharpnessLbl.Name = "sharpnessLbl";
+            this.sharpnessLbl.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.sharpnessLbl.Size = new System.Drawing.Size(144, 14);
             this.sharpnessLbl.TabIndex = 11;
             this.sharpnessLbl.TabStop = false;
@@ -288,6 +294,7 @@ namespace WebPFileType
             this.qualityLbl.ForeColor = System.Drawing.SystemColors.Highlight;
             this.qualityLbl.Location = new System.Drawing.Point(4, 48);
             this.qualityLbl.Name = "qualityLbl";
+            this.qualityLbl.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.qualityLbl.Size = new System.Drawing.Size(144, 14);
             this.qualityLbl.TabIndex = 2;
             this.qualityLbl.TabStop = false;
@@ -298,6 +305,7 @@ namespace WebPFileType
             this.presetLbl.ForeColor = System.Drawing.SystemColors.WindowText;
             this.presetLbl.Location = new System.Drawing.Point(4, 4);
             this.presetLbl.Name = "presetLbl";
+            this.presetLbl.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.presetLbl.Size = new System.Drawing.Size(65535, 13);
             this.presetLbl.TabIndex = 0;
             this.presetLbl.TabStop = false;
