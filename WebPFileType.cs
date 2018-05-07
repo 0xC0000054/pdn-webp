@@ -13,7 +13,6 @@
 using System;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
 using PaintDotNet;
 using PaintDotNet.IO;
 using WebPFileType.Properties;

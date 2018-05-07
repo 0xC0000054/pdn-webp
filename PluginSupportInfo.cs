@@ -11,7 +11,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using PaintDotNet;
 using System.Reflection;
 
