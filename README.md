@@ -1,6 +1,6 @@
 # pdn-webp
 
-A [Paint.NET](http://www.getpaint.net) filetype plugin that loads and saves WebP images.
+A [Paint.NET](http://www.getpaint.net) filetype plugin that loads and saves [WebP](https://developers.google.com/speed/webp/) images.
 
 ## Installing the plugin
 
