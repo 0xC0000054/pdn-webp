@@ -258,7 +258,6 @@ namespace WebPFileType
                 throw new FormatException(Resources.InvalidImageDimensions);
             }
 
-
             WebPEncodingError retVal = WebPEncodingError.Ok;
             IntPtr outPtr = IntPtr.Zero;
 

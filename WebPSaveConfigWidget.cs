@@ -310,6 +310,5 @@ namespace WebPFileType
             // Services are not provided for filetype plugins so use this method.
             System.Diagnostics.Process.Start(@"http://forums.getpaint.net/index.php?showtopic=21773");
         }
-
     }
 }

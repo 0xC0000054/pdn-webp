@@ -24,6 +24,5 @@ namespace WebPFileType
         public WebPException(string message)  : base(message)
         {
         }
-
     }
 }

@@ -110,6 +110,5 @@ namespace WebPFileType
         {
             return new WebPSaveConfigToken(this);
         }
-
     }
 }
