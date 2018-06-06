@@ -126,6 +126,7 @@ namespace WebPFileType
 			return false;
 		}
 
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "RCS1075", Justification = "Ignore any errors thrown by SetResolution.")]
 		private static void LoadProperties(Image dstImage, Document srcDoc)
 		{
 			Bitmap asBitmap = dstImage as Bitmap;
