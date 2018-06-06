@@ -82,28 +82,28 @@ namespace WebPFileType
             int fileSize,
             bool encodeMetaData)
         {
-            this.Preset = preset;
-            this.Quality = quality;
-            this.Method = method;
-            this.NoiseShaping = noiseShaping;
-            this.FilterStrength = filterStrength;
-            this.Sharpness = sharpness;
-            this.FilterType = filterType;
-            this.FileSize = fileSize;
-            this.EncodeMetaData = encodeMetaData;
+            Preset = preset;
+            Quality = quality;
+            Method = method;
+            NoiseShaping = noiseShaping;
+            FilterStrength = filterStrength;
+            Sharpness = sharpness;
+            FilterType = filterType;
+            FileSize = fileSize;
+            EncodeMetaData = encodeMetaData;
         }
 
         private WebPSaveConfigToken(WebPSaveConfigToken copyMe)
         {
-            this.Preset = copyMe.Preset;
-            this.Quality = copyMe.Quality;
-            this.Method = copyMe.Method;
-            this.NoiseShaping = copyMe.NoiseShaping;
-            this.FilterStrength = copyMe.FilterStrength;
-            this.Sharpness = copyMe.Sharpness;
-            this.FilterType = copyMe.FilterType;
-            this.FileSize = copyMe.FileSize;
-            this.EncodeMetaData = copyMe.EncodeMetaData;
+            Preset = copyMe.Preset;
+            Quality = copyMe.Quality;
+            Method = copyMe.Method;
+            NoiseShaping = copyMe.NoiseShaping;
+            FilterStrength = copyMe.FilterStrength;
+            Sharpness = copyMe.Sharpness;
+            FilterType = copyMe.FilterType;
+            FileSize = copyMe.FileSize;
+            EncodeMetaData = copyMe.EncodeMetaData;
         }
 
         public override object Clone()

@@ -30,9 +30,9 @@ namespace WebPFileType
 
         public PinnedByteArrayAllocator()
         {
-            this.pinnedArrayLookup = new Dictionary<IntPtr, byte[]>();
-            this.pinnedBufferHandles = new List<GCHandleContainer>();
-            this.disposed = false;
+            pinnedArrayLookup = new Dictionary<IntPtr, byte[]>();
+            pinnedBufferHandles = new List<GCHandleContainer>();
+            disposed = false;
         }
 
         public IntPtr AllocateArray(UIntPtr sizeInBytes)
@@ -42,28 +42,28 @@ namespace WebPFileType
             GCHandleContainer handle = new GCHandleContainer(buffer, GCHandleType.Pinned);
 
             IntPtr pbArray = handle.AddrOfPinnedObject();
-            this.pinnedArrayLookup.Add(pbArray, buffer);
-            this.pinnedBufferHandles.Add(handle);
+            pinnedArrayLookup.Add(pbArray, buffer);
+            pinnedBufferHandles.Add(handle);
 
             return pbArray;
         }
 
         public byte[] GetManagedArray(IntPtr pbArray)
         {
-            return this.pinnedArrayLookup[pbArray];
+            return pinnedArrayLookup[pbArray];
         }
 
         public void Dispose()
         {
-            if (!this.disposed)
+            if (!disposed)
             {
-                for (int i = 0; i < this.pinnedBufferHandles.Count; i++)
+                for (int i = 0; i < pinnedBufferHandles.Count; i++)
                 {
-                    this.pinnedBufferHandles[i].Dispose();
+                    pinnedBufferHandles[i].Dispose();
                 }
-                this.pinnedBufferHandles = null;
-                this.pinnedArrayLookup = null;
-                this.disposed = true;
+                pinnedBufferHandles = null;
+                pinnedArrayLookup = null;
+                disposed = true;
             }
         }
 
@@ -74,7 +74,7 @@ namespace WebPFileType
 
             public GCHandleContainer(object value, GCHandleType type)
             {
-                this.handle = GCHandle.Alloc(value, type);
+                handle = GCHandle.Alloc(value, type);
             }
 
             ~GCHandleContainer()
@@ -84,7 +84,7 @@ namespace WebPFileType
 
             public IntPtr AddrOfPinnedObject()
             {
-                return this.handle.AddrOfPinnedObject();
+                return handle.AddrOfPinnedObject();
             }
 
             public void Dispose()
@@ -95,14 +95,14 @@ namespace WebPFileType
 
             private void Dispose(bool disposing)
             {
-                if (!this.disposed)
+                if (!disposed)
                 {
                     if (disposing)
                     {
                     }
 
-                    this.handle.Free();
-                    this.disposed = true;
+                    handle.Free();
+                    disposed = true;
                 }
             }
         }

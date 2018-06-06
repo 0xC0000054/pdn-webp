@@ -66,7 +66,7 @@ namespace WebPFileType
 
         protected override void InitFileType()
         {
-            this.fileType = new WebPFileType();
+            fileType = new WebPFileType();
         }
 
         protected override void InitTokenFromWidget()
@@ -86,12 +86,12 @@ namespace WebPFileType
 
         private void PushSuspendTokenUpdate()
         {
-            this.suspendTokenUpdateCounter++;
+            suspendTokenUpdateCounter++;
         }
 
         private void PopSuspendTokenUpdate()
         {
-            this.suspendTokenUpdateCounter--;
+            suspendTokenUpdateCounter--;
         }
 
         protected override void InitWidgetFromToken(PaintDotNet.SaveConfigToken sourceToken)
@@ -101,15 +101,15 @@ namespace WebPFileType
             // Disable the UpdateToken function, this fixes a race condition with the controls that are updated by the UpdatePresetSliders method.
             PushSuspendTokenUpdate();
 
-            this.presetCbo.SelectedIndex = (int)configToken.Preset;
-            this.qualitySlider.Value = configToken.Quality;
-            this.encodeMethodSlider.Value = configToken.Method;
-            this.noiseShapingSlider.Value = configToken.NoiseShaping;
-            this.strengthSlider.Value = configToken.FilterStrength;
-            this.sharpnessSlider.Value = configToken.Sharpness;
-            this.filterTypeCbo.SelectedIndex = (int)configToken.FilterType;
-            this.fileSizeTxt.Text = configToken.FileSize > 0 ? configToken.FileSize.ToString() : string.Empty;
-            this.keepMetaDataCb.Checked = configToken.EncodeMetaData;
+            presetCbo.SelectedIndex = (int)configToken.Preset;
+            qualitySlider.Value = configToken.Quality;
+            encodeMethodSlider.Value = configToken.Method;
+            noiseShapingSlider.Value = configToken.NoiseShaping;
+            strengthSlider.Value = configToken.FilterStrength;
+            sharpnessSlider.Value = configToken.Sharpness;
+            filterTypeCbo.SelectedIndex = (int)configToken.FilterType;
+            fileSizeTxt.Text = configToken.FileSize > 0 ? configToken.FileSize.ToString() : string.Empty;
+            keepMetaDataCb.Checked = configToken.EncodeMetaData;
 
             PopSuspendTokenUpdate();
         }
@@ -129,35 +129,35 @@ namespace WebPFileType
             switch (preset)
             {
                 case WebPPreset.Picture:
-                    this.noiseShapingSlider.Value = 80;
-                    this.sharpnessSlider.Value = 4;
-                    this.strengthSlider.Value = 35;
+                    noiseShapingSlider.Value = 80;
+                    sharpnessSlider.Value = 4;
+                    strengthSlider.Value = 35;
                     break;
                 case WebPPreset.Photo:
-                    this.noiseShapingSlider.Value = 80;
-                    this.sharpnessSlider.Value = 3;
-                    this.strengthSlider.Value = 30;
+                    noiseShapingSlider.Value = 80;
+                    sharpnessSlider.Value = 3;
+                    strengthSlider.Value = 30;
                     break;
                 case WebPPreset.Drawing:
-                    this.noiseShapingSlider.Value = 80;
-                    this.sharpnessSlider.Value = 4;
-                    this.strengthSlider.Value = 35;
+                    noiseShapingSlider.Value = 80;
+                    sharpnessSlider.Value = 4;
+                    strengthSlider.Value = 35;
                     break;
                 case WebPPreset.Icon:
-                    this.noiseShapingSlider.Value = 25;
-                    this.sharpnessSlider.Value = 6;
-                    this.strengthSlider.Value = 10;
+                    noiseShapingSlider.Value = 25;
+                    sharpnessSlider.Value = 6;
+                    strengthSlider.Value = 10;
                     break;
                 case WebPPreset.Text:
-                    this.noiseShapingSlider.Value = 0;
-                    this.sharpnessSlider.Value = 0;
-                    this.strengthSlider.Value = 0;
+                    noiseShapingSlider.Value = 0;
+                    sharpnessSlider.Value = 0;
+                    strengthSlider.Value = 0;
                     break;
                 case WebPPreset.Default:
                 default:
-                    this.noiseShapingSlider.Value = 50;
-                    this.strengthSlider.Value = 60;
-                    this.sharpnessSlider.Value = 0;
+                    noiseShapingSlider.Value = 50;
+                    strengthSlider.Value = 60;
+                    sharpnessSlider.Value = 0;
                     break;
             }
 
@@ -166,40 +166,40 @@ namespace WebPFileType
 
         private void EnableLossyEncodingOptions(bool enabled)
         {
-            this.noiseShapingSlider.Enabled = enabled;
-            this.noiseShapingUpDown.Enabled = enabled;
-            this.strengthSlider.Enabled = enabled;
-            this.strengthUpDown.Enabled = enabled;
-            this.sharpnessSlider.Enabled = enabled;
-            this.sharpnessUpDown.Enabled = enabled;
-            this.filterTypeCbo.Enabled = enabled;
-            this.fileSizeTxt.Enabled = enabled;
+            noiseShapingSlider.Enabled = enabled;
+            noiseShapingUpDown.Enabled = enabled;
+            strengthSlider.Enabled = enabled;
+            strengthUpDown.Enabled = enabled;
+            sharpnessSlider.Enabled = enabled;
+            sharpnessUpDown.Enabled = enabled;
+            filterTypeCbo.Enabled = enabled;
+            fileSizeTxt.Enabled = enabled;
         }
 
         private void presetCbo_SelectedIndexChanged(object sender, EventArgs e)
         {
-            UpdatePresetSliders((WebPPreset)this.presetCbo.SelectedIndex);
+            UpdatePresetSliders((WebPPreset)presetCbo.SelectedIndex);
 
-            this.UpdateConfigToken();
+            UpdateConfigToken();
         }
 
         private void qualitySlider_ValueChanged(object sender, EventArgs e)
         {
             if (qualityUpDown.Value != qualitySlider.Value)
             {
-                this.qualityUpDown.Value = this.qualitySlider.Value;
+                qualityUpDown.Value = qualitySlider.Value;
             }
 
-            EnableLossyEncodingOptions(this.qualitySlider.Value < 100);
+            EnableLossyEncodingOptions(qualitySlider.Value < 100);
 
-            this.UpdateConfigToken();
+            UpdateConfigToken();
         }
 
         private void qualityUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (qualitySlider.Value != (int)qualityUpDown.Value)
             {
-                this.qualitySlider.Value = (int)qualityUpDown.Value;
+                qualitySlider.Value = (int)qualityUpDown.Value;
             }
         }
 
@@ -207,17 +207,17 @@ namespace WebPFileType
         {
             if (encodeMethodUpDown.Value != encodeMethodSlider.Value)
             {
-                this.encodeMethodUpDown.Value = this.encodeMethodSlider.Value;
+                encodeMethodUpDown.Value = encodeMethodSlider.Value;
             }
 
-            this.UpdateConfigToken();
+            UpdateConfigToken();
         }
 
         private void encodeMethodUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (encodeMethodSlider.Value != (int)encodeMethodUpDown.Value)
             {
-                this.encodeMethodSlider.Value = (int)encodeMethodUpDown.Value;
+                encodeMethodSlider.Value = (int)encodeMethodUpDown.Value;
             }
         }
 
@@ -225,17 +225,17 @@ namespace WebPFileType
         {
             if (noiseShapingUpDown.Value != noiseShapingSlider.Value)
             {
-                this.noiseShapingUpDown.Value = this.noiseShapingSlider.Value;
+                noiseShapingUpDown.Value = noiseShapingSlider.Value;
             }
 
-            this.UpdateConfigToken();
+            UpdateConfigToken();
         }
 
         private void noiseShapingUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (noiseShapingSlider.Value != noiseShapingUpDown.Value)
             {
-                this.noiseShapingSlider.Value = (int)this.noiseShapingUpDown.Value;
+                noiseShapingSlider.Value = (int)noiseShapingUpDown.Value;
             }
         }
 
@@ -243,17 +243,17 @@ namespace WebPFileType
         {
             if (strengthUpDown.Value != strengthSlider.Value)
             {
-                this.strengthUpDown.Value = this.strengthSlider.Value;
+                strengthUpDown.Value = strengthSlider.Value;
             }
 
-            this.UpdateConfigToken();
+            UpdateConfigToken();
         }
 
         private void strengthUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (strengthSlider.Value != (int)strengthUpDown.Value)
             {
-                this.strengthSlider.Value = (int)strengthUpDown.Value;
+                strengthSlider.Value = (int)strengthUpDown.Value;
             }
         }
 
@@ -261,23 +261,23 @@ namespace WebPFileType
         {
             if (sharpnessUpDown.Value != sharpnessSlider.Value)
             {
-                this.sharpnessUpDown.Value = this.sharpnessSlider.Value;
+                sharpnessUpDown.Value = sharpnessSlider.Value;
             }
 
-            this.UpdateConfigToken();
+            UpdateConfigToken();
         }
 
         private void sharpnessUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (sharpnessSlider.Value != (int)sharpnessUpDown.Value)
             {
-                this.sharpnessSlider.Value = (int)sharpnessUpDown.Value;
+                sharpnessSlider.Value = (int)sharpnessUpDown.Value;
             }
         }
 
         private void filterTypeCbo_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.UpdateConfigToken();
+            UpdateConfigToken();
         }
 
         private void fileSizeTxt_KeyDown(object sender, KeyEventArgs e)
@@ -297,12 +297,12 @@ namespace WebPFileType
 
         private void fileSizeTxt_TextChanged(object sender, EventArgs e)
         {
-            this.UpdateConfigToken();
+            UpdateConfigToken();
         }
 
         private void keepMetaDataCb_CheckedChanged(object sender, EventArgs e)
         {
-            this.UpdateConfigToken();
+            UpdateConfigToken();
         }
 
         private void donateLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

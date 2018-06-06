@@ -88,20 +88,20 @@ namespace WebPFileType
             {
                 if (iccProfileBytes != null)
                 {
-                    this.iccProfile = (byte[])iccProfileBytes.Clone();
-                    this.iccProfileSize = (uint)iccProfileBytes.Length;
+                    iccProfile = (byte[])iccProfileBytes.Clone();
+                    iccProfileSize = (uint)iccProfileBytes.Length;
                 }
 
                 if (exifBytes != null)
                 {
-                    this.exif = (byte[])exifBytes.Clone();
-                    this.exifSize = (uint)exifBytes.Length;
+                    exif = (byte[])exifBytes.Clone();
+                    exifSize = (uint)exifBytes.Length;
                 }
 
                 if (xmpBytes != null)
                 {
-                    this.xmp = (byte[])xmpBytes.Clone();
-                    this.xmpSize = (uint)xmpBytes.Length;
+                    xmp = (byte[])xmpBytes.Clone();
+                    xmpSize = (uint)xmpBytes.Length;
                 }
             }
         }
