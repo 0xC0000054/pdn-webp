@@ -3,7 +3,7 @@
 // This file is part of pdn-webp, a FileType plugin for Paint.NET
 // that loads and saves WebP images.
 //
-// Copyright (c) 2011-2018 Nicholas Hayes
+// Copyright (c) 2011-2019 Nicholas Hayes
 //
 // This file is licensed under the MIT License.
 // See LICENSE.txt for complete licensing and attribution information.
@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("null54")]
 [assembly: AssemblyProduct("WebPFileType")]
-[assembly: AssemblyCopyright("Copyright © 2011-2018 Nicholas Hayes (aka null54)")]
+[assembly: AssemblyCopyright("Copyright © 2011-2019 Nicholas Hayes (aka null54)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
