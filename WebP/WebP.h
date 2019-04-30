@@ -35,13 +35,6 @@ typedef struct EncodeParams
 {
     float quality;
     int preset;
-    int method;
-    // The following are only used for lossy compression:
-    int noiseShaping;
-    int filterType;
-    int filterStrength;
-    int sharpness;
-    int fileSize;
 }EncParams;
 
 enum MetaDataType

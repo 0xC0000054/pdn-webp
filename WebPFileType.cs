@@ -17,17 +17,26 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using PaintDotNet;
+using PaintDotNet.IndirectUI;
 using PaintDotNet.IO;
+using PaintDotNet.PropertySystem;
 using WebPFileType.Properties;
 
 namespace WebPFileType
 {
     [PluginSupportInfo(typeof(PluginSupportInfo))]
-    public sealed class WebPFileType : FileType, IFileTypeFactory
+    public sealed class WebPFileType : PropertyBasedFileType, IFileTypeFactory
     {
         private const string WebPColorProfile = "WebPICC";
         private const string WebPEXIF = "WebPEXIF";
         private const string WebPXMP = "WebPXMP";
+
+        private enum PropertyNames
+        {
+            Preset,
+            Quality,
+            KeepMetadata
+        }
 
         public WebPFileType() : base("WebP", FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress, new string[] { ".webp" })
         {
@@ -109,24 +118,45 @@ namespace WebPFileType
             return doc;
         }
 
-        public override SaveConfigWidget CreateSaveConfigWidget()
+        public override PropertyCollection OnCreateSavePropertyCollection()
         {
-            return new WebPSaveConfigWidget();
-        }
-
-        protected override SaveConfigToken OnCreateDefaultSaveConfigToken()
-        {
-            return new WebPSaveConfigToken(WebPPreset.Photo, 95, 4, 80, 30, 3, WebPFilterType.Strong, 0, true);
-        }
-
-        public override bool IsReflexive(SaveConfigToken token)
-        {
-            if (((WebPSaveConfigToken)token).Quality == 100)
+            List<Property> props = new List<Property>
             {
-                return true;
-            }
+                StaticListChoiceProperty.CreateForEnum(PropertyNames.Preset, WebPPreset.Photo, false),
+                new Int32Property(PropertyNames.Quality, 95, 0, 100, false),
+                new BooleanProperty(PropertyNames.KeepMetadata, true, false)
+            };
 
-            return false;
+            return new PropertyCollection(props);
+        }
+
+        public override ControlInfo OnCreateSaveConfigUI(PropertyCollection props)
+        {
+            ControlInfo info = CreateDefaultSaveConfigUI(props);
+
+            PropertyControlInfo presetPCI = info.FindControlForPropertyName(PropertyNames.Preset);
+
+            presetPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = Resources.Preset_Text;
+            presetPCI.SetValueDisplayName(WebPPreset.Default, Resources.Preset_Default_Name);
+            presetPCI.SetValueDisplayName(WebPPreset.Drawing, Resources.Preset_Drawing_Name);
+            presetPCI.SetValueDisplayName(WebPPreset.Icon, Resources.Preset_Icon_Name);
+            presetPCI.SetValueDisplayName(WebPPreset.Photo, Resources.Preset_Photo_Name);
+            presetPCI.SetValueDisplayName(WebPPreset.Picture, Resources.Preset_Picture_Name);
+            presetPCI.SetValueDisplayName(WebPPreset.Text, Resources.Preset_Text_Name);
+
+            info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, Resources.Quality_Text);
+
+            info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.DisplayName, string.Empty);
+            info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.Description, Resources.KeepMetadata_Text);
+
+            return info;
+        }
+
+        protected override bool IsReflexive(PropertyBasedSaveConfigToken token)
+        {
+            int quality = token.GetProperty<Int32Property>(PropertyNames.Quality).Value;
+
+            return quality == 100;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "RCS1075", Justification = "Ignore any errors thrown by SetResolution.")]
@@ -280,25 +310,22 @@ namespace WebPFileType
             return null;
         }
 
-        protected override void OnSave(Document input, Stream output, SaveConfigToken token, Surface scratchSurface, ProgressEventHandler callback)
+        protected override void OnSaveT(Document input, Stream output, PropertyBasedSaveConfigToken token, Surface scratchSurface, ProgressEventHandler progressCallback)
         {
-            WebPSaveConfigToken configToken = (WebPSaveConfigToken)token;
 
             WebPFile.WebPReportProgress encProgress = new WebPFile.WebPReportProgress(delegate(int percent)
             {
-                callback(this, new ProgressEventArgs(percent));
+                progressCallback(this, new ProgressEventArgs(percent));
             });
+
+            int quality = token.GetProperty<Int32Property>(PropertyNames.Quality).Value;
+            WebPPreset preset = (WebPPreset)token.GetProperty(PropertyNames.Preset).Value;
+            bool keepMetadata = token.GetProperty<BooleanProperty>(PropertyNames.KeepMetadata).Value;
 
             WebPFile.EncodeParams encParams = new WebPFile.EncodeParams
             {
-                quality = (float)configToken.Quality,
-                preset = configToken.Preset,
-                method = configToken.Method,
-                noiseShaping = configToken.NoiseShaping,
-                filterType = configToken.FilterType,
-                filterStrength = configToken.FilterStrength,
-                sharpness = configToken.Sharpness,
-                fileSize = configToken.FileSize
+                quality = quality,
+                preset = preset
             };
 
             using (RenderArgs ra = new RenderArgs(scratchSurface))
@@ -309,7 +336,7 @@ namespace WebPFileType
             using (PinnedByteArrayAllocator allocator = new PinnedByteArrayAllocator())
             {
                 WebPFile.MetaDataParams metaData = null;
-                if (configToken.EncodeMetaData)
+                if (keepMetadata)
                 {
                     metaData = GetMetaData(input, scratchSurface);
                 }

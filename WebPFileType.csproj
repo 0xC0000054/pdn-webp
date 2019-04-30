@@ -95,19 +95,6 @@
     <Compile Include="JPEGReader.cs" />
     <Compile Include="PinnedByteArrayAllocator.cs" />
     <Compile Include="PluginSupportInfo.cs" />
-    <Compile Include="WebPFilterType.cs" />
-    <Compile Include="PaintDotNet\EtchedLine.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PaintDotNet\HeaderLabel.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PaintDotNet\UI.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="PaintDotNet\VisualStyleClass.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="WebPPreset.cs" />
     <Compile Include="WebPException.cs" />
     <Compile Include="WebPFileType.cs" />
@@ -118,21 +105,11 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="WebPFile.cs" />
-    <Compile Include="WebPSaveConfigToken.cs" />
-    <Compile Include="WebPSaveConfigWidget.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="WebPSaveConfigWidget.Designer.cs">
-      <DependentUpon>WebPSaveConfigWidget.cs</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WebPSaveConfigWidget.resx">
-      <DependentUpon>WebPSaveConfigWidget.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

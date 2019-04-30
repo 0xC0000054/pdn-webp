@@ -10,8 +10,8 @@
 
 namespace WebPFileType.Properties {
     using System;
-
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -19,19 +19,19 @@ namespace WebPFileType.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
-
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Resources() {
         }
-
+        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -45,7 +45,7 @@ namespace WebPFileType.Properties {
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -59,7 +59,7 @@ namespace WebPFileType.Properties {
                 resourceCulture = value;
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to WebP encoder API version mismatch..
         /// </summary>
@@ -68,7 +68,7 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("ApiVersionMismatch", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Total file size must be less than 4GB.
         /// </summary>
@@ -77,7 +77,7 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("EncoderFileTooBig", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to An error occurred when encoding the WebP file..
         /// </summary>
@@ -86,7 +86,7 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("EncoderGenericError", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to An error occurred when encoding the WebP meta-data..
         /// </summary>
@@ -95,7 +95,7 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("EncoderMetaDataError", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Encoding Quality / Speed.
         /// </summary>
@@ -104,7 +104,7 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("EncodingMethod", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Encoding Passes.
         /// </summary>
@@ -113,52 +113,7 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("EncodingPasses", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to File size in bytes.
-        /// </summary>
-        internal static string FileSizeText {
-            get {
-                return ResourceManager.GetString("FileSizeText", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Filter Strength.
-        /// </summary>
-        internal static string FilterStrengthText {
-            get {
-                return ResourceManager.GetString("FilterStrengthText", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Simple.
-        /// </summary>
-        internal static string FilterTypeSimpleText {
-            get {
-                return ResourceManager.GetString("FilterTypeSimpleText", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Strong.
-        /// </summary>
-        internal static string FilterTypeStrongText {
-            get {
-                return ResourceManager.GetString("FilterTypeStrongText", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Filter Type.
-        /// </summary>
-        internal static string FilterTypeText {
-            get {
-                return ResourceManager.GetString("FilterTypeText", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Insufficient memory to save the image..
         /// </summary>
@@ -167,7 +122,7 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("InsufficientMemoryOnSave", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The dimensions of a WebP image must be 16383x16383 or less..
         /// </summary>
@@ -176,7 +131,7 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("InvalidImageDimensions", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid parameter..
         /// </summary>
@@ -185,7 +140,7 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("InvalidParameter", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid WebP Image..
         /// </summary>
@@ -194,85 +149,85 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("InvalidWebPImage", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Quality.
+        ///   Looks up a localized string similar to Keep Metadata.
         /// </summary>
-        internal static string QualityText {
+        internal static string KeepMetadata_Text {
             get {
-                return ResourceManager.GetString("QualityText", resourceCulture);
+                return ResourceManager.GetString("KeepMetadata_Text", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Sharpness .
-        /// </summary>
-        internal static string SharpnessText {
-            get {
-                return ResourceManager.GetString("SharpnessText", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Preset.
-        /// </summary>
-        internal static string WebPPreset_Text {
-            get {
-                return ResourceManager.GetString("WebPPreset_Text", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Default.
         /// </summary>
-        internal static string WebPPresetDefault_Text {
+        internal static string Preset_Default_Name {
             get {
-                return ResourceManager.GetString("WebPPresetDefault_Text", resourceCulture);
+                return ResourceManager.GetString("Preset_Default_Name", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Drawing.
         /// </summary>
-        internal static string WebPPresetDrawing_Text {
+        internal static string Preset_Drawing_Name {
             get {
-                return ResourceManager.GetString("WebPPresetDrawing_Text", resourceCulture);
+                return ResourceManager.GetString("Preset_Drawing_Name", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Icon.
         /// </summary>
-        internal static string WebPPresetIcon_Text {
+        internal static string Preset_Icon_Name {
             get {
-                return ResourceManager.GetString("WebPPresetIcon_Text", resourceCulture);
+                return ResourceManager.GetString("Preset_Icon_Name", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Photo.
         /// </summary>
-        internal static string WebPPresetPhoto_Text {
+        internal static string Preset_Photo_Name {
             get {
-                return ResourceManager.GetString("WebPPresetPhoto_Text", resourceCulture);
+                return ResourceManager.GetString("Preset_Photo_Name", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Picture.
         /// </summary>
-        internal static string WebPPresetPicture_Text {
+        internal static string Preset_Picture_Name {
             get {
-                return ResourceManager.GetString("WebPPresetPicture_Text", resourceCulture);
+                return ResourceManager.GetString("Preset_Picture_Name", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preset.
+        /// </summary>
+        internal static string Preset_Text {
+            get {
+                return ResourceManager.GetString("Preset_Text", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Text.
         /// </summary>
-        internal static string WebPPresetText_Text {
+        internal static string Preset_Text_Name {
             get {
-                return ResourceManager.GetString("WebPPresetText_Text", resourceCulture);
+                return ResourceManager.GetString("Preset_Text_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quality.
+        /// </summary>
+        internal static string Quality_Text {
+            get {
+                return ResourceManager.GetString("Quality_Text", resourceCulture);
             }
         }
     }

@@ -123,26 +123,11 @@
   <data name="EncodingPasses" xml:space="preserve">
     <value>Encoding Passes</value>
   </data>
-  <data name="FilterStrengthText" xml:space="preserve">
-    <value>Filter Strength</value>
-  </data>
-  <data name="FilterTypeSimpleText" xml:space="preserve">
-    <value>Simple</value>
-  </data>
-  <data name="FilterTypeStrongText" xml:space="preserve">
-    <value>Strong</value>
-  </data>
-  <data name="FilterTypeText" xml:space="preserve">
-    <value>Filter Type</value>
-  </data>
   <data name="InvalidWebPImage" xml:space="preserve">
     <value>Invalid WebP Image.</value>
   </data>
-  <data name="QualityText" xml:space="preserve">
+  <data name="Quality_Text" xml:space="preserve">
     <value>Quality</value>
-  </data>
-  <data name="SharpnessText" xml:space="preserve">
-    <value>Sharpness </value>
   </data>
   <data name="ApiVersionMismatch" xml:space="preserve">
     <value>WebP encoder API version mismatch.</value>
@@ -159,34 +144,34 @@
   <data name="InvalidImageDimensions" xml:space="preserve">
     <value>The dimensions of a WebP image must be 16383x16383 or less.</value>
   </data>
-  <data name="WebPPresetDefault_Text" xml:space="preserve">
+  <data name="Preset_Default_Name" xml:space="preserve">
     <value>Default</value>
   </data>
-  <data name="WebPPresetDrawing_Text" xml:space="preserve">
+  <data name="Preset_Drawing_Name" xml:space="preserve">
     <value>Drawing</value>
   </data>
-  <data name="WebPPresetIcon_Text" xml:space="preserve">
+  <data name="Preset_Icon_Name" xml:space="preserve">
     <value>Icon</value>
   </data>
-  <data name="WebPPresetPhoto_Text" xml:space="preserve">
+  <data name="Preset_Photo_Name" xml:space="preserve">
     <value>Photo</value>
   </data>
-  <data name="WebPPresetPicture_Text" xml:space="preserve">
+  <data name="Preset_Picture_Name" xml:space="preserve">
     <value>Picture</value>
   </data>
-  <data name="WebPPresetText_Text" xml:space="preserve">
+  <data name="Preset_Text_Name" xml:space="preserve">
     <value>Text</value>
   </data>
-  <data name="WebPPreset_Text" xml:space="preserve">
+  <data name="Preset_Text" xml:space="preserve">
     <value>Preset</value>
   </data>
   <data name="InvalidParameter" xml:space="preserve">
     <value>Invalid parameter.</value>
   </data>
-  <data name="FileSizeText" xml:space="preserve">
-    <value>File size in bytes</value>
-  </data>
   <data name="EncoderMetaDataError" xml:space="preserve">
     <value>An error occurred when encoding the WebP meta-data.</value>
+  </data>
+  <data name="KeepMetadata_Text" xml:space="preserve">
+    <value>Keep Metadata</value>
   </data>
 </root>

@@ -65,13 +65,6 @@ namespace WebPFileType
             public float quality;
             [MarshalAs(UnmanagedType.I4)]
             public WebPPreset preset;
-            public int method;
-            public int noiseShaping;
-            [MarshalAs(UnmanagedType.I4)]
-            public WebPFilterType filterType;
-            public int filterStrength;
-            public int sharpness;
-            public int fileSize;
         }
 
         [StructLayout(LayoutKind.Sequential)]
