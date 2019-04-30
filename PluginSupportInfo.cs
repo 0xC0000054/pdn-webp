@@ -54,7 +54,7 @@ namespace WebPFileType
         {
             get
             {
-                return new Uri("http://www.getpaint.net/redirect/plugins.html");
+                return new Uri("https://forums.getpaint.net/topic/21773-webp-filetype/");
             }
         }
     }
