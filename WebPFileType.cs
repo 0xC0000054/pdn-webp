@@ -174,6 +174,13 @@ namespace WebPFileType
                 string blob = metaData.GetValue(Metadata.ExifSectionName, key);
                 System.Drawing.Imaging.PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
 
+                const ushort ICCProfileId = unchecked((ushort)ExifTagID.IccProfileData);
+
+                if (pi.Id == ICCProfileId)
+                {
+                    continue;
+                }
+
                 try
                 {
                     dstImage.SetPropertyItem(pi);
