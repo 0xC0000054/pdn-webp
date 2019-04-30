@@ -16,7 +16,7 @@ using System.Reflection;
 
 namespace WebPFileType
 {
-    class PluginSupportInfo : IPluginSupportInfo
+    public sealed class PluginSupportInfo : IPluginSupportInfo
     {
         public string Author
         {
