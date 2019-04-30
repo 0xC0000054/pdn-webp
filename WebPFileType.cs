@@ -61,8 +61,8 @@ namespace WebPFileType
 
             input.ProperRead(bytes, 0, (int)input.Length);
 
-            int width = 0;
-            int height = 0;
+            int width;
+            int height;
             if (!WebPFile.WebPGetDimensions(bytes, out width, out height))
             {
                 throw new WebPException(Resources.InvalidWebPImage);

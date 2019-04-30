@@ -293,7 +293,7 @@ namespace WebPFileType
 
         internal static unsafe uint GetMetaDataSize(byte[] data, MetaDataType type)
         {
-            uint metaDataSize = 0U;
+            uint metaDataSize;
 
             fixed (byte* ptr = data)
             {
