@@ -11,8 +11,11 @@
 ////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using PaintDotNet;
 using PaintDotNet.IO;
 using WebPFileType.Properties;
@@ -127,7 +130,7 @@ namespace WebPFileType
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "RCS1075", Justification = "Ignore any errors thrown by SetResolution.")]
-        private static void LoadProperties(Image dstImage, Document srcDoc)
+        private static void LoadProperties(Image dstImage, MeasurementUnit dpuUnit, double dpuX, double dpuY, IEnumerable<PropertyItem> propertyItems)
         {
             Bitmap asBitmap = dstImage as Bitmap;
 
@@ -138,16 +141,16 @@ namespace WebPFileType
                 float dpiX;
                 float dpiY;
 
-                switch (srcDoc.DpuUnit)
+                switch (dpuUnit)
                 {
                     case MeasurementUnit.Centimeter:
-                        dpiX = (float)Document.DotsPerCmToDotsPerInch(srcDoc.DpuX);
-                        dpiY = (float)Document.DotsPerCmToDotsPerInch(srcDoc.DpuY);
+                        dpiX = (float)Document.DotsPerCmToDotsPerInch(dpuX);
+                        dpiY = (float)Document.DotsPerCmToDotsPerInch(dpuY);
                         break;
 
                     case MeasurementUnit.Inch:
-                        dpiX = (float)srcDoc.DpuX;
-                        dpiY = (float)srcDoc.DpuY;
+                        dpiX = (float)dpuX;
+                        dpiY = (float)dpuY;
                         break;
 
                     default:
@@ -167,20 +170,8 @@ namespace WebPFileType
                 }
             }
 
-            Metadata metaData = srcDoc.Metadata;
-
-            foreach (string key in metaData.GetKeys(Metadata.ExifSectionName))
+            foreach (PropertyItem pi in propertyItems)
             {
-                string blob = metaData.GetValue(Metadata.ExifSectionName, key);
-                System.Drawing.Imaging.PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
-
-                const ushort ICCProfileId = unchecked((ushort)ExifTagID.IccProfileData);
-
-                if (pi.Id == ICCProfileId)
-                {
-                    continue;
-                }
-
                 try
                 {
                     dstImage.SetPropertyItem(pi);
@@ -190,6 +181,37 @@ namespace WebPFileType
                     // Ignore error: the image does not support property items
                 }
             }
+        }
+
+        private static List<PropertyItem> GetMetadataFromDocument(Document doc)
+        {
+            List<PropertyItem> items = new List<PropertyItem>();
+
+            Metadata metadata = doc.Metadata;
+
+            string[] exifKeys = metadata.GetKeys(Metadata.ExifSectionName);
+
+            if (exifKeys.Length > 0)
+            {
+                items.Capacity = exifKeys.Length;
+
+                foreach (string key in exifKeys)
+                {
+                    string blob = metadata.GetValue(Metadata.ExifSectionName, key);
+                    try
+                    {
+                        PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
+
+                        items.Add(pi);
+                    }
+                    catch
+                    {
+                        // Ignore any items that cannot be deserialized.
+                    }
+                }
+            }
+
+            return items;
         }
 
         private static WebPFile.MetaDataParams GetMetaData(Document doc, Surface scratchSurface)
@@ -209,24 +231,45 @@ namespace WebPFileType
             {
                 exifBytes = Convert.FromBase64String(exif);
             }
-            else if (doc.Metadata.GetKeys(Metadata.ExifSectionName).Length > 0)
-            {
-                using (MemoryStream stream = new MemoryStream())
-                {
-                    using (Bitmap bmp = scratchSurface.CreateAliasedBitmap())
-                    {
-                        LoadProperties(bmp, doc);
-                        bmp.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
-                    }
-
-                    exifBytes = JPEGReader.ExtractEXIF(stream.GetBuffer());
-                }
-            }
 
             string xmp = doc.Metadata.GetUserValue(WebPXMP);
             if (!string.IsNullOrEmpty(xmp))
             {
                 xmpBytes = Convert.FromBase64String(xmp);
+            }
+
+            if (iccProfileBytes == null || exifBytes == null)
+            {
+                List<PropertyItem> propertyItems = GetMetadataFromDocument(doc);
+
+                if (propertyItems.Count > 0)
+                {
+                    const ushort ICCProfileId = unchecked((ushort)ExifTagID.IccProfileData);
+
+                    if (iccProfileBytes == null)
+                    {
+                        PropertyItem item = propertyItems.FirstOrDefault(p => p.Id == ICCProfileId);
+
+                        if (item != null)
+                        {
+                            iccProfileBytes = item.Value.CloneT();
+                        }
+                    }
+
+                    if (exifBytes == null)
+                    {
+                        using (MemoryStream stream = new MemoryStream())
+                        {
+                            using (Bitmap bmp = scratchSurface.CreateAliasedBitmap())
+                            {
+                                LoadProperties(bmp, doc.DpuUnit, doc.DpuX, doc.DpuY, propertyItems.Where(p => p.Id != ICCProfileId));
+                                bmp.Save(stream, ImageFormat.Jpeg);
+                            }
+
+                            exifBytes = JPEGReader.ExtractEXIF(stream.GetBuffer());
+                        }
+                    }
+                }
             }
 
             if (iccProfileBytes != null || exifBytes != null || xmpBytes != null)
