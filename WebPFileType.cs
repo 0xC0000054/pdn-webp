@@ -160,51 +160,47 @@ namespace WebPFileType
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "RCS1075", Justification = "Ignore any errors thrown by SetResolution.")]
-        private static void LoadProperties(Image dstImage, MeasurementUnit dpuUnit, double dpuX, double dpuY, IEnumerable<PropertyItem> propertyItems)
+        private static void LoadProperties(Bitmap bitmap, MeasurementUnit dpuUnit, double dpuX, double dpuY, IEnumerable<PropertyItem> propertyItems)
         {
-            Bitmap asBitmap = dstImage as Bitmap;
 
-            if (asBitmap != null)
+            // Sometimes GDI+ does not honor the resolution tags that we
+            // put in manually via the EXIF properties.
+            float dpiX;
+            float dpiY;
+
+            switch (dpuUnit)
             {
-                // Sometimes GDI+ does not honor the resolution tags that we
-                // put in manually via the EXIF properties.
-                float dpiX;
-                float dpiY;
+                case MeasurementUnit.Centimeter:
+                    dpiX = (float)Document.DotsPerCmToDotsPerInch(dpuX);
+                    dpiY = (float)Document.DotsPerCmToDotsPerInch(dpuY);
+                    break;
 
-                switch (dpuUnit)
-                {
-                    case MeasurementUnit.Centimeter:
-                        dpiX = (float)Document.DotsPerCmToDotsPerInch(dpuX);
-                        dpiY = (float)Document.DotsPerCmToDotsPerInch(dpuY);
-                        break;
+                case MeasurementUnit.Inch:
+                    dpiX = (float)dpuX;
+                    dpiY = (float)dpuY;
+                    break;
 
-                    case MeasurementUnit.Inch:
-                        dpiX = (float)dpuX;
-                        dpiY = (float)dpuY;
-                        break;
+                default:
+                case MeasurementUnit.Pixel:
+                    dpiX = 1.0f;
+                    dpiY = 1.0f;
+                    break;
+            }
 
-                    default:
-                    case MeasurementUnit.Pixel:
-                        dpiX = 1.0f;
-                        dpiY = 1.0f;
-                        break;
-                }
-
-                try
-                {
-                    asBitmap.SetResolution(dpiX, dpiY);
-                }
-                catch (Exception)
-                {
-                    // Ignore error
-                }
+            try
+            {
+                bitmap.SetResolution(dpiX, dpiY);
+            }
+            catch (Exception)
+            {
+                // Ignore error
             }
 
             foreach (PropertyItem pi in propertyItems)
             {
                 try
                 {
-                    dstImage.SetPropertyItem(pi);
+                    bitmap.SetPropertyItem(pi);
                 }
                 catch (ArgumentException)
                 {
