@@ -37,14 +37,14 @@ typedef struct EncodeParams
     int preset;
 }EncParams;
 
-enum MetaDataType
+enum MetadataType
 {
     ColorProfile = 0,
     EXIF,
     XMP
 };
 
-typedef struct MetaDataParams
+typedef struct MetadataParams
 {
     uint8_t* iccProfile;
     uint32_t iccProfileSize;
@@ -52,7 +52,7 @@ typedef struct MetaDataParams
     uint32_t exifSize;
     uint8_t* xmp;
     uint32_t xmpSize;
-}MetaDataParams;
+}MetadataParams;
 
 DLLEXPORT bool __stdcall WebPGetDimensions(const uint8_t* iData, size_t iData_size, int* oWidth, int* oHeight);
 
@@ -66,12 +66,12 @@ DLLEXPORT int __stdcall WebPSave(
     const int height,
     const int stride,
     const EncodeParams* params,
-    const MetaDataParams* metaData,
+    const MetadataParams* metadata,
     ProgressFn progressCallback);
 
-DLLEXPORT void __stdcall GetMetaDataSize(const uint8_t* data, size_t dataSize,  MetaDataType type, uint32_t* outSize);
+DLLEXPORT void __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize,  MetadataType type, uint32_t* outSize);
 
-DLLEXPORT void __stdcall ExtractMetaData(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetaDataType type);
+DLLEXPORT void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetadataType type);
 
 #define errVersionMismatch -1
 #define errMuxEncodeMetaData -2

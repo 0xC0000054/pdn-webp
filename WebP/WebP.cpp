@@ -65,14 +65,14 @@ static int ProgressReport(int percent, const WebPPicture* picture)
     return 1;
 }
 
-static int EncodeImageMetaData(
+static int EncodeImageMetadata(
     const uint8_t* image,
     const size_t imageSize,
-    const MetaDataParams* metaData,
+    const MetadataParams* metadata,
     const OutputBufferAllocFn outputAllocator,
     void** output)
 {
-    if (image == nullptr || metaData == nullptr || outputAllocator == nullptr || output == nullptr)
+    if (image == nullptr || metadata == nullptr || outputAllocator == nullptr || output == nullptr)
     {
         return VP8_ENC_ERROR_NULL_PARAMETER;
     }
@@ -93,26 +93,26 @@ static int EncodeImageMetaData(
     {
         WebPData chunkData;
 
-        if (metaData->iccProfileSize > 0)
+        if (metadata->iccProfileSize > 0)
         {
-            chunkData.bytes = metaData->iccProfile;
-            chunkData.size = metaData->iccProfileSize;
+            chunkData.bytes = metadata->iccProfile;
+            chunkData.size = metadata->iccProfileSize;
 
             muxError = WebPMuxSetChunk(mux, "ICCP", &chunkData, 1);
         }
 
-        if (muxError == WEBP_MUX_OK && metaData->exifSize > 0)
+        if (muxError == WEBP_MUX_OK && metadata->exifSize > 0)
         {
-            chunkData.bytes = metaData->exif;
-            chunkData.size = metaData->exifSize;
+            chunkData.bytes = metadata->exif;
+            chunkData.size = metadata->exifSize;
 
             muxError = WebPMuxSetChunk(mux, "EXIF", &chunkData, 1);
         }
 
-        if (muxError == WEBP_MUX_OK && metaData->xmpSize > 0)
+        if (muxError == WEBP_MUX_OK && metadata->xmpSize > 0)
         {
-            chunkData.bytes = metaData->xmp;
-            chunkData.size = metaData->xmpSize;
+            chunkData.bytes = metadata->xmp;
+            chunkData.size = metadata->xmpSize;
 
             muxError = WebPMuxSetChunk(mux, "XMP ", &chunkData, 1);
         }
@@ -175,7 +175,7 @@ int __stdcall WebPSave(
     const int height,
     const int stride,
     const EncodeParams* params,
-    const MetaDataParams* metaData,
+    const MetadataParams* metadata,
     ProgressFn callback)
 {
     if (outputAllocator == nullptr)
@@ -246,9 +246,9 @@ int __stdcall WebPSave(
     int error = VP8_ENC_OK;
     if (WebPEncode(&config, &pic) != 0) // C-style Boolean
     {
-        if (metaData != nullptr)
+        if (metadata != nullptr)
         {
-            error = EncodeImageMetaData(wrt.mem, wrt.size, metaData, outputAllocator, output);
+            error = EncodeImageMetadata(wrt.mem, wrt.size, metadata, outputAllocator, output);
         }
         else
         {
@@ -273,7 +273,7 @@ int __stdcall WebPSave(
     return error;
 }
 
-void __stdcall GetMetaDataSize(const uint8_t* data, size_t dataSize, MetaDataType type, uint32_t* outSize)
+void __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, MetadataType type, uint32_t* outSize)
 {
     *outSize = 0;
 
@@ -319,7 +319,7 @@ void __stdcall GetMetaDataSize(const uint8_t* data, size_t dataSize, MetaDataTyp
 
 }
 
-void __stdcall ExtractMetaData(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetaDataType type)
+void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetadataType type)
 {
     WebPData webpData;
     webpData.bytes = data;

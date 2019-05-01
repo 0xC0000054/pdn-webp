@@ -31,7 +31,7 @@ namespace WebPFileType
             NotEnoughData,
         }
 
-        internal enum MetaDataType : int
+        internal enum MetadataType : int
         {
             ColorProfile = 0,
             EXIF,
@@ -68,7 +68,7 @@ namespace WebPFileType
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal sealed class MetaDataParams
+        internal sealed class MetadataParams
         {
             public byte[] iccProfile;
             public uint iccProfileSize;
@@ -77,7 +77,7 @@ namespace WebPFileType
             public byte[] xmp;
             public uint xmpSize;
 
-            public MetaDataParams(byte[] iccProfileBytes, byte[] exifBytes, byte[] xmpBytes)
+            public MetadataParams(byte[] iccProfileBytes, byte[] exifBytes, byte[] xmpBytes)
             {
                 if (iccProfileBytes != null)
                 {
@@ -122,16 +122,16 @@ namespace WebPFileType
                 int height,
                 int stride,
                 EncodeParams parameters,
-                MetaDataParams metaData,
+                MetadataParams metaData,
                 WebPReportProgress callback);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetaDataSize")]
-            public static extern void GetMetaDataSize(byte* iData, UIntPtr iDataSize, MetaDataType type, out uint metaDataSize);
+            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]
+            public static extern void GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type, out uint metadataSize);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetaData")]
-            public static extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, byte* metaDataBytes, uint metaDataSize, MetaDataType type);
+            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
+            public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
         }
 
         [System.Security.SuppressUnmanagedCodeSecurity]
@@ -156,16 +156,16 @@ namespace WebPFileType
                 int height,
                 int stride,
                 EncodeParams parameters,
-                MetaDataParams metaData,
+                MetadataParams metaData,
                 WebPReportProgress callback);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetaDataSize")]
-            public static extern void GetMetaDataSize(byte* iData, UIntPtr iDataSize, MetaDataType type, out uint metaDataSize);
+            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]
+            public static extern void GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type, out uint metadataSize);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetaData")]
-            public static extern void ExtractMetaData(byte* iData, UIntPtr iDataSize, byte* metaDataBytes, uint metaDataSize, MetaDataType type);
+            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
+            public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace WebPFileType
             PinnedByteArrayAllocator outputAllocator,
             Surface input,
             EncodeParams parameters,
-            MetaDataParams metaData,
+            MetadataParams metaData,
             WebPReportProgress callback)
         {
             if (outputAllocator == null)
@@ -291,36 +291,36 @@ namespace WebPFileType
             return outPtr;
         }
 
-        internal static unsafe uint GetMetaDataSize(byte[] data, MetaDataType type)
+        internal static unsafe uint GetMetadataSize(byte[] data, MetadataType type)
         {
-            uint metaDataSize;
+            uint metadataSize;
 
             fixed (byte* ptr = data)
             {
                 if (IntPtr.Size == 8)
                 {
-                    WebP_64.GetMetaDataSize(ptr, new UIntPtr((ulong)data.Length), type, out metaDataSize);
+                    WebP_64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type, out metadataSize);
                 }
                 else
                 {
-                    WebP_32.GetMetaDataSize(ptr, new UIntPtr((ulong)data.Length), type, out metaDataSize);
+                    WebP_32.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type, out metadataSize);
                 }
             }
 
-            return metaDataSize;
+            return metadataSize;
         }
 
-        internal static unsafe void ExtractMetadata(byte[] data, MetaDataType type, byte[] outData, uint outSize)
+        internal static unsafe void ExtractMetadata(byte[] data, MetadataType type, byte[] outData, uint outSize)
         {
             fixed (byte* ptr = data, outPtr = outData)
             {
                 if (IntPtr.Size == 8)
                 {
-                    WebP_64.ExtractMetaData(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
+                    WebP_64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
                 else
                 {
-                    WebP_32.ExtractMetaData(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
+                    WebP_32.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
             }
         }

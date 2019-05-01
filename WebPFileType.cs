@@ -47,7 +47,7 @@ namespace WebPFileType
             return new FileType[] { new WebPFileType()};
         }
 
-        private static string GetMetaDataBase64(byte[] data, WebPFile.MetaDataType type, uint metaDataSize)
+        private static string GetMetaDataBase64(byte[] data, WebPFile.MetadataType type, uint metaDataSize)
         {
             byte[] bytes = new byte[metaDataSize];
             WebPFile.ExtractMetadata(data, type, bytes, metaDataSize);
@@ -91,24 +91,24 @@ namespace WebPFileType
                     }
                 }
 
-                uint colorProfileSize = WebPFile.GetMetaDataSize(bytes, WebPFile.MetaDataType.ColorProfile);
+                uint colorProfileSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.ColorProfile);
                 if (colorProfileSize > 0U)
                 {
-                    string icc = GetMetaDataBase64(bytes, WebPFile.MetaDataType.ColorProfile, colorProfileSize);
+                    string icc = GetMetaDataBase64(bytes, WebPFile.MetadataType.ColorProfile, colorProfileSize);
                     doc.Metadata.SetUserValue(WebPColorProfile, icc);
                 }
 
-                uint exifSize = WebPFile.GetMetaDataSize(bytes, WebPFile.MetaDataType.EXIF);
+                uint exifSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.EXIF);
                 if (exifSize > 0)
                 {
-                    string exif = GetMetaDataBase64(bytes, WebPFile.MetaDataType.EXIF, exifSize);
+                    string exif = GetMetaDataBase64(bytes, WebPFile.MetadataType.EXIF, exifSize);
                     doc.Metadata.SetUserValue(WebPEXIF, exif);
                 }
 
-                uint xmpSize = WebPFile.GetMetaDataSize(bytes, WebPFile.MetaDataType.XMP);
+                uint xmpSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.XMP);
                 if (xmpSize > 0U)
                 {
-                    string xmp = GetMetaDataBase64(bytes, WebPFile.MetaDataType.XMP, xmpSize);
+                    string xmp = GetMetaDataBase64(bytes, WebPFile.MetadataType.XMP, xmpSize);
                     doc.Metadata.SetUserValue(WebPXMP, xmp);
                 }
             }
@@ -244,7 +244,7 @@ namespace WebPFileType
             return items;
         }
 
-        private static WebPFile.MetaDataParams GetMetaData(Document doc, Surface scratchSurface)
+        private static WebPFile.MetadataParams GetMetaData(Document doc, Surface scratchSurface)
         {
             byte[] iccProfileBytes = null;
             byte[] exifBytes = null;
@@ -304,7 +304,7 @@ namespace WebPFileType
 
             if (iccProfileBytes != null || exifBytes != null || xmpBytes != null)
             {
-                return new WebPFile.MetaDataParams(iccProfileBytes, exifBytes, xmpBytes);
+                return new WebPFile.MetadataParams(iccProfileBytes, exifBytes, xmpBytes);
             }
 
             return null;
@@ -335,7 +335,7 @@ namespace WebPFileType
 
             using (PinnedByteArrayAllocator allocator = new PinnedByteArrayAllocator())
             {
-                WebPFile.MetaDataParams metaData = null;
+                WebPFile.MetadataParams metaData = null;
                 if (keepMetadata)
                 {
                     metaData = GetMetaData(input, scratchSurface);
