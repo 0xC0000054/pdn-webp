@@ -47,12 +47,12 @@ namespace WebPFileType
             return new FileType[] { new WebPFileType()};
         }
 
-        private static string GetMetaDataBase64(byte[] data, WebPFile.MetadataType type, uint metaDataSize)
+        private static byte[] GetMetaDataBytes(byte[] data, WebPFile.MetadataType type, uint metaDataSize)
         {
             byte[] bytes = new byte[metaDataSize];
             WebPFile.ExtractMetadata(data, type, bytes, metaDataSize);
 
-            return Convert.ToBase64String(bytes, Base64FormattingOptions.None);
+            return bytes;
         }
 
         protected override Document OnLoad(Stream input)
@@ -94,22 +94,29 @@ namespace WebPFileType
                 uint colorProfileSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.ColorProfile);
                 if (colorProfileSize > 0U)
                 {
-                    string icc = GetMetaDataBase64(bytes, WebPFile.MetadataType.ColorProfile, colorProfileSize);
-                    doc.Metadata.SetUserValue(WebPColorProfile, icc);
+                    byte[] iccBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.ColorProfile, colorProfileSize);
+
+                    PropertyItem colorProfileItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
+                    colorProfileItem.Id = unchecked((ushort)ExifTagID.IccProfileData);
+                    colorProfileItem.Type = (short)ExifTagType.Undefined;
+                    colorProfileItem.Len = iccBytes.Length;
+                    colorProfileItem.Value = iccBytes.CloneT();
+
+                    doc.Metadata.AddExifValues(new PropertyItem[] { colorProfileItem });
                 }
 
                 uint exifSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.EXIF);
                 if (exifSize > 0)
                 {
-                    string exif = GetMetaDataBase64(bytes, WebPFile.MetadataType.EXIF, exifSize);
-                    doc.Metadata.SetUserValue(WebPEXIF, exif);
+                    byte[] exifBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.EXIF, exifSize);
+                    doc.Metadata.SetUserValue(WebPEXIF, Convert.ToBase64String(exifBytes, Base64FormattingOptions.None));
                 }
 
                 uint xmpSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.XMP);
                 if (xmpSize > 0U)
                 {
-                    string xmp = GetMetaDataBase64(bytes, WebPFile.MetadataType.XMP, xmpSize);
-                    doc.Metadata.SetUserValue(WebPXMP, xmp);
+                    byte[] xmpBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.XMP, xmpSize);
+                    doc.Metadata.SetUserValue(WebPXMP, Convert.ToBase64String(xmpBytes, Base64FormattingOptions.None));
                 }
             }
 
