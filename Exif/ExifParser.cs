@@ -1,0 +1,558 @@
+﻿////////////////////////////////////////////////////////////////////////
+//
+// This file is part of pdn-webp, a FileType plugin for Paint.NET
+// that loads and saves WebP images.
+//
+// Copyright (c) 2011-2019 Nicholas Hayes
+//
+// This file is licensed under the MIT License.
+// See LICENSE.txt for complete licensing and attribution information.
+//
+////////////////////////////////////////////////////////////////////////
+
+using System;
+using System.Collections.Generic;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.IO;
+using System.Text;
+
+namespace WebPFileType.Exif
+{
+    internal static class ExifParser
+    {
+        private const ushort TiffSignature = 42;
+        private const ushort ExifIFDTag = 34665;
+        private const ushort GpsIFDTag = 34853;
+        private const ushort InteropIFDTag = 40965;
+
+        private enum TagDataType : ushort
+        {
+            Byte = 1,
+            Ascii = 2,
+            Short = 3,
+            Long = 4,
+            Rational = 5,
+            SByte = 6,
+            Undefined = 7,
+            SShort = 8,
+            SLong = 9,
+            SRational = 10,
+            Float = 11,
+            Double = 12
+        }
+
+        internal static List<PropertyItem> Parse(byte[] exifBytes)
+        {
+            List<PropertyItem> propertyItems = new List<PropertyItem>();
+
+            MemoryStream stream = null;
+            try
+            {
+                stream = new MemoryStream(exifBytes);
+
+                Endianess? byteOrder = TryDetectTiffByteOrder(stream);
+
+                if (byteOrder.HasValue)
+                {
+                    using (EndianBinaryReader reader = new EndianBinaryReader(stream, byteOrder.Value))
+                    {
+                        stream = null;
+
+                        ushort signature = reader.ReadUInt16();
+
+                        if (signature == TiffSignature)
+                        {
+                            uint ifdOffset = reader.ReadUInt32();
+
+                            List<IFDEntry> entries = ParseDirectories(reader, ifdOffset);
+
+                            propertyItems.AddRange(ConvertIFDEntriesToPropertyItems(reader, entries));
+                        }
+                    }
+                }
+            }
+            catch (EndOfStreamException)
+            {
+            }
+            finally
+            {
+                stream?.Dispose();
+            }
+
+            return propertyItems;
+        }
+
+        private static Endianess? TryDetectTiffByteOrder(Stream stream)
+        {
+            int byte1 = stream.ReadByte();
+            if (byte1 == -1)
+            {
+                return null;
+            }
+
+            int byte2 = stream.ReadByte();
+            if (byte2 == -1)
+            {
+                return null;
+            }
+
+            if (byte1 == 0x4D && byte2 == 0x4D)
+            {
+                return Endianess.Big;
+            }
+            else if (byte1 == 0x49 && byte2 == 0x49)
+            {
+                return Endianess.Little;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private static ICollection<PropertyItem> ConvertIFDEntriesToPropertyItems(EndianBinaryReader reader, List<IFDEntry> entries)
+        {
+            List<PropertyItem> propertyItems = new List<PropertyItem>(entries.Count);
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                IFDEntry entry = entries[i];
+
+                if (!TagDataTypeUtil.IsKnownType(entry.Type))
+                {
+                    continue;
+                }
+
+                byte[] propertyData;
+                if (entry.OffsetFieldContainsValue)
+                {
+                    propertyData = entry.GetValueBytesFromOffset();
+                    if (propertyData == null)
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    long bytesToRead = entry.Count * TagDataTypeUtil.GetSizeInBytes(entry.Type);
+
+                    // Skip any tags that are empty or larger than 2 GB.
+                    if (bytesToRead == 0 || bytesToRead > int.MaxValue)
+                    {
+                        continue;
+                    }
+
+                    uint offset = entry.Offset;
+
+                    if ((offset + bytesToRead) > reader.Length)
+                    {
+                        continue;
+                    }
+
+                    reader.Position = offset;
+
+                    propertyData = reader.ReadBytes((int)bytesToRead);
+                }
+
+                PropertyItem propertyItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
+                propertyItem.Id = entry.Tag;
+                propertyItem.Type = (short)entry.Type;
+                propertyItem.Len = propertyData.Length;
+                propertyItem.Value = (byte[])propertyData.Clone();
+
+                propertyItems.Add(propertyItem);
+            }
+
+            return propertyItems;
+        }
+
+        private static List<IFDEntry> ParseDirectories(EndianBinaryReader reader, uint firstIFDOffset)
+        {
+            List<IFDEntry> items = new List<IFDEntry>();
+
+            bool foundExif = false;
+            bool foundGps = false;
+            bool foundInterop = false;
+
+            Queue<uint> ifdOffsets = new Queue<uint>();
+            ifdOffsets.Enqueue(firstIFDOffset);
+
+            while (ifdOffsets.Count > 0)
+            {
+                uint offset = ifdOffsets.Dequeue();
+
+                if (offset >= reader.Length)
+                {
+                    continue;
+                }
+
+                reader.Position = offset;
+
+                ushort count = reader.ReadUInt16();
+                if (count == 0)
+                {
+                    continue;
+                }
+
+                items.Capacity += count;
+
+                for (int i = 0; i < count; i++)
+                {
+                    IFDEntry entry = new IFDEntry(reader);
+
+                    switch (entry.Tag)
+                    {
+                        case ExifIFDTag:
+                            if (!foundExif)
+                            {
+                                foundExif = true;
+                                ifdOffsets.Enqueue(entry.Offset);
+                            }
+                            break;
+                        case GpsIFDTag:
+                            if (!foundGps)
+                            {
+                                foundGps = true;
+                                ifdOffsets.Enqueue(entry.Offset);
+                            }
+                            break;
+                        case InteropIFDTag:
+                            if (!foundInterop)
+                            {
+                                foundInterop = true;
+                                ifdOffsets.Enqueue(entry.Offset);
+                            }
+                            break;
+                        default:
+                            items.Add(entry);
+                            break;
+                    }
+
+                    System.Diagnostics.Debug.WriteLine(entry.ToString());
+                }
+            }
+
+            return items;
+        }
+
+        private readonly struct IFDEntry
+        {
+#pragma warning disable IDE0032 // Use auto property
+            private readonly ushort tag;
+            private readonly TagDataType type;
+            private readonly uint count;
+            private readonly uint offset;
+#pragma warning restore IDE0032 // Use auto property
+
+            public IFDEntry(EndianBinaryReader reader)
+            {
+                tag = reader.ReadUInt16();
+                type = (TagDataType)reader.ReadUInt16();
+                count = reader.ReadUInt32();
+                offset = reader.ReadUInt32();
+            }
+
+            public ushort Tag => tag;
+
+            public TagDataType Type => type;
+
+            public uint Count => count;
+
+            public uint Offset => offset;
+
+            public bool OffsetFieldContainsValue
+            {
+                get
+                {
+                    switch (type)
+                    {
+                        case TagDataType.Byte:
+                        case TagDataType.Ascii:
+                        case TagDataType.Undefined:
+                        case TagDataType.SByte:
+                            return count <= 4;
+                        case TagDataType.Short:
+                        case TagDataType.SShort:
+                            return count <= 2;
+                        case TagDataType.Long:
+                        case TagDataType.SLong:
+                        case TagDataType.Float:
+                            return count == 1;
+                        case TagDataType.Rational:
+                        case TagDataType.SRational:
+                        case TagDataType.Double:
+                        default:
+                            return false;
+                    }
+                }
+            }
+
+            public unsafe byte[] GetValueBytesFromOffset()
+            {
+                if (!OffsetFieldContainsValue)
+                {
+                    return null;
+                }
+
+                // GDI+ always stores data in little-endian byte order.
+                byte[] bytes;
+                if (type == TagDataType.Byte ||
+                    type == TagDataType.Ascii ||
+                    type == TagDataType.SByte ||
+                    type == TagDataType.Undefined)
+                {
+                    bytes = new byte[count];
+
+                    switch (count)
+                    {
+                        case 1:
+                            bytes[0] = (byte)(offset & 0x000000ff);
+                            break;
+                        case 2:
+                            bytes[0] = (byte)(offset & 0x000000ff);
+                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                            break;
+                        case 3:
+                            bytes[0] = (byte)(offset & 0x000000ff);
+                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                            bytes[2] = (byte)((offset >> 16) & 0x000000ff);
+                            break;
+                        case 4:
+                            bytes[0] = (byte)(offset & 0x000000ff);
+                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                            bytes[2] = (byte)((offset >> 16) & 0x000000ff);
+                            bytes[3] = (byte)((offset >> 24) & 0x000000ff);
+                            break;
+                    }
+                }
+                else
+                {
+                    if (type == TagDataType.Short || type == TagDataType.SShort)
+                    {
+                        int byteArrayLength = unchecked((int)count) * sizeof(ushort);
+                        bytes = new byte[byteArrayLength];
+
+                        fixed (byte* ptr = bytes)
+                        {
+                            ushort* ushortPtr = (ushort*)ptr;
+
+                            switch (count)
+                            {
+                                case 1:
+                                    ushortPtr[0] = (ushort)(offset & 0x0000ffff);
+                                    break;
+                                case 2:
+                                    ushortPtr[0] = (ushort)((offset >> 16) & 0x0000ffff);
+                                    ushortPtr[1] = (ushort)(offset & 0x0000ffff);
+                                    break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        bytes = BitConverter.GetBytes(offset);
+                    }
+                }
+
+                return bytes;
+            }
+
+            public override string ToString()
+            {
+                if (OffsetFieldContainsValue)
+                {
+
+
+                    return string.Format("Tag={0}, Type={1}, Count={2}, Value={3}",
+                                         tag.ToString(CultureInfo.InvariantCulture),
+                                         type.ToString(),
+                                         count.ToString(CultureInfo.InvariantCulture),
+                                         GetValueStringFromOffset());
+                }
+                else
+                {
+                    return string.Format("Tag={0}, Type={1}, Count={2}, Offset=0x{3}",
+                                         tag.ToString(CultureInfo.InvariantCulture),
+                                         type.ToString(),
+                                         count.ToString(CultureInfo.InvariantCulture),
+                                         offset.ToString("X", CultureInfo.InvariantCulture));
+                }
+            }
+
+            private string GetValueStringFromOffset()
+            {
+                string valueString;
+
+                int typeSizeInBytes = TagDataTypeUtil.GetSizeInBytes(type);
+
+                if (typeSizeInBytes == 1)
+                {
+                    byte[] bytes = new byte[count];
+
+                    switch (count)
+                    {
+                        case 1:
+                            bytes[0] = (byte)(offset & 0x000000ff);
+                            break;
+                        case 2:
+                            bytes[0] = (byte)(offset & 0x000000ff);
+                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                            break;
+                        case 3:
+                            bytes[0] = (byte)(offset & 0x000000ff);
+                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                            bytes[2] = (byte)((offset >> 16) & 0x000000ff);
+                            break;
+                        case 4:
+                            bytes[0] = (byte)(offset & 0x000000ff);
+                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                            bytes[2] = (byte)((offset >> 16) & 0x000000ff);
+                            bytes[3] = (byte)((offset >> 24) & 0x000000ff);
+                            break;
+                    }
+
+                    if (type == TagDataType.Ascii)
+                    {
+                        valueString = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
+                    }
+                    else if (count == 1)
+                    {
+                        valueString = bytes[0].ToString(CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        StringBuilder builder = new StringBuilder();
+
+                        uint lastItemIndex = count - 1;
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            builder.Append(bytes[i].ToString(CultureInfo.InvariantCulture));
+
+                            if (i < lastItemIndex)
+                            {
+                                builder.Append(",");
+                            }
+                        }
+
+                        valueString = builder.ToString();
+                    }
+                }
+                else if (typeSizeInBytes == 2)
+                {
+                    ushort[] values = new ushort[count];
+                    switch (count)
+                    {
+                        case 1:
+                            values[0] = (ushort)(offset & 0x0000ffff);
+                            break;
+                        case 2:
+                            values[0] = (ushort)((offset >> 16) & 0x0000ffff);
+                            values[1] = (ushort)(offset & 0x0000ffff);
+                            break;
+                    }
+
+                    if (count == 1)
+                    {
+                        switch (type)
+                        {
+                            case TagDataType.SShort:
+                                valueString = ((short)values[0]).ToString(CultureInfo.InvariantCulture);
+                                break;
+                            case TagDataType.Short:
+                            default:
+                                valueString = values[0].ToString(CultureInfo.InvariantCulture);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (type)
+                        {
+                            case TagDataType.SShort:
+                                valueString = ((short)values[0]).ToString(CultureInfo.InvariantCulture) + "," +
+                                              ((short)values[1]).ToString(CultureInfo.InvariantCulture);
+                                break;
+                            case TagDataType.Short:
+                            default:
+                                valueString = values[0].ToString(CultureInfo.InvariantCulture) + "," +
+                                              values[1].ToString(CultureInfo.InvariantCulture);
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    valueString = offset.ToString(CultureInfo.InvariantCulture);
+                }
+
+                return valueString;
+            }
+        }
+
+        private static class TagDataTypeUtil
+        {
+            /// <summary>
+            /// Determines whether the <see cref="TagDataType"/> uses a known value.
+            /// </summary>
+            /// <param name="type">The tag type.</param>
+            /// <returns>
+            /// <see langword="true"/> if the tag type is a known value; otherwise, <see langword="false"/>.
+            /// </returns>
+            public static bool IsKnownType(TagDataType type)
+            {
+                switch (type)
+                {
+                    case TagDataType.Byte:
+                    case TagDataType.Ascii:
+                    case TagDataType.Short:
+                    case TagDataType.Long:
+                    case TagDataType.Rational:
+                    case TagDataType.SByte:
+                    case TagDataType.Undefined:
+                    case TagDataType.SShort:
+                    case TagDataType.SLong:
+                    case TagDataType.SRational:
+                    case TagDataType.Float:
+                    case TagDataType.Double:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            /// <summary>
+            /// Gets the size in bytes of a <see cref="TagDataType"/> value.
+            /// </summary>
+            /// <param name="type">The tag type.</param>
+            /// <returns>
+            /// The size of the value in bytes.
+            /// </returns>
+            public static int GetSizeInBytes(TagDataType type)
+            {
+                switch (type)
+                {
+                    case TagDataType.Byte:
+                    case TagDataType.Ascii:
+                    case TagDataType.Undefined:
+                    case TagDataType.SByte:
+                        return 1;
+                    case TagDataType.Short:
+                    case TagDataType.SShort:
+                        return 2;
+                    case TagDataType.Long:
+                    case TagDataType.SLong:
+                    case TagDataType.Float:
+                        return 4;
+                    case TagDataType.Rational:
+                    case TagDataType.SRational:
+                    case TagDataType.Double:
+                        return 8;
+                    default:
+                        return 0;
+                }
+            }
+        }
+    }
+}

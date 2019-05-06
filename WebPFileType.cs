@@ -20,6 +20,7 @@ using PaintDotNet;
 using PaintDotNet.IndirectUI;
 using PaintDotNet.IO;
 using PaintDotNet.PropertySystem;
+using WebPFileType.Exif;
 using WebPFileType.Properties;
 
 namespace WebPFileType
@@ -109,7 +110,15 @@ namespace WebPFileType
                 if (exifSize > 0)
                 {
                     byte[] exifBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.EXIF, exifSize);
-                    doc.Metadata.SetUserValue(WebPEXIF, Convert.ToBase64String(exifBytes, Base64FormattingOptions.None));
+                    List<PropertyItem> propertyItems = ExifParser.Parse(exifBytes);
+
+                    if (propertyItems.Count > 0)
+                    {
+                        foreach (PropertyItem item in propertyItems)
+                        {
+                            doc.Metadata.AddExifValues(new PropertyItem[] { item });
+                        }
+                    }
                 }
 
                 uint xmpSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.XMP);

@@ -92,6 +92,9 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exif\EndianBinaryReader.cs" />
+    <Compile Include="Exif\Endianess.cs" />
+    <Compile Include="Exif\ExifParser.cs" />
     <Compile Include="JPEGReader.cs" />
     <Compile Include="PinnedByteArrayAllocator.cs" />
     <Compile Include="PluginSupportInfo.cs" />
