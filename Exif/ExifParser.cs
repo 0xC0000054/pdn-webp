@@ -115,6 +115,7 @@ namespace WebPFileType.Exif
         private static ICollection<PropertyItem> ConvertIFDEntriesToPropertyItems(EndianBinaryReader reader, List<IFDEntry> entries)
         {
             List<PropertyItem> propertyItems = new List<PropertyItem>(entries.Count);
+            bool swapNumberByteOrder = reader.Endianess == Endianess.Big;
 
             for (int i = 0; i < entries.Count; i++)
             {
@@ -154,6 +155,36 @@ namespace WebPFileType.Exif
                     reader.Position = offset;
 
                     propertyData = reader.ReadBytes((int)bytesToRead);
+
+                    if (swapNumberByteOrder)
+                    {
+                        // GDI+ converts all multi-byte numbers to little-endian when creating a PropertyItem.
+                        switch (entry.Type)
+                        {
+                            case TagDataType.Short:
+                            case TagDataType.SShort:
+                                propertyData = SwapShortArrayToLittleEndian(propertyData, entry.Count);
+                                break;
+                            case TagDataType.Long:
+                            case TagDataType.SLong:
+                            case TagDataType.Float:
+                                propertyData = SwapLongArrayToLittleEndian(propertyData, entry.Count);
+                                break;
+                            case TagDataType.Rational:
+                            case TagDataType.SRational:
+                                propertyData = SwapRationalArrayToLittleEndian(propertyData, entry.Count);
+                                break;
+                            case TagDataType.Double:
+                                propertyData = SwapDoubleArrayToLittleEndian(propertyData, entry.Count);
+                                break;
+                            case TagDataType.Byte:
+                            case TagDataType.Ascii:
+                            case TagDataType.Undefined:
+                            case TagDataType.SByte:
+                            default:
+                                break;
+                        }
+                    }
                 }
 
                 PropertyItem propertyItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
@@ -235,6 +266,77 @@ namespace WebPFileType.Exif
             }
 
             return items;
+        }
+
+        private static unsafe byte[] SwapShortArrayToLittleEndian(byte[] values, uint count)
+        {
+            fixed (byte* pBytes = values)
+            {
+                ushort* ptr = (ushort*)pBytes;
+                ushort* ptrEnd = ptr + count;
+
+                while (ptr < ptrEnd)
+                {
+                    *ptr = EndianUtil.Swap(*ptr);
+                    ptr++;
+                }
+            }
+
+            return values;
+        }
+
+        private static unsafe byte[] SwapLongArrayToLittleEndian(byte[] values, uint count)
+        {
+            fixed (byte* pBytes = values)
+            {
+                uint* ptr = (uint*)pBytes;
+                uint* ptrEnd = ptr + count;
+
+                while (ptr < ptrEnd)
+                {
+                    *ptr = EndianUtil.Swap(*ptr);
+                    ptr++;
+                }
+            }
+
+            return values;
+        }
+
+        private static unsafe byte[] SwapRationalArrayToLittleEndian(byte[] values, uint count)
+        {
+            // A rational value consists of two 4-byte values, a numerator and a denominator.
+            long itemCount = count * 2;
+
+            fixed (byte* pBytes = values)
+            {
+                uint* ptr = (uint*)pBytes;
+                uint* ptrEnd = ptr + itemCount;
+
+                while (ptr < ptrEnd)
+                {
+                    *ptr = EndianUtil.Swap(*ptr);
+                    ptr++;
+                }
+            }
+
+            return values;
+        }
+
+        private static unsafe byte[] SwapDoubleArrayToLittleEndian(byte[] values, uint count)
+        {
+            fixed (byte* pBytes = values)
+            {
+                ulong* ptr = (ulong*)pBytes;
+                ulong* ptrEnd = ptr + count;
+
+                while (ptr < ptrEnd)
+                {
+                    *ptr = EndianUtil.Swap(*ptr);
+                    ptr++;
+                }
+            }
+
+            return values;
         }
 
         private readonly struct IFDEntry
