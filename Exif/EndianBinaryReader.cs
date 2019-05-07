@@ -475,11 +475,28 @@ namespace WebPFileType.Exif
             return (((ulong)hi) << 32) | lo;
         }
 
+        /// <summary>
+        /// Reads an ASCII string from the stream.
+        /// </summary>
+        /// <param name="length">The length of the string.</param>
+        /// <returns>The string.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
+        /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
+        /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         public string ReadAsciiString(int length)
         {
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
             if (stream == null)
             {
                 throw new ObjectDisposedException(nameof(EndianBinaryReader));
+            }
+
+            if (length == 0)
+            {
+                return string.Empty;
             }
 
             if ((readOffset + length) > readLength)
