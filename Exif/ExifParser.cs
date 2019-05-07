@@ -362,8 +362,6 @@ namespace WebPFileType.Exif
             {
                 if (OffsetFieldContainsValue)
                 {
-
-
                     return string.Format("Tag={0}, Type={1}, Count={2}, Value={3}",
                                          tag.ToString(CultureInfo.InvariantCulture),
                                          type.ToString(),
