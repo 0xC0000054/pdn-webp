@@ -194,9 +194,9 @@ namespace WebPFileType
         /// The WebP load function.
         /// </summary>
         /// <param name="data">The input image data</param>
-        /// <param name="output">The output surface.</param>
+        /// <param name="output">The output BitmapData.</param>
         /// <returns>VP8StatusCode.Ok on success.</returns>
-        internal static unsafe VP8StatusCode WebPLoad(byte[] data, Surface output)
+        internal static unsafe VP8StatusCode WebPLoad(byte[] data, System.Drawing.Imaging.BitmapData output)
         {
             fixed (byte* ptr = data)
             {
@@ -204,11 +204,11 @@ namespace WebPFileType
                 ulong outputSize = (ulong)stride * (ulong)output.Height;
                 if (IntPtr.Size == 8)
                 {
-                    return WebP_64.WebPLoad(ptr, new UIntPtr((ulong)data.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
+                    return WebP_64.WebPLoad(ptr, new UIntPtr((ulong)data.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
                 }
                 else
                 {
-                    return WebP_32.WebPLoad(ptr, new UIntPtr((ulong)data.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
+                    return WebP_32.WebPLoad(ptr, new UIntPtr((ulong)data.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
                 }
             }
         }

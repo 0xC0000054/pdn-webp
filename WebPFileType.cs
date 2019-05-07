@@ -56,11 +56,9 @@ namespace WebPFileType
             return bytes;
         }
 
-        protected override Document OnLoad(Stream input)
+        private static Document GetOrientedDocument(byte[] bytes, out List<PropertyItem> exifMetadata)
         {
-            byte[] bytes = new byte[input.Length];
-
-            input.ProperRead(bytes, 0, (int)input.Length);
+            exifMetadata = null;
 
             int width;
             int height;
@@ -69,67 +67,104 @@ namespace WebPFileType
                 throw new WebPException(Resources.InvalidWebPImage);
             }
 
-            Document doc = new Document(width, height);
-            BitmapLayer layer = Layer.CreateBackgroundLayer(width, height);
+            Document doc = null;
 
-            unsafe
+            // Load the image into a Bitmap so the EXIF orientation transform can be applied.
+
+            using (Bitmap image = new Bitmap(width, height, PixelFormat.Format32bppArgb))
             {
-                WebPFile.VP8StatusCode status = WebPFile.WebPLoad(bytes, layer.Surface);
-                if (status != WebPFile.VP8StatusCode.Ok)
+                BitmapData bitmapData = image.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+                try
                 {
-                    switch (status)
+                    WebPFile.VP8StatusCode status = WebPFile.WebPLoad(bytes, bitmapData);
+                    if (status != WebPFile.VP8StatusCode.Ok)
                     {
-                        case WebPFile.VP8StatusCode.OutOfMemory:
-                            throw new OutOfMemoryException();
-                        case WebPFile.VP8StatusCode.InvalidParam:
-                            throw new WebPException(Resources.InvalidParameter);
-                        case WebPFile.VP8StatusCode.BitStreamError:
-                        case WebPFile.VP8StatusCode.UnsupportedFeature:
-                        case WebPFile.VP8StatusCode.NotEnoughData:
-                            throw new WebPException(Resources.InvalidWebPImage);
-                        default:
-                            break;
+                        switch (status)
+                        {
+                            case WebPFile.VP8StatusCode.OutOfMemory:
+                                throw new OutOfMemoryException();
+                            case WebPFile.VP8StatusCode.InvalidParam:
+                                throw new WebPException(Resources.InvalidParameter);
+                            case WebPFile.VP8StatusCode.BitStreamError:
+                            case WebPFile.VP8StatusCode.UnsupportedFeature:
+                            case WebPFile.VP8StatusCode.NotEnoughData:
+                                throw new WebPException(Resources.InvalidWebPImage);
+                            default:
+                                break;
+                        }
                     }
                 }
-
-                uint colorProfileSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.ColorProfile);
-                if (colorProfileSize > 0U)
+                finally
                 {
-                    byte[] iccBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.ColorProfile, colorProfileSize);
-
-                    PropertyItem colorProfileItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
-                    colorProfileItem.Id = unchecked((ushort)ExifTagID.IccProfileData);
-                    colorProfileItem.Type = (short)ExifTagType.Undefined;
-                    colorProfileItem.Len = iccBytes.Length;
-                    colorProfileItem.Value = iccBytes.CloneT();
-
-                    doc.Metadata.AddExifValues(new PropertyItem[] { colorProfileItem });
+                    image.UnlockBits(bitmapData);
                 }
 
                 uint exifSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.EXIF);
                 if (exifSize > 0)
                 {
                     byte[] exifBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.EXIF, exifSize);
-                    List<PropertyItem> propertyItems = ExifParser.Parse(exifBytes);
+                    exifMetadata = ExifParser.Parse(exifBytes);
 
-                    if (propertyItems.Count > 0)
+                    if (exifMetadata.Count > 0)
                     {
-                        foreach (PropertyItem item in propertyItems)
+                        const int OrientationId = (int)ExifTagID.Orientation;
+
+                        PropertyItem item = exifMetadata.Find(p => p.Id == OrientationId);
+                        if (item != null)
                         {
-                            doc.Metadata.AddExifValues(new PropertyItem[] { item });
+                            RotateFlipType transform = PropertyItemHelpers.GetOrientationTransform(item);
+                            if (transform != RotateFlipType.RotateNoneFlipNone)
+                            {
+                                image.RotateFlip(transform);
+                            }
+                            exifMetadata.RemoveAll(p => p.Id == OrientationId);
                         }
                     }
                 }
 
-                uint xmpSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.XMP);
-                if (xmpSize > 0U)
+                doc = Document.FromGdipImage(image);
+            }
+
+            return doc;
+        }
+
+        protected override Document OnLoad(Stream input)
+        {
+            byte[] bytes = new byte[input.Length];
+
+            input.ProperRead(bytes, 0, (int)input.Length);
+
+            Document doc = GetOrientedDocument(bytes, out List<PropertyItem> exifMetadata);
+
+            uint colorProfileSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.ColorProfile);
+            if (colorProfileSize > 0U)
+            {
+                byte[] iccBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.ColorProfile, colorProfileSize);
+
+                PropertyItem colorProfileItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
+                colorProfileItem.Id = unchecked((ushort)ExifTagID.IccProfileData);
+                colorProfileItem.Type = (short)ExifTagType.Undefined;
+                colorProfileItem.Len = iccBytes.Length;
+                colorProfileItem.Value = iccBytes.CloneT();
+
+                doc.Metadata.AddExifValues(new PropertyItem[] { colorProfileItem });
+            }
+
+            if (exifMetadata != null)
+            {
+                foreach (PropertyItem item in exifMetadata)
                 {
-                    byte[] xmpBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.XMP, xmpSize);
-                    doc.Metadata.SetUserValue(WebPXMP, Convert.ToBase64String(xmpBytes, Base64FormattingOptions.None));
+                    doc.Metadata.AddExifValues(new PropertyItem[] { item });
                 }
             }
 
-            doc.Layers.Add(layer);
+            uint xmpSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.XMP);
+            if (xmpSize > 0U)
+            {
+                byte[] xmpBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.XMP, xmpSize);
+                doc.Metadata.SetUserValue(WebPXMP, Convert.ToBase64String(xmpBytes, Base64FormattingOptions.None));
+            }
 
             return doc;
         }
