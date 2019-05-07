@@ -62,6 +62,20 @@ namespace WebPFileType
             return bytes;
         }
 
+        private static PropertyItem GetAndRemoveExifValue(ref List<PropertyItem> exifMetadata, ExifTagID tag)
+        {
+            int tagID = unchecked((ushort)tag);
+
+            PropertyItem value = exifMetadata.Find(p => p.Id == tagID);
+
+            if (value != null)
+            {
+                exifMetadata.RemoveAll(p => p.Id == tagID);
+            }
+
+            return value;
+        }
+
         private static Document GetOrientedDocument(byte[] bytes, out List<PropertyItem> exifMetadata)
         {
             exifMetadata = null;
@@ -113,9 +127,7 @@ namespace WebPFileType
 
                     if (exifMetadata.Count > 0)
                     {
-                        const int OrientationId = (int)ExifTagID.Orientation;
-
-                        PropertyItem item = exifMetadata.Find(p => p.Id == OrientationId);
+                        PropertyItem item = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.Orientation);
                         if (item != null)
                         {
                             RotateFlipType transform = PropertyItemHelpers.GetOrientationTransform(item);
@@ -123,7 +135,6 @@ namespace WebPFileType
                             {
                                 image.RotateFlip(transform);
                             }
-                            exifMetadata.RemoveAll(p => p.Id == OrientationId);
                         }
                     }
                 }
@@ -156,6 +167,33 @@ namespace WebPFileType
 
             if (exifMetadata != null)
             {
+                // Set the resolution manually as Paint.NET will not use the correct values
+                // when loading from the bitmap.
+                PropertyItem xResProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.XResolution);
+                PropertyItem yResProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.YResolution);
+                PropertyItem resUnitProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.ResolutionUnit);
+                if (xResProperty != null && yResProperty != null && resUnitProperty != null)
+                {
+                    double xRes, yRes;
+                    ushort resUnit;
+
+                    if (PropertyItemHelpers.TryDecodeRational(xResProperty, out xRes) &&
+                        PropertyItemHelpers.TryDecodeRational(yResProperty, out yRes) &&
+                        PropertyItemHelpers.TryDecodeShort(resUnitProperty, out resUnit))
+                    {
+                        if (xRes > 0.0 && yRes > 0.0)
+                        {
+                            MeasurementUnit measurementUnit = (MeasurementUnit)resUnit;
+                            if (measurementUnit == MeasurementUnit.Inch || measurementUnit == MeasurementUnit.Centimeter)
+                            {
+                                doc.DpuX = xRes;
+                                doc.DpuY = yRes;
+                                doc.DpuUnit = measurementUnit;
+                            }
+                        }
+                    }
+                }
+
                 foreach (PropertyItem item in exifMetadata)
                 {
                     doc.Metadata.AddExifValues(new PropertyItem[] { item });

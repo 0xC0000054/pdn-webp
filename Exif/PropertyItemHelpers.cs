@@ -64,5 +64,38 @@ namespace WebPFileType.Exif
 
             return transform;
         }
+
+        internal static bool TryDecodeRational(PropertyItem propertyItem, out double value)
+        {
+            if (propertyItem.Type != (int)PaintDotNet.ExifTagType.Rational)
+            {
+                value = 0.0;
+                return false;
+            }
+
+            PaintDotNet.Exif.DecodeRationalValue(propertyItem, out uint numerator, out uint denominator);
+
+            if (denominator == 0)
+            {
+                // Avoid division by zero.
+                value = 0.0;
+                return false;
+            }
+
+            value = (double)numerator / denominator;
+            return true;
+        }
+
+        internal static bool TryDecodeShort(PropertyItem propertyItem, out ushort value)
+        {
+            if (propertyItem.Type != (int)PaintDotNet.ExifTagType.Short)
+            {
+                value = 0;
+                return false;
+            }
+
+            value = PaintDotNet.Exif.DecodeShortValue(propertyItem);
+            return true;
+        }
     }
 }
