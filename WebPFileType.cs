@@ -48,10 +48,16 @@ namespace WebPFileType
             return new FileType[] { new WebPFileType()};
         }
 
-        private static byte[] GetMetaDataBytes(byte[] data, WebPFile.MetadataType type, uint metaDataSize)
+        private static byte[] GetMetaDataBytes(byte[] data, WebPFile.MetadataType type)
         {
-            byte[] bytes = new byte[metaDataSize];
-            WebPFile.ExtractMetadata(data, type, bytes, metaDataSize);
+            byte[] bytes = null;
+
+            uint size = WebPFile.GetMetadataSize(data, type);
+            if (size > 0)
+            {
+                bytes = new byte[size];
+                WebPFile.ExtractMetadata(data, type, bytes, size);
+            }
 
             return bytes;
         }
@@ -100,10 +106,9 @@ namespace WebPFileType
                     image.UnlockBits(bitmapData);
                 }
 
-                uint exifSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.EXIF);
-                if (exifSize > 0)
+                byte[] exifBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.EXIF);
+                if (exifBytes != null)
                 {
-                    byte[] exifBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.EXIF, exifSize);
                     exifMetadata = ExifParser.Parse(exifBytes);
 
                     if (exifMetadata.Count > 0)
@@ -137,16 +142,14 @@ namespace WebPFileType
 
             Document doc = GetOrientedDocument(bytes, out List<PropertyItem> exifMetadata);
 
-            uint colorProfileSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.ColorProfile);
-            if (colorProfileSize > 0U)
+            byte[] colorProfileBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.ColorProfile);
+            if (colorProfileBytes != null)
             {
-                byte[] iccBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.ColorProfile, colorProfileSize);
-
                 PropertyItem colorProfileItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
                 colorProfileItem.Id = unchecked((ushort)ExifTagID.IccProfileData);
                 colorProfileItem.Type = (short)ExifTagType.Undefined;
-                colorProfileItem.Len = iccBytes.Length;
-                colorProfileItem.Value = iccBytes.CloneT();
+                colorProfileItem.Len = colorProfileBytes.Length;
+                colorProfileItem.Value = colorProfileBytes.CloneT();
 
                 doc.Metadata.AddExifValues(new PropertyItem[] { colorProfileItem });
             }
@@ -159,10 +162,9 @@ namespace WebPFileType
                 }
             }
 
-            uint xmpSize = WebPFile.GetMetadataSize(bytes, WebPFile.MetadataType.XMP);
-            if (xmpSize > 0U)
+            byte[] xmpBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.XMP);
+            if (xmpBytes != null)
             {
-                byte[] xmpBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.XMP, xmpSize);
                 doc.Metadata.SetUserValue(WebPXMP, Convert.ToBase64String(xmpBytes, Base64FormattingOptions.None));
             }
 
