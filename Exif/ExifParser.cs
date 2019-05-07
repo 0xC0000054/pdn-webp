@@ -618,7 +618,6 @@ namespace WebPFileType.Exif
                     case TagDataType.SRational:
                     case TagDataType.Float:
                     case TagDataType.Double:
-                    case TagDataType.IFD:
                         return true;
                     default:
                         return false;
