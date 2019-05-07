@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Text;
+using System.IO;
 
 namespace WebPFileType.Exif
 {
@@ -26,44 +26,32 @@ namespace WebPFileType.Exif
         }
 
         private const int EXIFSignatureLength = 6;
-        private const int EXIFSegmentHeaderLength = sizeof(ushort) + EXIFSignatureLength;
-
-        private static ushort ReadUInt16BigEndian(byte[] buffer, int startIndex)
-        {
-            return (ushort)((buffer[startIndex] << 8) | buffer[startIndex + 1]);
-        }
 
         /// <summary>
         /// Extracts the EXIF data from a JPEG image.
         /// </summary>
-        /// <param name="jpegBytes">The JPEG image bytes.</param>
+        /// <param name="stream">The JPEG image stream.</param>
         /// <returns>The extracted EXIF data, or null.</returns>
-        internal static byte[] ExtractEXIF(byte[] jpegBytes)
+        internal static byte[] ExtractEXIF(Stream stream)
         {
+            stream.Position = 0;
             try
             {
-                if (jpegBytes.Length > 2)
+                using (EndianBinaryReader reader = new EndianBinaryReader(stream, Endianess.Big, true))
                 {
-                    ushort marker = ReadUInt16BigEndian(jpegBytes, 0);
+                    ushort marker = reader.ReadUInt16();
 
                     // Check the file signature.
                     if (marker == JpegMarkers.StartOfImage)
                     {
-                        int index = 2;
-                        int length = jpegBytes.Length;
-
-                        while (index < length)
+                        while (stream.Position < stream.Length)
                         {
-                            marker = ReadUInt16BigEndian(jpegBytes, index);
+                            marker = reader.ReadUInt16();
                             if (marker == 0xFFFF)
                             {
                                 // Skip the first padding byte and read the marker again.
-                                index++;
+                                stream.Position++;
                                 continue;
-                            }
-                            else
-                            {
-                                index += 2;
                             }
 
                             if (marker == JpegMarkers.StartOfScan || marker == JpegMarkers.EndOfImage)
@@ -73,34 +61,35 @@ namespace WebPFileType.Exif
                             }
 
                             // The segment length field includes its own length in the total.
-                            // The index is not incremented after reading it to avoid having to subtract
-                            // 2 bytes from the length when skipping a segment.
-                            ushort segmentLength = ReadUInt16BigEndian(jpegBytes, index);
+                            int segmentLength = reader.ReadUInt16() - sizeof(ushort);
 
-                            if (marker == JpegMarkers.App1 && segmentLength >= EXIFSegmentHeaderLength)
+                            if (marker == JpegMarkers.App1 && segmentLength >= EXIFSignatureLength)
                             {
-                                string sig = Encoding.UTF8.GetString(jpegBytes, index + 2, EXIFSignatureLength);
+                                string sig = reader.ReadAsciiString(EXIFSignatureLength);
                                 if (sig.Equals("Exif\0\0", StringComparison.Ordinal))
                                 {
-                                    int exifDataSize = segmentLength - EXIFSegmentHeaderLength;
+                                    int exifDataSize = segmentLength - EXIFSignatureLength;
                                     byte[] exifData = null;
 
                                     if (exifDataSize > 0)
                                     {
-                                        exifData = new byte[exifDataSize];
-                                        Buffer.BlockCopy(jpegBytes, index + EXIFSegmentHeaderLength, exifData, 0, exifDataSize);
+                                        exifData = reader.ReadBytes(exifDataSize);
                                     }
 
                                     return exifData;
                                 }
+                                else
+                                {
+                                    segmentLength -= EXIFSignatureLength;
+                                }
                             }
 
-                            index += segmentLength;
+                            reader.Position += segmentLength;
                         }
                     }
                 }
             }
-            catch (IndexOutOfRangeException)
+            catch (EndOfStreamException)
             {
             }
 

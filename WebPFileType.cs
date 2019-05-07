@@ -383,7 +383,7 @@ namespace WebPFileType
                                 bmp.Save(stream, ImageFormat.Jpeg);
                             }
 
-                            exifBytes = JPEGReader.ExtractEXIF(stream.GetBuffer());
+                            exifBytes = JPEGReader.ExtractEXIF(stream);
                         }
                     }
                 }
