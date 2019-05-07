@@ -121,7 +121,7 @@ namespace WebPFileType.Exif
             {
                 IFDEntry entry = entries[i];
 
-                if (!TagDataTypeUtil.IsKnownType(entry.Type))
+                if (!TagDataTypeUtil.IsKnownToGDIPlus(entry.Type))
                 {
                     continue;
                 }
@@ -596,13 +596,13 @@ namespace WebPFileType.Exif
         private static class TagDataTypeUtil
         {
             /// <summary>
-            /// Determines whether the <see cref="TagDataType"/> uses a known value.
+            /// Determines whether the <see cref="TagDataType"/> is known to GDI+.
             /// </summary>
             /// <param name="type">The tag type.</param>
             /// <returns>
-            /// <see langword="true"/> if the tag type is a known value; otherwise, <see langword="false"/>.
+            /// <see langword="true"/> if the tag type is known to GDI+; otherwise, <see langword="false"/>.
             /// </returns>
-            public static bool IsKnownType(TagDataType type)
+            public static bool IsKnownToGDIPlus(TagDataType type)
             {
                 switch (type)
                 {
