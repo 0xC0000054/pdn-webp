@@ -484,7 +484,7 @@ namespace WebPFileType.Exif
 
             if ((readOffset + length) > readLength)
             {
-                FillBuffer(sizeof(ulong));
+                FillBuffer(length);
             }
 
             string value = System.Text.Encoding.ASCII.GetString(buffer, readOffset, length);
