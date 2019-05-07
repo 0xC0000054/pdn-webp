@@ -96,8 +96,8 @@
     <Compile Include="Exif\Endianess.cs" />
     <Compile Include="Exif\EndianUtil.cs" />
     <Compile Include="Exif\ExifParser.cs" />
+    <Compile Include="Exif\JPEGReader.cs" />
     <Compile Include="Exif\PropertyItemHelpers.cs" />
-    <Compile Include="JPEGReader.cs" />
     <Compile Include="PinnedByteArrayAllocator.cs" />
     <Compile Include="PluginSupportInfo.cs" />
     <Compile Include="WebPPreset.cs" />

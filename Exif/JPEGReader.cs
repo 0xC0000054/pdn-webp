@@ -13,7 +13,7 @@
 using System;
 using System.Text;
 
-namespace WebPFileType
+namespace WebPFileType.Exif
 {
     internal static class JPEGReader
     {
