@@ -39,7 +39,8 @@ namespace WebPFileType.Exif
             SLong = 9,
             SRational = 10,
             Float = 11,
-            Double = 12
+            Double = 12,
+            IFD = 13
         }
 
         internal static List<PropertyItem> Parse(byte[] exifBytes)
@@ -278,6 +279,7 @@ namespace WebPFileType.Exif
                         case TagDataType.Long:
                         case TagDataType.SLong:
                         case TagDataType.Float:
+                        case TagDataType.IFD:
                             return count == 1;
                         case TagDataType.Rational:
                         case TagDataType.SRational:
@@ -514,6 +516,7 @@ namespace WebPFileType.Exif
                     case TagDataType.SRational:
                     case TagDataType.Float:
                     case TagDataType.Double:
+                    case TagDataType.IFD:
                         return true;
                     default:
                         return false;
@@ -542,6 +545,7 @@ namespace WebPFileType.Exif
                     case TagDataType.Long:
                     case TagDataType.SLong:
                     case TagDataType.Float:
+                    case TagDataType.IFD:
                         return 4;
                     case TagDataType.Rational:
                     case TagDataType.SRational:
