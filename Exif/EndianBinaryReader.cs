@@ -28,6 +28,7 @@ namespace WebPFileType.Exif
         private readonly byte[] buffer;
         private readonly int bufferSize;
         private readonly Endianess endianess;
+        private readonly bool leaveOpen;
 #pragma warning restore IDE0032 // Use auto property
 
         private const int MaxBufferSize = 4096;
@@ -36,13 +37,28 @@ namespace WebPFileType.Exif
         /// Initializes a new instance of the <see cref="EndianBinaryReader"/> class.
         /// </summary>
         /// <param name="stream">The stream.</param>
+        /// <param name="byteOrder">The byte order of the stream.</param>
         /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
-        public EndianBinaryReader(Stream stream, Endianess byteOrder)
+        public EndianBinaryReader(Stream stream, Endianess byteOrder) : this(stream, byteOrder, false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EndianBinaryReader"/> class.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="byteOrder">The byte order of the stream.</param>
+        /// <param name="leaveOpen">
+        /// <see langword="true"/> to leave the stream open after the EndianBinaryReader is disposed; otherwise, <see langword="false"/>
+        /// </param>
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
+        public EndianBinaryReader(Stream stream, Endianess byteOrder, bool leaveOpen)
         {
             this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
             bufferSize = (int)Math.Min(stream.Length, MaxBufferSize);
             buffer = new byte[bufferSize];
             endianess = byteOrder;
+            this.leaveOpen = leaveOpen;
 
             readOffset = 0;
             readLength = 0;
@@ -129,7 +145,7 @@ namespace WebPFileType.Exif
         /// </summary>
         public void Dispose()
         {
-            if (stream != null)
+            if (stream != null && !leaveOpen)
             {
                 stream.Dispose();
                 stream = null;
