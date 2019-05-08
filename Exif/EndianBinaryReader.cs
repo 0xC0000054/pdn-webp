@@ -302,7 +302,7 @@ namespace WebPFileType.Exif
         }
 
         /// <summary>
-        /// Reads a 8-byte floating point value in big endian byte order.
+        /// Reads a 8-byte floating point value.
         /// </summary>
         /// <returns>The 8-byte floating point value.</returns>
         /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
@@ -315,7 +315,7 @@ namespace WebPFileType.Exif
         }
 
         /// <summary>
-        /// Reads a 2-byte signed integer in big endian byte order.
+        /// Reads a 2-byte signed integer.
         /// </summary>
         /// <returns>The 2-byte signed integer.</returns>
         /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
@@ -326,7 +326,7 @@ namespace WebPFileType.Exif
         }
 
         /// <summary>
-        /// Reads a 2-byte unsigned integer in big endian byte order.
+        /// Reads a 2-byte unsigned integer.
         /// </summary>
         /// <returns>The 2-byte unsigned integer.</returns>
         /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
@@ -364,7 +364,7 @@ namespace WebPFileType.Exif
         }
 
         /// <summary>
-        /// Reads a 4-byte signed integer in big endian byte order.
+        /// Reads a 4-byte signed integer.
         /// </summary>
         /// <returns>The 4-byte signed integer.</returns>
         /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
@@ -375,7 +375,7 @@ namespace WebPFileType.Exif
         }
 
         /// <summary>
-        /// Reads a 4-byte unsigned integer in big endian byte order.
+        /// Reads a 4-byte unsigned integer.
         /// </summary>
         /// <returns>The 4-byte unsigned integer.</returns>
         /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
@@ -412,7 +412,7 @@ namespace WebPFileType.Exif
         }
 
         /// <summary>
-        /// Reads a 4-byte floating point value in big endian byte order.
+        /// Reads a 4-byte floating point value.
         /// </summary>
         /// <returns>The 4-byte floating point value.</returns>
         /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
@@ -425,7 +425,7 @@ namespace WebPFileType.Exif
         }
 
         /// <summary>
-        /// Reads a 8-byte signed integer in big endian byte order.
+        /// Reads a 8-byte signed integer.
         /// </summary>
         /// <returns>The 8-byte signed integer.</returns>
         /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
@@ -436,7 +436,7 @@ namespace WebPFileType.Exif
         }
 
         /// <summary>
-        /// Reads a 8-byte unsigned integer in big endian byte order.
+        /// Reads a 8-byte unsigned integer.
         /// </summary>
         /// <returns>The 8-byte unsigned integer.</returns>
         /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
