@@ -136,6 +136,51 @@ namespace WebPFileType
                                 image.RotateFlip(transform);
                             }
                         }
+
+                        PropertyItem xResProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.XResolution);
+                        PropertyItem yResProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.YResolution);
+                        PropertyItem resUnitProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.ResolutionUnit);
+                        if (xResProperty != null && yResProperty != null && resUnitProperty != null)
+                        {
+                            if (PropertyItemHelpers.TryDecodeRational(xResProperty, out double xRes) &&
+                                PropertyItemHelpers.TryDecodeRational(yResProperty, out double yRes) &&
+                                PropertyItemHelpers.TryDecodeShort(resUnitProperty, out ushort resUnit))
+                            {
+                                if (xRes > 0.0 && yRes > 0.0)
+                                {
+                                    double dpiX, dpiY;
+
+                                    switch ((MeasurementUnit)resUnit)
+                                    {
+                                        case MeasurementUnit.Centimeter:
+                                            dpiX = Document.DotsPerCmToDotsPerInch(xRes);
+                                            dpiY = Document.DotsPerCmToDotsPerInch(yRes);
+                                            break;
+                                        case MeasurementUnit.Inch:
+                                            dpiX = xRes;
+                                            dpiY = yRes;
+                                            break;
+                                        default:
+                                            // Unknown ResolutionUnit value.
+                                            dpiX = 0.0;
+                                            dpiY = 0.0;
+                                            break;
+                                    }
+
+                                    if (dpiX > 0.0 && dpiY > 0.0)
+                                    {
+                                        try
+                                        {
+                                            image.SetResolution((float)dpiX, (float)dpiY);
+                                        }
+                                        catch
+                                        {
+                                            // Ignore any errors when setting the resolution.
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -167,33 +212,6 @@ namespace WebPFileType
 
             if (exifMetadata != null)
             {
-                // Set the resolution manually as Paint.NET will not use the correct values
-                // when loading from the bitmap.
-                PropertyItem xResProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.XResolution);
-                PropertyItem yResProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.YResolution);
-                PropertyItem resUnitProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.ResolutionUnit);
-                if (xResProperty != null && yResProperty != null && resUnitProperty != null)
-                {
-                    double xRes, yRes;
-                    ushort resUnit;
-
-                    if (PropertyItemHelpers.TryDecodeRational(xResProperty, out xRes) &&
-                        PropertyItemHelpers.TryDecodeRational(yResProperty, out yRes) &&
-                        PropertyItemHelpers.TryDecodeShort(resUnitProperty, out resUnit))
-                    {
-                        if (xRes > 0.0 && yRes > 0.0)
-                        {
-                            MeasurementUnit measurementUnit = (MeasurementUnit)resUnit;
-                            if (measurementUnit == MeasurementUnit.Inch || measurementUnit == MeasurementUnit.Centimeter)
-                            {
-                                doc.DpuX = xRes;
-                                doc.DpuY = yRes;
-                                doc.DpuUnit = measurementUnit;
-                            }
-                        }
-                    }
-                }
-
                 foreach (PropertyItem item in exifMetadata)
                 {
                     doc.Metadata.AddExifValues(new PropertyItem[] { item });
