@@ -127,10 +127,10 @@ namespace WebPFileType
 
                     if (exifMetadata.Count > 0)
                     {
-                        PropertyItem item = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.Orientation);
-                        if (item != null)
+                        PropertyItem orientationProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.Orientation);
+                        if (orientationProperty != null)
                         {
-                            RotateFlipType transform = PropertyItemHelpers.GetOrientationTransform(item);
+                            RotateFlipType transform = PropertyItemHelpers.GetOrientationTransform(orientationProperty);
                             if (transform != RotateFlipType.RotateNoneFlipNone)
                             {
                                 image.RotateFlip(transform);
