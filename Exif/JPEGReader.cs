@@ -50,7 +50,7 @@ namespace WebPFileType.Exif
                             if (marker == 0xFFFF)
                             {
                                 // Skip the first padding byte and read the marker again.
-                                stream.Position++;
+                                reader.Position++;
                                 continue;
                             }
 
