@@ -44,7 +44,7 @@ namespace WebPFileType.Exif
                     // Check the file signature.
                     if (marker == JpegMarkers.StartOfImage)
                     {
-                        while (stream.Position < stream.Length)
+                        while (reader.Position < reader.Length)
                         {
                             marker = reader.ReadUInt16();
                             if (marker == 0xFFFF)
