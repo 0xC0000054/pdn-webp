@@ -43,8 +43,21 @@ namespace WebPFileType.Exif
             IFD = 13
         }
 
+        /// <summary>
+        /// Parses the EXIF data into a collection of properties.
+        /// </summary>
+        /// <param name="exifBytes">The EXIF bytes.</param>
+        /// <returns>
+        /// A collection containing the EXIF properties.
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="exifBytes"/> is null.</exception>
         internal static List<PropertyItem> Parse(byte[] exifBytes)
         {
+            if (exifBytes == null)
+            {
+                throw new ArgumentNullException(nameof(exifBytes));
+            }
+
             List<PropertyItem> propertyItems = new List<PropertyItem>();
 
             MemoryStream stream = null;
