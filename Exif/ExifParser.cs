@@ -460,8 +460,8 @@ namespace WebPFileType.Exif
                                     ushortPtr[0] = (ushort)(offset & 0x0000ffff);
                                     break;
                                 case 2:
-                                    ushortPtr[0] = (ushort)((offset >> 16) & 0x0000ffff);
-                                    ushortPtr[1] = (ushort)(offset & 0x0000ffff);
+                                    ushortPtr[0] = (ushort)(offset & 0x0000ffff);
+                                    ushortPtr[1] = (ushort)((offset >> 16) & 0x0000ffff);
                                     break;
                             }
                         }
@@ -563,8 +563,8 @@ namespace WebPFileType.Exif
                             values[0] = (ushort)(offset & 0x0000ffff);
                             break;
                         case 2:
-                            values[0] = (ushort)((offset >> 16) & 0x0000ffff);
-                            values[1] = (ushort)(offset & 0x0000ffff);
+                            values[0] = (ushort)(offset & 0x0000ffff);
+                            values[1] = (ushort)((offset >> 16) & 0x0000ffff);
                             break;
                     }
 
