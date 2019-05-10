@@ -67,13 +67,17 @@ namespace WebPFileType.Exif
 
         internal static bool TryDecodeRational(PropertyItem propertyItem, out double value)
         {
-            if (propertyItem.Type != (int)PaintDotNet.ExifTagType.Rational)
+            uint numerator;
+            uint denominator;
+            try
+            {
+                PaintDotNet.Exif.DecodeRationalValue(propertyItem, out numerator, out denominator);
+            }
+            catch
             {
                 value = 0.0;
                 return false;
             }
-
-            PaintDotNet.Exif.DecodeRationalValue(propertyItem, out uint numerator, out uint denominator);
 
             if (denominator == 0)
             {
@@ -88,14 +92,20 @@ namespace WebPFileType.Exif
 
         internal static bool TryDecodeShort(PropertyItem propertyItem, out ushort value)
         {
-            if (propertyItem.Type != (int)PaintDotNet.ExifTagType.Short)
+            bool result;
+
+            try
+            {
+                value = PaintDotNet.Exif.DecodeShortValue(propertyItem);
+                result = true;
+            }
+            catch
             {
                 value = 0;
-                return false;
+                result = false;
             }
 
-            value = PaintDotNet.Exif.DecodeShortValue(propertyItem);
-            return true;
+            return result;
         }
     }
 }
