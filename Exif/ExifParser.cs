@@ -443,33 +443,30 @@ namespace WebPFileType.Exif
                             break;
                     }
                 }
-                else
+                else if (type == TagDataType.Short || type == TagDataType.SShort)
                 {
-                    if (type == TagDataType.Short || type == TagDataType.SShort)
+                    int byteArrayLength = unchecked((int)count) * sizeof(ushort);
+                    bytes = new byte[byteArrayLength];
+
+                    fixed (byte* ptr = bytes)
                     {
-                        int byteArrayLength = unchecked((int)count) * sizeof(ushort);
-                        bytes = new byte[byteArrayLength];
+                        ushort* ushortPtr = (ushort*)ptr;
 
-                        fixed (byte* ptr = bytes)
+                        switch (count)
                         {
-                            ushort* ushortPtr = (ushort*)ptr;
-
-                            switch (count)
-                            {
-                                case 1:
-                                    ushortPtr[0] = (ushort)(offset & 0x0000ffff);
-                                    break;
-                                case 2:
-                                    ushortPtr[0] = (ushort)(offset & 0x0000ffff);
-                                    ushortPtr[1] = (ushort)((offset >> 16) & 0x0000ffff);
-                                    break;
-                            }
+                            case 1:
+                                ushortPtr[0] = (ushort)(offset & 0x0000ffff);
+                                break;
+                            case 2:
+                                ushortPtr[0] = (ushort)(offset & 0x0000ffff);
+                                ushortPtr[1] = (ushort)((offset >> 16) & 0x0000ffff);
+                                break;
                         }
                     }
-                    else
-                    {
-                        bytes = BitConverter.GetBytes(offset);
-                    }
+                }
+                else
+                {
+                    bytes = BitConverter.GetBytes(offset);
                 }
 
                 return bytes;
