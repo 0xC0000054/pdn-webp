@@ -21,44 +21,45 @@ namespace WebPFileType.Exif
         {
             RotateFlipType transform = RotateFlipType.RotateNoneFlipNone;
 
-            ushort exifValue = PaintDotNet.Exif.DecodeShortValue(propertyItem);
-
-            if (exifValue >= 1 && exifValue <= 8)
+            if (TryDecodeShort(propertyItem, out ushort exifValue))
             {
-                switch (exifValue)
+                if (exifValue >= 1 && exifValue <= 8)
                 {
-                    case 1:
-                        // Do nothing
-                        transform = RotateFlipType.RotateNoneFlipNone;
-                        break;
-                    case 2:
-                        // Flip horizontally.
-                        transform = RotateFlipType.RotateNoneFlipX;
-                        break;
-                    case 3:
-                        // Rotate 180 degrees.
-                        transform = RotateFlipType.Rotate180FlipNone;
-                        break;
-                    case 4:
-                        // Flip vertically.
-                        transform = RotateFlipType.RotateNoneFlipY;
-                        break;
-                    case 5:
-                        // Rotate 90 degrees clockwise and flip horizontally.
-                        transform = RotateFlipType.Rotate90FlipX;
-                        break;
-                    case 6:
-                        // Rotate 90 degrees clockwise.
-                        transform = RotateFlipType.Rotate90FlipNone;
-                        break;
-                    case 7:
-                        // Rotate 270 degrees clockwise and flip horizontally.
-                        transform = RotateFlipType.Rotate270FlipX;
-                        break;
-                    case 8:
-                        // Rotate 270 degrees clockwise.
-                        transform = RotateFlipType.Rotate270FlipNone;
-                        break;
+                    switch (exifValue)
+                    {
+                        case 1:
+                            // Do nothing
+                            transform = RotateFlipType.RotateNoneFlipNone;
+                            break;
+                        case 2:
+                            // Flip horizontally.
+                            transform = RotateFlipType.RotateNoneFlipX;
+                            break;
+                        case 3:
+                            // Rotate 180 degrees.
+                            transform = RotateFlipType.Rotate180FlipNone;
+                            break;
+                        case 4:
+                            // Flip vertically.
+                            transform = RotateFlipType.RotateNoneFlipY;
+                            break;
+                        case 5:
+                            // Rotate 90 degrees clockwise and flip horizontally.
+                            transform = RotateFlipType.Rotate90FlipX;
+                            break;
+                        case 6:
+                            // Rotate 90 degrees clockwise.
+                            transform = RotateFlipType.Rotate90FlipNone;
+                            break;
+                        case 7:
+                            // Rotate 270 degrees clockwise and flip horizontally.
+                            transform = RotateFlipType.Rotate270FlipX;
+                            break;
+                        case 8:
+                            // Rotate 270 degrees clockwise.
+                            transform = RotateFlipType.Rotate270FlipNone;
+                            break;
+                    }
                 }
             }
 
