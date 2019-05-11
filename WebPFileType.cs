@@ -48,7 +48,7 @@ namespace WebPFileType
             return new FileType[] { new WebPFileType()};
         }
 
-        private static byte[] GetMetaDataBytes(byte[] data, WebPFile.MetadataType type)
+        private static byte[] GetMetadataBytes(byte[] data, WebPFile.MetadataType type)
         {
             byte[] bytes = null;
 
@@ -120,7 +120,7 @@ namespace WebPFileType
                     image.UnlockBits(bitmapData);
                 }
 
-                byte[] exifBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.EXIF);
+                byte[] exifBytes = GetMetadataBytes(bytes, WebPFile.MetadataType.EXIF);
                 if (exifBytes != null)
                 {
                     exifMetadata = ExifParser.Parse(exifBytes);
@@ -198,7 +198,7 @@ namespace WebPFileType
 
             Document doc = GetOrientedDocument(bytes, out List<PropertyItem> exifMetadata);
 
-            byte[] colorProfileBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.ColorProfile);
+            byte[] colorProfileBytes = GetMetadataBytes(bytes, WebPFile.MetadataType.ColorProfile);
             if (colorProfileBytes != null)
             {
                 PropertyItem colorProfileItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
@@ -218,7 +218,7 @@ namespace WebPFileType
                 }
             }
 
-            byte[] xmpBytes = GetMetaDataBytes(bytes, WebPFile.MetadataType.XMP);
+            byte[] xmpBytes = GetMetadataBytes(bytes, WebPFile.MetadataType.XMP);
             if (xmpBytes != null)
             {
                 doc.Metadata.SetUserValue(WebPXMP, Convert.ToBase64String(xmpBytes, Base64FormattingOptions.None));
