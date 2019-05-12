@@ -129,7 +129,7 @@ namespace WebPFileType
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]
-            public static extern void GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type, out uint metadataSize);
+            public static extern uint GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
@@ -162,7 +162,7 @@ namespace WebPFileType
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]
-            public static extern void GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type, out uint metadataSize);
+            public static extern uint GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
@@ -296,11 +296,11 @@ namespace WebPFileType
             {
                 if (IntPtr.Size == 8)
                 {
-                    WebP_64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type, out metadataSize);
+                    metadataSize = WebP_64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
                 }
                 else
                 {
-                    WebP_32.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type, out metadataSize);
+                    metadataSize = WebP_32.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
                 }
             }
 

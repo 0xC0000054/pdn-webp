@@ -253,9 +253,9 @@ int __stdcall WebPSave(
     return error;
 }
 
-void __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, MetadataType type, uint32_t* outSize)
+uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, MetadataType type)
 {
-    *outSize = 0;
+    uint32_t outSize = 0;
 
     WebPData webpData;
     webpData.bytes = data;
@@ -291,12 +291,13 @@ void __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, MetadataTyp
             break;
         }
 
-        *outSize = static_cast<uint32_t>(iter.chunk.size);
+        outSize = static_cast<uint32_t>(iter.chunk.size);
 
         WebPDemuxReleaseChunkIterator(&iter);
         WebPDemuxDelete(demux);
     }
 
+    return outSize;
 }
 
 void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetadataType type)
