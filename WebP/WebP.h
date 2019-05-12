@@ -44,6 +44,7 @@ enum MetadataType
     XMP
 };
 
+// This must be kept in sync with the NativeMetadataParams structure in MetadataCustomMarshaller.cs.
 typedef struct MetadataParams
 {
     uint8_t* iccProfile;

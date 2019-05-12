@@ -124,6 +124,7 @@ namespace WebPFileType
                 int height,
                 int stride,
                 EncodeParams parameters,
+                [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaller))]
                 MetadataParams metaData,
                 WebPReportProgress callback);
 
@@ -157,6 +158,7 @@ namespace WebPFileType
                 int height,
                 int stride,
                 EncodeParams parameters,
+                [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaller))]
                 MetadataParams metaData,
                 WebPReportProgress callback);
 
