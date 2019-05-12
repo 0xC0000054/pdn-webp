@@ -418,7 +418,7 @@ namespace WebPFileType
         protected override void OnSaveT(Document input, Stream output, PropertyBasedSaveConfigToken token, Surface scratchSurface, ProgressEventHandler progressCallback)
         {
 
-            WebPFile.WebPReportProgress encProgress = new WebPFile.WebPReportProgress(delegate(int percent)
+            WebPFile.WebPReportProgress encProgress = new WebPFile.WebPReportProgress(delegate (int percent)
             {
                 progressCallback(this, new ProgressEventArgs(percent));
             });
@@ -438,21 +438,41 @@ namespace WebPFileType
                 input.Render(ra, true);
             }
 
-            using (PinnedByteArrayAllocator allocator = new PinnedByteArrayAllocator())
+
+            WebPFile.MetadataParams metaData = null;
+            if (keepMetadata)
             {
-                WebPFile.MetadataParams metaData = null;
-                if (keepMetadata)
+                metaData = GetMetaData(input, scratchSurface);
+            }
+
+            WebPFile.WebPSave(WriteImageCallback, scratchSurface, encParams, metaData, encProgress);
+
+            void WriteImageCallback(IntPtr image, UIntPtr imageSize)
+            {
+                // 81920 is the largest multiple of 4096 that is below the large object heap threshold.
+                const int MaxBufferSize = 81920;
+
+                long size = checked((long)imageSize.ToUInt64());
+
+                int bufferSize = (int)Math.Min(size, MaxBufferSize);
+
+                byte[] streamBuffer = new byte[bufferSize];
+
+                output.SetLength(size);
+
+                long offset = 0;
+                long remaining = size;
+
+                while (remaining > 0)
                 {
-                    metaData = GetMetaData(input, scratchSurface);
-                }
+                    int copySize = (int)Math.Min(MaxBufferSize, remaining);
 
-                IntPtr pinnedArrayPtr = WebPFile.WebPSave(allocator, scratchSurface, encParams, metaData, encProgress);
+                    System.Runtime.InteropServices.Marshal.Copy(new IntPtr(image.ToInt64() + offset), streamBuffer, 0, copySize);
 
-                if (pinnedArrayPtr != IntPtr.Zero)
-                {
-                    byte[] data = allocator.GetManagedArray(pinnedArrayPtr);
+                    output.Write(streamBuffer, 0, copySize);
 
-                    output.Write(data, 0, data.Length);
+                    offset += copySize;
+                    remaining -= copySize;
                 }
             }
         }

@@ -29,7 +29,7 @@ extern "C" {
 
 typedef void (__stdcall *ProgressFn)(int progress);
 
-typedef void* (__stdcall *OutputBufferAllocFn)(size_t sizeInBytes);
+typedef void (__stdcall *WriteImageFn)(const uint8_t* image, const size_t imageSize);
 
 typedef struct EncodeParams
 {
@@ -59,8 +59,7 @@ DLLEXPORT bool __stdcall WebPGetDimensions(const uint8_t* iData, size_t iData_si
 DLLEXPORT int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride);
 
 DLLEXPORT int __stdcall WebPSave(
-    void** output,
-    const OutputBufferAllocFn outputAllocator,
+    const WriteImageFn writeImageCallback,
     const void* iBitmap,
     const int width,
     const int height,

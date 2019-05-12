@@ -58,6 +58,9 @@ namespace WebPFileType
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         internal delegate void WebPReportProgress(int progress);
 
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        internal delegate void WebPWriteImage(IntPtr image, UIntPtr imageSize);
+
         [StructLayout(LayoutKind.Sequential)]
         internal sealed class EncodeParams
         {
@@ -115,8 +118,7 @@ namespace WebPFileType
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
             public static extern WebPEncodingError WebPSave(
-                out IntPtr output,
-                PinnedByteArrayAllocDelegate outputAllocator,
+                WebPWriteImage writeImageCallback,
                 IntPtr scan0,
                 int width,
                 int height,
@@ -149,8 +151,7 @@ namespace WebPFileType
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
             public static extern WebPEncodingError WebPSave(
-                out IntPtr output,
-                PinnedByteArrayAllocDelegate outputAllocator,
+                WebPWriteImage writeImageCallback,
                 IntPtr scan0,
                 int width,
                 int height,
@@ -229,16 +230,16 @@ namespace WebPFileType
         /// <paramref name="input"/> is null.
         /// </exception>
         /// <exception cref="FormatException">The image exceeds 16383 pixels in width and/or height.</exception>
-        internal static IntPtr WebPSave(
-            PinnedByteArrayAllocator outputAllocator,
+        internal static void WebPSave(
+            WebPWriteImage writeImageCallback,
             Surface input,
             EncodeParams parameters,
             MetadataParams metaData,
             WebPReportProgress callback)
         {
-            if (outputAllocator == null)
+            if (writeImageCallback == null)
             {
-                throw new ArgumentNullException(nameof(outputAllocator));
+                throw new ArgumentNullException(nameof(writeImageCallback));
             }
 
             if (input == null)
@@ -252,18 +253,16 @@ namespace WebPFileType
             }
 
             WebPEncodingError retVal = WebPEncodingError.Ok;
-            IntPtr outPtr = IntPtr.Zero;
 
-            PinnedByteArrayAllocDelegate allocateFn = new PinnedByteArrayAllocDelegate(outputAllocator.AllocateArray);
             if (IntPtr.Size == 8)
             {
-                retVal = WebP_64.WebPSave(out outPtr, allocateFn, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metaData, callback);
+                retVal = WebP_64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metaData, callback);
             }
             else
             {
-                retVal = WebP_32.WebPSave(out outPtr, allocateFn, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metaData, callback);
+                retVal = WebP_32.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metaData, callback);
             }
-            GC.KeepAlive(allocateFn);
+            GC.KeepAlive(writeImageCallback);
 
             if (retVal != WebPEncodingError.Ok)
             {
@@ -287,8 +286,6 @@ namespace WebPFileType
                         throw new WebPException(Resources.EncoderMetaDataError);
                 }
             }
-
-            return outPtr;
         }
 
         internal static unsafe uint GetMetadataSize(byte[] data, MetadataType type)

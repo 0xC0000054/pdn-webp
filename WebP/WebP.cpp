@@ -69,10 +69,9 @@ static int EncodeImageMetadata(
     const uint8_t* image,
     const size_t imageSize,
     const MetadataParams* metadata,
-    const OutputBufferAllocFn outputAllocator,
-    void** output)
+    const WriteImageFn writeImageCallback)
 {
-    if (image == nullptr || metadata == nullptr || outputAllocator == nullptr || output == nullptr)
+    if (image == nullptr || metadata == nullptr || writeImageCallback == nullptr)
     {
         return VP8_ENC_ERROR_NULL_PARAMETER;
     }
@@ -125,17 +124,7 @@ static int EncodeImageMetadata(
 
             if (muxError == WEBP_MUX_OK)
             {
-                *output = outputAllocator(assembledData.size);
-
-                if (*output == nullptr)
-                {
-                    muxError = WEBP_MUX_MEMORY_ERROR;
-                }
-
-                if (muxError == WEBP_MUX_OK)
-                {
-                    memcpy_s(*output, assembledData.size, assembledData.bytes, assembledData.size);
-                }
+                writeImageCallback(assembledData.bytes, assembledData.size);
 
                 WebPDataClear(&assembledData);
             }
@@ -168,8 +157,7 @@ static int EncodeImageMetadata(
 }
 
 int __stdcall WebPSave(
-    void** output,
-    const OutputBufferAllocFn outputAllocator,
+    const WriteImageFn writeImageCallback,
     const void* bitmap,
     const int width,
     const int height,
@@ -178,7 +166,7 @@ int __stdcall WebPSave(
     const MetadataParams* metadata,
     ProgressFn callback)
 {
-    if (outputAllocator == nullptr)
+    if (writeImageCallback == nullptr)
     {
         return VP8_ENC_ERROR_NULL_PARAMETER;
     }
@@ -248,19 +236,11 @@ int __stdcall WebPSave(
     {
         if (metadata != nullptr)
         {
-            error = EncodeImageMetadata(wrt.mem, wrt.size, metadata, outputAllocator, output);
+            error = EncodeImageMetadata(wrt.mem, wrt.size, metadata, writeImageCallback);
         }
         else
         {
-            *output = outputAllocator(wrt.size);
-            if (*output != nullptr)
-            {
-                memcpy_s(*output, wrt.size, wrt.mem, wrt.size);
-            }
-            else
-            {
-                error = VP8_ENC_ERROR_OUT_OF_MEMORY;
-            }
+            writeImageCallback(wrt.mem, wrt.size);
         }
     }
     else
