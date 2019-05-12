@@ -417,7 +417,6 @@ namespace WebPFileType
 
         protected override void OnSaveT(Document input, Stream output, PropertyBasedSaveConfigToken token, Surface scratchSurface, ProgressEventHandler progressCallback)
         {
-
             WebPFile.WebPReportProgress encProgress = new WebPFile.WebPReportProgress(delegate (int percent)
             {
                 progressCallback(this, new ProgressEventArgs(percent));
@@ -437,7 +436,6 @@ namespace WebPFileType
             {
                 input.Render(ra, true);
             }
-
 
             WebPFile.MetadataParams metaData = null;
             if (keepMetadata)
