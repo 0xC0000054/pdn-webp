@@ -74,30 +74,24 @@ namespace WebPFileType
         internal sealed class MetadataParams
         {
             public byte[] iccProfile;
-            public uint iccProfileSize;
             public byte[] exif;
-            public uint exifSize;
             public byte[] xmp;
-            public uint xmpSize;
 
             public MetadataParams(byte[] iccProfileBytes, byte[] exifBytes, byte[] xmpBytes)
             {
                 if (iccProfileBytes != null)
                 {
                     iccProfile = (byte[])iccProfileBytes.Clone();
-                    iccProfileSize = (uint)iccProfileBytes.Length;
                 }
 
                 if (exifBytes != null)
                 {
                     exif = (byte[])exifBytes.Clone();
-                    exifSize = (uint)exifBytes.Length;
                 }
 
                 if (xmpBytes != null)
                 {
                     xmp = (byte[])xmpBytes.Clone();
-                    xmpSize = (uint)xmpBytes.Length;
                 }
             }
         }
