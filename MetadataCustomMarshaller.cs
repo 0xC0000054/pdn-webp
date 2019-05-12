@@ -22,11 +22,11 @@ namespace WebPFileType
         private struct NativeMetadataParams
         {
             public IntPtr iccProfile;
-            public uint iccProfileSize;
+            public UIntPtr iccProfileSize;
             public IntPtr exif;
-            public uint exifSize;
+            public UIntPtr exifSize;
             public IntPtr xmp;
-            public uint xmpSize;
+            public UIntPtr xmpSize;
         }
 
         private static readonly int NativeMetadataParamsSize = Marshal.SizeOf(typeof(NativeMetadataParams));
@@ -97,36 +97,36 @@ namespace WebPFileType
                     {
                         nativeMetadata->iccProfile = Marshal.AllocHGlobal(metadata.iccProfile.Length);
                         Marshal.Copy(metadata.iccProfile, 0, nativeMetadata->iccProfile, metadata.iccProfile.Length);
-                        nativeMetadata->iccProfileSize = (uint)metadata.iccProfile.Length;
+                        nativeMetadata->iccProfileSize = new UIntPtr((uint)metadata.iccProfile.Length);
                     }
                     else
                     {
                         nativeMetadata->iccProfile = IntPtr.Zero;
-                        nativeMetadata->iccProfileSize = 0;
+                        nativeMetadata->iccProfileSize = UIntPtr.Zero;
                     }
 
                     if (metadata.exif != null && metadata.exif.Length > 0)
                     {
                         nativeMetadata->exif = Marshal.AllocHGlobal(metadata.exif.Length);
                         Marshal.Copy(metadata.exif, 0, nativeMetadata->exif, metadata.exif.Length);
-                        nativeMetadata->exifSize = (uint)metadata.exif.Length;
+                        nativeMetadata->exifSize = new UIntPtr((uint)metadata.exif.Length);
                     }
                     else
                     {
                         nativeMetadata->exif = IntPtr.Zero;
-                        nativeMetadata->exifSize = 0;
+                        nativeMetadata->exifSize = UIntPtr.Zero;
                     }
 
                     if (metadata.xmp != null && metadata.xmp.Length > 0)
                     {
                         nativeMetadata->xmp = Marshal.AllocHGlobal(metadata.xmp.Length);
                         Marshal.Copy(metadata.xmp, 0, nativeMetadata->xmp, metadata.xmp.Length);
-                        nativeMetadata->xmpSize = (uint)metadata.xmp.Length;
+                        nativeMetadata->xmpSize = new UIntPtr((uint)metadata.xmp.Length);
                     }
                     else
                     {
                         nativeMetadata->xmp = IntPtr.Zero;
-                        nativeMetadata->xmpSize = 0;
+                        nativeMetadata->xmpSize = UIntPtr.Zero;
                     }
                 }
             }

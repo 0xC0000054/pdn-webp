@@ -48,11 +48,11 @@ enum MetadataType
 typedef struct MetadataParams
 {
     uint8_t* iccProfile;
-    uint32_t iccProfileSize;
+    size_t iccProfileSize;
     uint8_t* exif;
-    uint32_t exifSize;
+    size_t exifSize;
     uint8_t* xmp;
-    uint32_t xmpSize;
+    size_t xmpSize;
 }MetadataParams;
 
 DLLEXPORT bool __stdcall WebPGetDimensions(const uint8_t* iData, size_t iData_size, int* oWidth, int* oHeight);
