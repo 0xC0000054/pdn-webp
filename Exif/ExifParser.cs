@@ -359,6 +359,7 @@ namespace WebPFileType.Exif
             private readonly TagDataType type;
             private readonly uint count;
             private readonly uint offset;
+            private readonly bool offsetIsBigEndian;
 #pragma warning restore IDE0032 // Use auto property
 
             public IFDEntry(EndianBinaryReader reader)
@@ -367,6 +368,7 @@ namespace WebPFileType.Exif
                 type = (TagDataType)reader.ReadUInt16();
                 count = reader.ReadUInt32();
                 offset = reader.ReadUInt32();
+                offsetIsBigEndian = reader.Endianess == Endianess.Big;
             }
 
             public ushort Tag => tag;
@@ -421,26 +423,53 @@ namespace WebPFileType.Exif
                 {
                     bytes = new byte[count];
 
-                    switch (count)
+                    if (offsetIsBigEndian)
                     {
-                        case 1:
-                            bytes[0] = (byte)(offset & 0x000000ff);
-                            break;
-                        case 2:
-                            bytes[0] = (byte)(offset & 0x000000ff);
-                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
-                            break;
-                        case 3:
-                            bytes[0] = (byte)(offset & 0x000000ff);
-                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
-                            bytes[2] = (byte)((offset >> 16) & 0x000000ff);
-                            break;
-                        case 4:
-                            bytes[0] = (byte)(offset & 0x000000ff);
-                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
-                            bytes[2] = (byte)((offset >> 16) & 0x000000ff);
-                            bytes[3] = (byte)((offset >> 24) & 0x000000ff);
-                            break;
+                        switch (count)
+                        {
+                            case 1:
+                                bytes[0] = (byte)((offset >> 24) & 0x000000ff);
+                                break;
+                            case 2:
+                                bytes[0] = (byte)((offset >> 24) & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 16) & 0x000000ff);
+                                break;
+                            case 3:
+                                bytes[0] = (byte)((offset >> 24) & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 16) & 0x000000ff);
+                                bytes[2] = (byte)((offset >> 8) & 0x000000ff);
+                                break;
+                            case 4:
+                                bytes[0] = (byte)((offset >> 24) & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 16) & 0x000000ff);
+                                bytes[2] = (byte)((offset >> 8) & 0x000000ff);
+                                bytes[3] = (byte)(offset & 0x000000ff);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (count)
+                        {
+                            case 1:
+                                bytes[0] = (byte)(offset & 0x000000ff);
+                                break;
+                            case 2:
+                                bytes[0] = (byte)(offset & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                                break;
+                            case 3:
+                                bytes[0] = (byte)(offset & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                                bytes[2] = (byte)((offset >> 16) & 0x000000ff);
+                                break;
+                            case 4:
+                                bytes[0] = (byte)(offset & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                                bytes[2] = (byte)((offset >> 16) & 0x000000ff);
+                                bytes[3] = (byte)((offset >> 24) & 0x000000ff);
+                                break;
+                        }
                     }
                 }
                 else if (type == TagDataType.Short || type == TagDataType.SShort)
@@ -452,21 +481,52 @@ namespace WebPFileType.Exif
                     {
                         ushort* ushortPtr = (ushort*)ptr;
 
-                        switch (count)
+                        if (offsetIsBigEndian)
                         {
-                            case 1:
-                                ushortPtr[0] = (ushort)(offset & 0x0000ffff);
-                                break;
-                            case 2:
-                                ushortPtr[0] = (ushort)(offset & 0x0000ffff);
-                                ushortPtr[1] = (ushort)((offset >> 16) & 0x0000ffff);
-                                break;
+                            switch (count)
+                            {
+                                case 1:
+                                    ushortPtr[0] = (ushort)((offset >> 16) & 0x0000ffff);
+                                    break;
+                                case 2:
+                                    ushortPtr[0] = (ushort)((offset >> 16) & 0x0000ffff);
+                                    ushortPtr[1] = (ushort)(offset & 0x0000ffff);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            switch (count)
+                            {
+                                case 1:
+                                    ushortPtr[0] = (ushort)(offset & 0x0000ffff);
+                                    break;
+                                case 2:
+                                    ushortPtr[0] = (ushort)(offset & 0x0000ffff);
+                                    ushortPtr[1] = (ushort)((offset >> 16) & 0x0000ffff);
+                                    break;
+                            }
                         }
                     }
                 }
                 else
                 {
-                    bytes = BitConverter.GetBytes(offset);
+                    bytes = new byte[4];
+
+                    if (offsetIsBigEndian)
+                    {
+                        bytes[0] = (byte)((offset >> 24) & 0x000000ff);
+                        bytes[1] = (byte)((offset >> 16) & 0x000000ff);
+                        bytes[2] = (byte)((offset >> 8) & 0x000000ff);
+                        bytes[3] = (byte)(offset & 0x000000ff);
+                    }
+                    else
+                    {
+                        bytes[0] = (byte)(offset & 0x000000ff);
+                        bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                        bytes[2] = (byte)((offset >> 16) & 0x000000ff);
+                        bytes[3] = (byte)((offset >> 24) & 0x000000ff);
+                    }
                 }
 
                 return bytes;
@@ -502,26 +562,54 @@ namespace WebPFileType.Exif
                 {
                     byte[] bytes = new byte[count];
 
-                    switch (count)
+
+                    if (offsetIsBigEndian)
                     {
-                        case 1:
-                            bytes[0] = (byte)(offset & 0x000000ff);
-                            break;
-                        case 2:
-                            bytes[0] = (byte)(offset & 0x000000ff);
-                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
-                            break;
-                        case 3:
-                            bytes[0] = (byte)(offset & 0x000000ff);
-                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
-                            bytes[2] = (byte)((offset >> 16) & 0x000000ff);
-                            break;
-                        case 4:
-                            bytes[0] = (byte)(offset & 0x000000ff);
-                            bytes[1] = (byte)((offset >> 8) & 0x000000ff);
-                            bytes[2] = (byte)((offset >> 16) & 0x000000ff);
-                            bytes[3] = (byte)((offset >> 24) & 0x000000ff);
-                            break;
+                        switch (count)
+                        {
+                            case 1:
+                                bytes[0] = (byte)((offset >> 24) & 0x000000ff);
+                                break;
+                            case 2:
+                                bytes[0] = (byte)((offset >> 24) & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 16) & 0x000000ff);
+                                break;
+                            case 3:
+                                bytes[0] = (byte)((offset >> 24) & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 16) & 0x000000ff);
+                                bytes[2] = (byte)((offset >> 8) & 0x000000ff);
+                                break;
+                            case 4:
+                                bytes[0] = (byte)((offset >> 24) & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 16) & 0x000000ff);
+                                bytes[2] = (byte)((offset >> 8) & 0x000000ff);
+                                bytes[3] = (byte)(offset & 0x000000ff);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (count)
+                        {
+                            case 1:
+                                bytes[0] = (byte)(offset & 0x000000ff);
+                                break;
+                            case 2:
+                                bytes[0] = (byte)(offset & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                                break;
+                            case 3:
+                                bytes[0] = (byte)(offset & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                                bytes[2] = (byte)((offset >> 16) & 0x000000ff);
+                                break;
+                            case 4:
+                                bytes[0] = (byte)(offset & 0x000000ff);
+                                bytes[1] = (byte)((offset >> 8) & 0x000000ff);
+                                bytes[2] = (byte)((offset >> 16) & 0x000000ff);
+                                bytes[3] = (byte)((offset >> 24) & 0x000000ff);
+                                break;
+                        }
                     }
 
                     if (type == TagDataType.Ascii)
@@ -554,15 +642,31 @@ namespace WebPFileType.Exif
                 else if (typeSizeInBytes == 2)
                 {
                     ushort[] values = new ushort[count];
-                    switch (count)
+                    if (offsetIsBigEndian)
                     {
-                        case 1:
-                            values[0] = (ushort)(offset & 0x0000ffff);
-                            break;
-                        case 2:
-                            values[0] = (ushort)(offset & 0x0000ffff);
-                            values[1] = (ushort)((offset >> 16) & 0x0000ffff);
-                            break;
+                        switch (count)
+                        {
+                            case 1:
+                                values[0] = (ushort)((offset >> 16) & 0x0000ffff);
+                                break;
+                            case 2:
+                                values[0] = (ushort)((offset >> 16) & 0x0000ffff);
+                                values[1] = (ushort)(offset & 0x0000ffff);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (count)
+                        {
+                            case 1:
+                                values[0] = (ushort)(offset & 0x0000ffff);
+                                break;
+                            case 2:
+                                values[0] = (ushort)(offset & 0x0000ffff);
+                                values[1] = (ushort)((offset >> 16) & 0x0000ffff);
+                                break;
+                        }
                     }
 
                     if (count == 1)
