@@ -98,7 +98,7 @@
     <Compile Include="Exif\ExifParser.cs" />
     <Compile Include="Exif\JPEGReader.cs" />
     <Compile Include="Exif\PropertyItemHelpers.cs" />
-    <Compile Include="MetadataCustomMarshaller.cs" />
+    <Compile Include="MetadataCustomMarshaler.cs" />
     <Compile Include="PluginSupportInfo.cs" />
     <Compile Include="WebPPreset.cs" />
     <Compile Include="WebPException.cs" />

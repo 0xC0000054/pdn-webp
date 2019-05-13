@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 
 namespace WebPFileType
 {
-    internal sealed class MetadataCustomMarshaller : ICustomMarshaler
+    internal sealed class MetadataCustomMarshaler : ICustomMarshaler
     {
         // This must be kept in sync with the MetadataParams structure in WebP.h.
         [StructLayout(LayoutKind.Sequential)]
@@ -30,7 +30,7 @@ namespace WebPFileType
         }
 
         private static readonly int NativeMetadataParamsSize = Marshal.SizeOf(typeof(NativeMetadataParams));
-        private static readonly MetadataCustomMarshaller instance = new MetadataCustomMarshaller();
+        private static readonly MetadataCustomMarshaler instance = new MetadataCustomMarshaler();
 
 #pragma warning disable IDE0060 // Remove unused parameter
         public static ICustomMarshaler GetInstance(string cookie)
@@ -39,7 +39,7 @@ namespace WebPFileType
             return instance;
         }
 
-        private MetadataCustomMarshaller()
+        private MetadataCustomMarshaler()
         {
         }
 
