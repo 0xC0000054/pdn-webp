@@ -218,7 +218,6 @@ namespace WebPFileType.Exif
 
             bool foundExif = false;
             bool foundGps = false;
-            bool foundInterop = false;
 
             Queue<uint> ifdOffsets = new Queue<uint>();
             ifdOffsets.Enqueue(firstIFDOffset);
@@ -263,11 +262,8 @@ namespace WebPFileType.Exif
                             }
                             break;
                         case InteropIFDTag:
-                            if (!foundInterop)
-                            {
-                                foundInterop = true;
-                                ifdOffsets.Enqueue(entry.Offset);
-                            }
+                            // Skip the Interoperability IFD because GDI+ does not support it.
+                            // https://docs.microsoft.com/en-us/windows/desktop/gdiplus/-gdiplus-constant-image-property-tag-constants
                             break;
                         default:
                             items.Add(entry);
