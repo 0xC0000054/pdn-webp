@@ -336,7 +336,11 @@ namespace WebPFileType
                     {
                         PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
 
-                        items.Add(pi);
+                        // GDI+ does not support the Interoperability IFD tags.
+                        if (!IsInteroperabilityIFDTag(pi))
+                        {
+                            items.Add(pi);
+                        }
                     }
                     catch
                     {
@@ -346,6 +350,42 @@ namespace WebPFileType
             }
 
             return items;
+
+            bool IsInteroperabilityIFDTag(PropertyItem propertyItem)
+            {
+                if (propertyItem.Id == 1)
+                {
+                    // The tag number 1 is used by both the GPS IFD (GPSLatitudeRef) and the Interoperability IFD (InteroperabilityIndex).
+                    // The EXIF specification states that InteroperabilityIndex should be a four character ASCII field.
+
+                    return propertyItem.Type == (short)ExifTagType.Ascii && propertyItem.Len == 4;
+                }
+                else if (propertyItem.Id == 2)
+                {
+                    // The tag number 2 is used by both the GPS IFD (GPSLatitude) and the Interoperability IFD (InteroperabilityVersion).
+                    // The DCF specification states that InteroperabilityVersion should be a four byte field.
+                    switch ((ExifTagType)propertyItem.Type)
+                    {
+                        case ExifTagType.Byte:
+                        case ExifTagType.Undefined:
+                            return propertyItem.Len == 4;
+                        default:
+                            return false;
+                    }
+                }
+                else
+                {
+                    switch (propertyItem.Id)
+                    {
+                        case 4096: // Interoperability IFD - RelatedImageFileFormat
+                        case 4097: // Interoperability IFD - RelatedImageWidth
+                        case 4098: // Interoperability IFD - RelatedImageHeight
+                            return true;
+                        default:
+                            return false;
+                    }
+                }
+            }
         }
 
         private static WebPFile.MetadataParams GetMetaData(Document doc, Surface scratchSurface)
