@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using PaintDotNet;
 using PaintDotNet.IndirectUI;
 using PaintDotNet.IO;
@@ -379,11 +378,9 @@ namespace WebPFileType
 
                 if (propertyItems.Count > 0)
                 {
-                    const ushort ICCProfileId = unchecked((ushort)ExifTagID.IccProfileData);
-
                     if (iccProfileBytes == null)
                     {
-                        PropertyItem item = propertyItems.FirstOrDefault(p => p.Id == ICCProfileId);
+                        PropertyItem item = GetAndRemoveExifValue(ref propertyItems, ExifTagID.IccProfileData);
 
                         if (item != null)
                         {
@@ -397,7 +394,7 @@ namespace WebPFileType
                         {
                             using (Bitmap bmp = scratchSurface.CreateAliasedBitmap())
                             {
-                                LoadProperties(bmp, doc.DpuUnit, doc.DpuX, doc.DpuY, propertyItems.Where(p => p.Id != ICCProfileId));
+                                LoadProperties(bmp, doc.DpuUnit, doc.DpuX, doc.DpuY, propertyItems);
                                 bmp.Save(stream, ImageFormat.Jpeg);
                             }
 
