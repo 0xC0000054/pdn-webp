@@ -268,30 +268,34 @@ uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, Metadat
 
         WebPChunkIterator iter;
         memset(&iter, 0, sizeof(WebPChunkIterator));
+        int result = 0;
 
         switch (type)
         {
         case ColorProfile:
             if ((flags & ICCP_FLAG) != 0)
             {
-                WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
+                result = WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
             }
         break;
         case EXIF:
             if ((flags & EXIF_FLAG) != 0)
             {
-                WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
+                result = WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
             }
             break;
         case XMP:
             if ((flags & XMP_FLAG) != 0)
             {
-                WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
+                result = WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
             }
             break;
         }
 
-        outSize = static_cast<uint32_t>(iter.chunk.size);
+        if (result != 0)
+        {
+            outSize = static_cast<uint32_t>(iter.chunk.size);
+        }
 
         WebPDemuxReleaseChunkIterator(&iter);
         WebPDemuxDelete(demux);
@@ -313,30 +317,34 @@ void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* ou
 
         WebPChunkIterator iter;
         memset(&iter, 0, sizeof(WebPChunkIterator));
+        int result = 0;
 
         switch (type)
         {
         case ColorProfile:
             if ((flags & ICCP_FLAG) != 0)
             {
-                WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
+                result = WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
             }
         break;
         case EXIF:
             if ((flags & EXIF_FLAG) != 0)
             {
-                WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
+                result = WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
             }
             break;
         case XMP:
             if ((flags & XMP_FLAG) != 0)
             {
-                WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
+                result = WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
             }
             break;
         }
 
-        memcpy_s(outData, outSize, iter.chunk.bytes, outSize);
+        if (result != 0)
+        {
+            memcpy_s(outData, outSize, iter.chunk.bytes, outSize);
+        }
 
         WebPDemuxReleaseChunkIterator(&iter);
         WebPDemuxDelete(demux);
