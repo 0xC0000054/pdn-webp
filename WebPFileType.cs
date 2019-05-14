@@ -388,7 +388,7 @@ namespace WebPFileType
             }
         }
 
-        private static WebPFile.MetadataParams GetMetaData(Document doc, Surface scratchSurface)
+        private static WebPFile.MetadataParams GetMetadata(Document doc, Surface scratchSurface)
         {
             byte[] iccProfileBytes = null;
             byte[] exifBytes = null;
@@ -474,13 +474,13 @@ namespace WebPFileType
                 input.Render(ra, true);
             }
 
-            WebPFile.MetadataParams metaData = null;
+            WebPFile.MetadataParams metadata = null;
             if (keepMetadata)
             {
-                metaData = GetMetaData(input, scratchSurface);
+                metadata = GetMetadata(input, scratchSurface);
             }
 
-            WebPFile.WebPSave(WriteImageCallback, scratchSurface, encParams, metaData, encProgress);
+            WebPFile.WebPSave(WriteImageCallback, scratchSurface, encParams, metadata, encProgress);
 
             void WriteImageCallback(IntPtr image, UIntPtr imageSize)
             {

@@ -119,7 +119,7 @@ namespace WebPFileType
                 int stride,
                 EncodeParams parameters,
                 [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaler))]
-                MetadataParams metaData,
+                MetadataParams metadata,
                 WebPReportProgress callback);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
@@ -153,7 +153,7 @@ namespace WebPFileType
                 int stride,
                 EncodeParams parameters,
                 [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaler))]
-                MetadataParams metaData,
+                MetadataParams metadata,
                 WebPReportProgress callback);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
@@ -230,7 +230,7 @@ namespace WebPFileType
             WebPWriteImage writeImageCallback,
             Surface input,
             EncodeParams parameters,
-            MetadataParams metaData,
+            MetadataParams metadata,
             WebPReportProgress callback)
         {
             if (writeImageCallback == null)
@@ -252,11 +252,11 @@ namespace WebPFileType
 
             if (IntPtr.Size == 8)
             {
-                retVal = WebP_64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metaData, callback);
+                retVal = WebP_64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
             }
             else
             {
-                retVal = WebP_32.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metaData, callback);
+                retVal = WebP_32.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
             }
             GC.KeepAlive(writeImageCallback);
 
