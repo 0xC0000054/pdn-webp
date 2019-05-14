@@ -38,7 +38,7 @@ namespace WebPFileType
             XMP
         }
 
-        internal enum WebPEncodingError : int
+        private enum WebPEncodingError : int
         {
             MetaDataEncoding = -2,
             ApiVersionMismatch = -1,
