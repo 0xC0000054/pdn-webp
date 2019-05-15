@@ -77,10 +77,7 @@ namespace WebPFileType.Exif
         {
             get
             {
-                if (stream == null)
-                {
-                    throw new ObjectDisposedException(nameof(EndianBinaryReader));
-                }
+                VerifyNotDisposed();
 
                 return stream.Length;
             }
@@ -98,10 +95,7 @@ namespace WebPFileType.Exif
         {
             get
             {
-                if (stream == null)
-                {
-                    throw new ObjectDisposedException(nameof(EndianBinaryReader));
-                }
+                VerifyNotDisposed();
 
                 return stream.Position - readLength + readOffset;
             }
@@ -111,10 +105,7 @@ namespace WebPFileType.Exif
                 {
                     throw new ArgumentOutOfRangeException("value");
                 }
-                if (stream == null)
-                {
-                    throw new ObjectDisposedException(nameof(EndianBinaryReader));
-                }
+                VerifyNotDisposed();
 
                 long current = Position;
 
@@ -173,10 +164,7 @@ namespace WebPFileType.Exif
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
-            if (stream == null)
-            {
-                throw new ObjectDisposedException(nameof(EndianBinaryReader));
-            }
+            VerifyNotDisposed();
 
             if (count == 0)
             {
@@ -220,10 +208,7 @@ namespace WebPFileType.Exif
         /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         public byte ReadByte()
         {
-            if (stream == null)
-            {
-                throw new ObjectDisposedException(nameof(EndianBinaryReader));
-            }
+            VerifyNotDisposed();
 
             if ((readOffset + sizeof(byte)) > readLength)
             {
@@ -250,10 +235,7 @@ namespace WebPFileType.Exif
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
-            if (stream == null)
-            {
-                throw new ObjectDisposedException(nameof(EndianBinaryReader));
-            }
+            VerifyNotDisposed();
 
             if (count == 0)
             {
@@ -333,10 +315,7 @@ namespace WebPFileType.Exif
         /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         public ushort ReadUInt16()
         {
-            if (stream == null)
-            {
-                throw new ObjectDisposedException(nameof(EndianBinaryReader));
-            }
+            VerifyNotDisposed();
 
             if ((readOffset + sizeof(ushort)) > readLength)
             {
@@ -382,10 +361,7 @@ namespace WebPFileType.Exif
         /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         public uint ReadUInt32()
         {
-            if (stream == null)
-            {
-                throw new ObjectDisposedException(nameof(EndianBinaryReader));
-            }
+            VerifyNotDisposed();
 
             if ((readOffset + sizeof(uint)) > readLength)
             {
@@ -443,10 +419,7 @@ namespace WebPFileType.Exif
         /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         public ulong ReadUInt64()
         {
-            if (stream == null)
-            {
-                throw new ObjectDisposedException(nameof(EndianBinaryReader));
-            }
+            VerifyNotDisposed();
 
             if ((readOffset + sizeof(ulong)) > readLength)
             {
@@ -489,10 +462,7 @@ namespace WebPFileType.Exif
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
-            if (stream == null)
-            {
-                throw new ObjectDisposedException(nameof(EndianBinaryReader));
-            }
+            VerifyNotDisposed();
 
             if (length == 0)
             {
@@ -543,6 +513,18 @@ namespace WebPFileType.Exif
 
             readOffset = 0;
             readLength = numBytesRead;
+        }
+
+        /// <summary>
+        /// Verifies that the <see cref="EndianBinaryReader"/> has not been disposed.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
+        private void VerifyNotDisposed()
+        {
+            if (stream == null)
+            {
+                throw new ObjectDisposedException(nameof(EndianBinaryReader));
+            }
         }
 
         private static class EmptyArray<T>
