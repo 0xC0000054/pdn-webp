@@ -262,9 +262,13 @@ namespace WebPFileType.Exif
                             // Skip the Interoperability IFD because GDI+ does not support it.
                             // https://docs.microsoft.com/en-us/windows/desktop/gdiplus/-gdiplus-constant-image-property-tag-constants
                             break;
+                        case TiffTags.StripOffsets:
+                        case TiffTags.StripByteCounts:
                         case TiffTags.ThumbnailOffset:
                         case TiffTags.ThumbnailLength:
-                            // Skip the image thumbnail.
+                            // Skip the thumbnail and/or preview images.
+                            // The StripOffsets and StripByteCounts tags are used to store a preview image in some formats.
+                            //
                             // Note that some cameras will also store a thumbnail as part of their private data in the MakerNote tag.
                             // The MakerNote tag is treated as an opaque blob, so those thumbnails will be preserved.
                             break;
@@ -773,6 +777,8 @@ namespace WebPFileType.Exif
 
         private static class TiffTags
         {
+            internal const ushort StripOffsets = 273;
+            internal const ushort StripByteCounts = 279;
             internal const ushort ThumbnailOffset = 513;
             internal const ushort ThumbnailLength = 514;
             internal const ushort ExifIFD = 34665;
