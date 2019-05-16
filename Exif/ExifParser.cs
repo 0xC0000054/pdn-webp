@@ -269,8 +269,8 @@ namespace WebPFileType.Exif
                             // Skip the thumbnail and/or preview images.
                             // The StripOffsets and StripByteCounts tags are used to store a preview image in some formats.
                             //
-                            // Note that some cameras will also store a thumbnail as part of their private data in the MakerNote tag.
-                            // The MakerNote tag is treated as an opaque blob, so those thumbnails will be preserved.
+                            // Note that some cameras will also store a thumbnail as part of their private data in the EXIF MakerNote tag.
+                            // The EXIF MakerNote tag is treated as an opaque blob, so those thumbnails will be preserved.
                             break;
                         default:
                             items.Add(entry);
