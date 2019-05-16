@@ -22,9 +22,6 @@ namespace WebPFileType.Exif
     internal static class ExifParser
     {
         private const ushort TiffSignature = 42;
-        private const ushort ExifIFDTag = 34665;
-        private const ushort GpsIFDTag = 34853;
-        private const ushort InteropIFDTag = 40965;
 
         private enum TagDataType : ushort
         {
@@ -247,21 +244,21 @@ namespace WebPFileType.Exif
 
                     switch (entry.Tag)
                     {
-                        case ExifIFDTag:
+                        case TiffTags.ExifIFD:
                             if (!foundExif)
                             {
                                 foundExif = true;
                                 ifdOffsets.Enqueue(entry.Offset);
                             }
                             break;
-                        case GpsIFDTag:
+                        case TiffTags.GpsIFD:
                             if (!foundGps)
                             {
                                 foundGps = true;
                                 ifdOffsets.Enqueue(entry.Offset);
                             }
                             break;
-                        case InteropIFDTag:
+                        case TiffTags.InteropIFD:
                             // Skip the Interoperability IFD because GDI+ does not support it.
                             // https://docs.microsoft.com/en-us/windows/desktop/gdiplus/-gdiplus-constant-image-property-tag-constants
                             break;
@@ -766,6 +763,13 @@ namespace WebPFileType.Exif
                         return 0;
                 }
             }
+        }
+
+        private static class TiffTags
+        {
+            internal const ushort ExifIFD = 34665;
+            internal const ushort GpsIFD = 34853;
+            internal const ushort InteropIFD = 40965;
         }
     }
 }
