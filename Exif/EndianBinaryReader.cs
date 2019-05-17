@@ -324,7 +324,6 @@ namespace WebPFileType.Exif
 
             ushort val;
 
-
             switch (endianess)
             {
                 case Endianess.Big:

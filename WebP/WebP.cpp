@@ -34,7 +34,6 @@ int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, s
     output_buffer->u.RGBA.size = outSize;
     output_buffer->u.RGBA.stride = outStride;
 
-
     return WebPDecode(data, dataSize, &config);
 }
 

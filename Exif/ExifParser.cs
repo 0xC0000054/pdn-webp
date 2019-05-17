@@ -565,7 +565,6 @@ namespace WebPFileType.Exif
                 {
                     byte[] bytes = new byte[count];
 
-
                     if (offsetIsBigEndian)
                     {
                         switch (count)
