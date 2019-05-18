@@ -12,310 +12,401 @@
 
 using PaintDotNet;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
+using WebPFileType.Exif;
 using WebPFileType.Properties;
 
 namespace WebPFileType
 {
     static class WebPFile
     {
-        internal enum VP8StatusCode : int
+        /// <summary>
+        /// Gets the color profile from the WebP image.
+        /// </summary>
+        /// <param name="webpBytes">The WebP image data.</param>
+        /// <returns>
+        /// A byte array containing the color profile, if present; otherwise, <see langword="null"/>
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
+        internal static byte[] GetColorProfileBytes(byte[] webpBytes)
         {
-            Ok = 0,
-            OutOfMemory,
-            InvalidParam,
-            BitStreamError,
-            UnsupportedFeature,
-            Suspended,
-            UserAbort,
-            NotEnoughData,
-        }
-
-        internal enum MetadataType : int
-        {
-            ColorProfile = 0,
-            EXIF,
-            XMP
-        }
-
-        private enum WebPEncodingError : int
-        {
-            MetaDataEncoding = -2,
-            ApiVersionMismatch = -1,
-            Ok = 0,
-            OutOfMemory = 1,           // memory error allocating objects
-            BitStreamOutOfMemory = 2, // memory error while flushing bits
-            NullParameter = 3,         // a pointer parameter is NULL
-            InvalidConfiguration = 4,   // configuration is invalid
-            BadDimension = 5,           // picture has invalid width/height
-            PartitionZeroOverflow = 6,     // partition is bigger than 512k
-            PartitionOverflow = 7,      // partition is bigger than 16M
-            BadWrite = 8,               // error while flushing bytes
-            FileTooBig = 9,            // file is bigger than 4G
-            UserAbort = 10              // abort request by user
-        }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        internal delegate void WebPReportProgress(int progress);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        internal delegate void WebPWriteImage(IntPtr image, UIntPtr imageSize);
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal sealed class EncodeParams
-        {
-            [MarshalAs(UnmanagedType.R4)]
-            public float quality;
-            [MarshalAs(UnmanagedType.I4)]
-            public WebPPreset preset;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal sealed class MetadataParams
-        {
-            public byte[] iccProfile;
-            public byte[] exif;
-            public byte[] xmp;
-
-            public MetadataParams(byte[] iccProfileBytes, byte[] exifBytes, byte[] xmpBytes)
-            {
-                if (iccProfileBytes != null)
-                {
-                    iccProfile = (byte[])iccProfileBytes.Clone();
-                }
-
-                if (exifBytes != null)
-                {
-                    exif = (byte[])exifBytes.Clone();
-                }
-
-                if (xmpBytes != null)
-                {
-                    xmp = (byte[])xmpBytes.Clone();
-                }
-            }
-        }
-
-        private const int WebPMaxDimension = 16383;
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        private unsafe static class WebP_32
-        {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetDimensions")]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool WebPGetDimensions(byte* data, UIntPtr dataSize, out int width, out int height);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
-            public static extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
-            public static extern WebPEncodingError WebPSave(
-                WebPWriteImage writeImageCallback,
-                IntPtr scan0,
-                int width,
-                int height,
-                int stride,
-                EncodeParams parameters,
-                [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaler))]
-                MetadataParams metadata,
-                WebPReportProgress callback);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]
-            public static extern uint GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
-            public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
-        }
-
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        private unsafe static class WebP_64
-        {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetDimensions")]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool WebPGetDimensions(byte* data, UIntPtr dataSize, out int width, out int height);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
-            public static extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
-            public static extern WebPEncodingError WebPSave(
-                WebPWriteImage writeImageCallback,
-                IntPtr scan0,
-                int width,
-                int height,
-                int stride,
-                EncodeParams parameters,
-                [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaler))]
-                MetadataParams metadata,
-                WebPReportProgress callback);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]
-            public static extern uint GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
-            public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
+            return GetMetadataBytes(webpBytes, WebPNative.MetadataType.ColorProfile);
         }
 
         /// <summary>
-        /// Gets the dimension of the WebP image.
+        /// Gets the EXIF data from the WebP image.
         /// </summary>
-        /// <param name="data">The input image data.</param>
-        /// <param name="width">The output width of the image.</param>
-        /// <param name="height">The output height of the image.</param>
-        /// <returns>true on success, otherwise false.</returns>
-        internal static unsafe bool WebPGetDimensions(byte[] data, out int width, out int height)
+        /// <param name="webpBytes">The WebP image data.</param>
+        /// <returns>
+        /// A byte array containing the EXIF data, if present; otherwise, <see langword="null"/>
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
+        internal static byte[] GetExifBytes(byte[] webpBytes)
         {
-            fixed (byte* ptr = data)
-            {
-                if (IntPtr.Size == 8)
-                {
-                    return WebP_64.WebPGetDimensions(ptr, new UIntPtr((ulong)data.Length), out width, out height);
-                }
-                else
-                {
-                    return WebP_32.WebPGetDimensions(ptr, new UIntPtr((ulong)data.Length), out width, out height);
-                }
-            }
+            return GetMetadataBytes(webpBytes, WebPNative.MetadataType.EXIF);
+        }
+
+        /// <summary>
+        /// Gets the XMP data from the WebP image.
+        /// </summary>
+        /// <param name="webpBytes">The WebP image data.</param>
+        /// <returns>
+        /// A byte array containing the XMP data, if present; otherwise, <see langword="null"/>
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
+        internal static byte[] GetXmpBytes(byte[] webpBytes)
+        {
+            return GetMetadataBytes(webpBytes, WebPNative.MetadataType.XMP);
         }
 
         /// <summary>
         /// The WebP load function.
         /// </summary>
-        /// <param name="data">The input image data</param>
-        /// <param name="output">The output BitmapData.</param>
-        /// <returns>VP8StatusCode.Ok on success.</returns>
-        internal static unsafe VP8StatusCode WebPLoad(byte[] data, System.Drawing.Imaging.BitmapData output)
+        /// <param name="webpBytes">The input image data</param>
+        /// <returns>
+        /// A <see cref="Bitmap"/> containing the WebP image.
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">Insufficient memory to load the WebP image.</exception>
+        /// <exception cref="WebPException">
+        /// The WebP image is invalid.
+        /// -or-
+        /// A native API parameter is invalid.
+        /// </exception>
+        internal static unsafe Bitmap Load(byte[] webpBytes)
         {
-            fixed (byte* ptr = data)
+            if (webpBytes == null)
             {
-                int stride = output.Stride;
-                ulong outputSize = (ulong)stride * (ulong)output.Height;
-                if (IntPtr.Size == 8)
+                throw new ArgumentNullException(nameof(webpBytes));
+            }
+
+            int width;
+            int height;
+            if (!WebPNative.WebPGetDimensions(webpBytes, out width, out height))
+            {
+                throw new WebPException(Resources.InvalidWebPImage);
+            }
+
+            Bitmap image = null;
+            Bitmap temp = null;
+
+            try
+            {
+                temp = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+
+                BitmapData bitmapData = temp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+                try
                 {
-                    return WebP_64.WebPLoad(ptr, new UIntPtr((ulong)data.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
+                    WebPNative.WebPLoad(webpBytes, bitmapData);
                 }
-                else
+                finally
                 {
-                    return WebP_32.WebPLoad(ptr, new UIntPtr((ulong)data.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
+                    temp.UnlockBits(bitmapData);
+                }
+
+                image = temp;
+                temp = null;
+            }
+            finally
+            {
+                if (temp != null)
+                {
+                    temp.Dispose();
                 }
             }
+
+            return image;
         }
 
         /// <summary>
         /// The WebP save function.
         /// </summary>
-        /// <param name="outputAllocator">The allocator for the managed output buffer.</param>
-        /// <param name="input">The input surface.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <param name="callback">The callback.</param>
-        /// <returns>
-        /// A pointer to the pinned managed array.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="outputAllocator"/> is null.
-        /// or
-        /// <paramref name="input"/> is null.
-        /// </exception>
         /// <exception cref="FormatException">The image exceeds 16383 pixels in width and/or height.</exception>
-        internal static void WebPSave(
-            WebPWriteImage writeImageCallback,
-            Surface input,
-            EncodeParams parameters,
-            MetadataParams metadata,
-            WebPReportProgress callback)
+        internal static void Save(
+            Document input,
+            Stream output,
+            int quality,
+            WebPPreset preset,
+            bool keepMetadata,
+            Surface scratchSurface,
+            ProgressEventHandler progressCallback)
         {
-            if (writeImageCallback == null)
+            WebPNative.EncodeParams encParams = new WebPNative.EncodeParams
             {
-                throw new ArgumentNullException(nameof(writeImageCallback));
+                quality = quality,
+                preset = preset
+            };
+
+            using (RenderArgs ra = new RenderArgs(scratchSurface))
+            {
+                input.Render(ra, true);
             }
 
-            if (input == null)
+            WebPNative.MetadataParams metadata = null;
+            if (keepMetadata)
             {
-                throw new ArgumentNullException(nameof(input));
+                metadata = CreateWebPMetadata(input, scratchSurface);
             }
 
-            if (input.Width > WebPMaxDimension || input.Height > WebPMaxDimension)
+            WebPNative.WebPReportProgress encProgress = null;
+
+            if (progressCallback != null)
             {
-                throw new FormatException(Resources.InvalidImageDimensions);
+                encProgress = (int percent) => progressCallback(null, new ProgressEventArgs(percent, true));
             }
 
-            WebPEncodingError retVal = WebPEncodingError.Ok;
+            WebPNative.WebPSave(WriteImageCallback, scratchSurface, encParams, metadata, encProgress);
 
-            if (IntPtr.Size == 8)
+            void WriteImageCallback(IntPtr image, UIntPtr imageSize)
             {
-                retVal = WebP_64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
-            }
-            else
-            {
-                retVal = WebP_32.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
-            }
-            GC.KeepAlive(writeImageCallback);
+                // 81920 is the largest multiple of 4096 that is below the large object heap threshold.
+                const int MaxBufferSize = 81920;
 
-            if (retVal != WebPEncodingError.Ok)
-            {
-                switch (retVal)
+                long size = checked((long)imageSize.ToUInt64());
+
+                int bufferSize = (int)Math.Min(size, MaxBufferSize);
+
+                byte[] streamBuffer = new byte[bufferSize];
+
+                output.SetLength(size);
+
+                long offset = 0;
+                long remaining = size;
+
+                while (remaining > 0)
                 {
-                    case WebPEncodingError.OutOfMemory:
-                    case WebPEncodingError.BitStreamOutOfMemory:
-                        throw new OutOfMemoryException(Resources.InsufficientMemoryOnSave);
-                    case WebPEncodingError.NullParameter:
-                    case WebPEncodingError.InvalidConfiguration:
-                    case WebPEncodingError.PartitionZeroOverflow:
-                    case WebPEncodingError.PartitionOverflow:
-                    case WebPEncodingError.BadWrite:
-                        throw new WebPException(Resources.EncoderGenericError);
-                    case WebPEncodingError.FileTooBig:
-                        throw new WebPException(Resources.EncoderFileTooBig);
+                    int copySize = (int)Math.Min(MaxBufferSize, remaining);
 
-                    case WebPEncodingError.ApiVersionMismatch:
-                        throw new WebPException(Resources.ApiVersionMismatch);
-                    case WebPEncodingError.MetaDataEncoding:
-                        throw new WebPException(Resources.EncoderMetaDataError);
+                    Marshal.Copy(new IntPtr(image.ToInt64() + offset), streamBuffer, 0, copySize);
+
+                    output.Write(streamBuffer, 0, copySize);
+
+                    offset += copySize;
+                    remaining -= copySize;
                 }
             }
         }
 
-        internal static unsafe uint GetMetadataSize(byte[] data, MetadataType type)
+        private static WebPNative.MetadataParams CreateWebPMetadata(Document doc, Surface scratchSurface)
         {
-            uint metadataSize;
+            byte[] iccProfileBytes = null;
+            byte[] exifBytes = null;
+            byte[] xmpBytes = null;
 
-            fixed (byte* ptr = data)
+            string colorProfile = doc.Metadata.GetUserValue(WebPMetadataNames.ColorProfile);
+            if (!string.IsNullOrEmpty(colorProfile))
             {
-                if (IntPtr.Size == 8)
+                iccProfileBytes = Convert.FromBase64String(colorProfile);
+            }
+
+            string exif = doc.Metadata.GetUserValue(WebPMetadataNames.EXIF);
+            if (!string.IsNullOrEmpty(exif))
+            {
+                exifBytes = Convert.FromBase64String(exif);
+            }
+
+            string xmp = doc.Metadata.GetUserValue(WebPMetadataNames.XMP);
+            if (!string.IsNullOrEmpty(xmp))
+            {
+                xmpBytes = Convert.FromBase64String(xmp);
+            }
+
+            if (iccProfileBytes == null || exifBytes == null)
+            {
+                List<PropertyItem> propertyItems = GetMetadataFromDocument(doc);
+
+                if (propertyItems.Count > 0)
                 {
-                    metadataSize = WebP_64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
-                }
-                else
-                {
-                    metadataSize = WebP_32.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
+                    if (iccProfileBytes == null)
+                    {
+                        const int ICCProfileId = unchecked((ushort)ExifTagID.IccProfileData);
+
+                        PropertyItem item = propertyItems.Find(p => p.Id == ICCProfileId);
+
+                        if (item != null)
+                        {
+                            iccProfileBytes = item.Value.CloneT();
+                            propertyItems.RemoveAll(p => p.Id == ICCProfileId);
+                        }
+                    }
+
+                    if (exifBytes == null)
+                    {
+                        using (MemoryStream stream = new MemoryStream())
+                        {
+                            using (Bitmap bmp = scratchSurface.CreateAliasedBitmap())
+                            {
+                                LoadProperties(bmp, doc.DpuUnit, doc.DpuX, doc.DpuY, propertyItems);
+                                bmp.Save(stream, ImageFormat.Jpeg);
+                            }
+
+                            exifBytes = JPEGReader.ExtractEXIF(stream);
+                        }
+                    }
                 }
             }
 
-            return metadataSize;
+            if (iccProfileBytes != null || exifBytes != null || xmpBytes != null)
+            {
+                return new WebPNative.MetadataParams(iccProfileBytes, exifBytes, xmpBytes);
+            }
+
+            return null;
         }
 
-        internal static unsafe void ExtractMetadata(byte[] data, MetadataType type, byte[] outData, uint outSize)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "RCS1075", Justification = "Ignore any errors thrown by SetResolution.")]
+        private static void LoadProperties(Bitmap bitmap, MeasurementUnit dpuUnit, double dpuX, double dpuY, IEnumerable<PropertyItem> propertyItems)
         {
-            fixed (byte* ptr = data, outPtr = outData)
+            // The following code is from Paint.NET 3.36.
+
+            // Sometimes GDI+ does not honor the resolution tags that we
+            // put in manually via the EXIF properties.
+            float dpiX;
+            float dpiY;
+
+            switch (dpuUnit)
             {
-                if (IntPtr.Size == 8)
+                case MeasurementUnit.Centimeter:
+                    dpiX = (float)Document.DotsPerCmToDotsPerInch(dpuX);
+                    dpiY = (float)Document.DotsPerCmToDotsPerInch(dpuY);
+                    break;
+
+                case MeasurementUnit.Inch:
+                    dpiX = (float)dpuX;
+                    dpiY = (float)dpuY;
+                    break;
+
+                default:
+                case MeasurementUnit.Pixel:
+                    dpiX = 1.0f;
+                    dpiY = 1.0f;
+                    break;
+            }
+
+            try
+            {
+                bitmap.SetResolution(dpiX, dpiY);
+            }
+            catch (Exception)
+            {
+                // Ignore error
+            }
+
+            foreach (PropertyItem pi in propertyItems)
+            {
+                try
                 {
-                    WebP_64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
+                    bitmap.SetPropertyItem(pi);
+                }
+                catch (ArgumentException)
+                {
+                    // Ignore error: the image does not support property items
+                }
+            }
+        }
+
+        private static List<PropertyItem> GetMetadataFromDocument(Document doc)
+        {
+            List<PropertyItem> items = new List<PropertyItem>();
+
+            Metadata metadata = doc.Metadata;
+
+            string[] exifKeys = metadata.GetKeys(Metadata.ExifSectionName);
+
+            if (exifKeys.Length > 0)
+            {
+                items.Capacity = exifKeys.Length;
+
+                foreach (string key in exifKeys)
+                {
+                    string blob = metadata.GetValue(Metadata.ExifSectionName, key);
+                    try
+                    {
+                        PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
+
+                        // GDI+ does not support the Interoperability IFD tags.
+                        if (!IsInteroperabilityIFDTag(pi))
+                        {
+                            items.Add(pi);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore any items that cannot be deserialized.
+                    }
+                }
+            }
+
+            return items;
+
+            bool IsInteroperabilityIFDTag(PropertyItem propertyItem)
+            {
+                if (propertyItem.Id == 1)
+                {
+                    // The tag number 1 is used by both the GPS IFD (GPSLatitudeRef) and the Interoperability IFD (InteroperabilityIndex).
+                    // The EXIF specification states that InteroperabilityIndex should be a four character ASCII field.
+
+                    return propertyItem.Type == (short)ExifTagType.Ascii && propertyItem.Len == 4;
+                }
+                else if (propertyItem.Id == 2)
+                {
+                    // The tag number 2 is used by both the GPS IFD (GPSLatitude) and the Interoperability IFD (InteroperabilityVersion).
+                    // The DCF specification states that InteroperabilityVersion should be a four byte field.
+                    switch ((ExifTagType)propertyItem.Type)
+                    {
+                        case ExifTagType.Byte:
+                        case ExifTagType.Undefined:
+                            return propertyItem.Len == 4;
+                        default:
+                            return false;
+                    }
                 }
                 else
                 {
-                    WebP_32.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
+                    switch (propertyItem.Id)
+                    {
+                        case 4096: // Interoperability IFD - RelatedImageFileFormat
+                        case 4097: // Interoperability IFD - RelatedImageWidth
+                        case 4098: // Interoperability IFD - RelatedImageHeight
+                            return true;
+                        default:
+                            return false;
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the metadata from the WebP image.
+        /// </summary>
+        /// <param name="webpBytes">The WebP image data.</param>
+        /// <param name="type">The metadata type.</param>
+        /// <returns>
+        /// A byte array containing the requested metadata, if present; otherwise, <see langword="null"/>
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
+        private static byte[] GetMetadataBytes(byte[] webpBytes, WebPNative.MetadataType type)
+        {
+            if (webpBytes == null)
+            {
+                throw new ArgumentNullException(nameof(webpBytes));
+            }
+
+            byte[] bytes = null;
+
+            uint size = WebPNative.GetMetadataSize(webpBytes, type);
+            if (size > 0)
+            {
+                bytes = new byte[size];
+                WebPNative.ExtractMetadata(webpBytes, type, bytes, size);
+            }
+
+            return bytes;
         }
     }
 }

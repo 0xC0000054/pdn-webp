@@ -27,10 +27,6 @@ namespace WebPFileType
     [PluginSupportInfo(typeof(PluginSupportInfo))]
     public sealed class WebPFileType : PropertyBasedFileType, IFileTypeFactory
     {
-        private const string WebPColorProfile = "WebPICC";
-        private const string WebPEXIF = "WebPEXIF";
-        private const string WebPXMP = "WebPXMP";
-
         private enum PropertyNames
         {
             Preset,
@@ -45,20 +41,6 @@ namespace WebPFileType
         public FileType[] GetFileTypeInstances()
         {
             return new FileType[] { new WebPFileType()};
-        }
-
-        private static byte[] GetMetadataBytes(byte[] data, WebPFile.MetadataType type)
-        {
-            byte[] bytes = null;
-
-            uint size = WebPFile.GetMetadataSize(data, type);
-            if (size > 0)
-            {
-                bytes = new byte[size];
-                WebPFile.ExtractMetadata(data, type, bytes, size);
-            }
-
-            return bytes;
         }
 
         private static PropertyItem GetAndRemoveExifValue(ref List<PropertyItem> exifMetadata, ExifTagID tag)
@@ -79,47 +61,13 @@ namespace WebPFileType
         {
             exifMetadata = null;
 
-            int width;
-            int height;
-            if (!WebPFile.WebPGetDimensions(bytes, out width, out height))
-            {
-                throw new WebPException(Resources.InvalidWebPImage);
-            }
-
             Document doc = null;
 
             // Load the image into a Bitmap so the EXIF orientation transform can be applied.
 
-            using (Bitmap image = new Bitmap(width, height, PixelFormat.Format32bppArgb))
+            using (Bitmap image = WebPFile.Load(bytes))
             {
-                BitmapData bitmapData = image.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-                try
-                {
-                    WebPFile.VP8StatusCode status = WebPFile.WebPLoad(bytes, bitmapData);
-                    if (status != WebPFile.VP8StatusCode.Ok)
-                    {
-                        switch (status)
-                        {
-                            case WebPFile.VP8StatusCode.OutOfMemory:
-                                throw new OutOfMemoryException();
-                            case WebPFile.VP8StatusCode.InvalidParam:
-                                throw new WebPException(Resources.InvalidParameter);
-                            case WebPFile.VP8StatusCode.BitStreamError:
-                            case WebPFile.VP8StatusCode.UnsupportedFeature:
-                            case WebPFile.VP8StatusCode.NotEnoughData:
-                                throw new WebPException(Resources.InvalidWebPImage);
-                            default:
-                                break;
-                        }
-                    }
-                }
-                finally
-                {
-                    image.UnlockBits(bitmapData);
-                }
-
-                byte[] exifBytes = GetMetadataBytes(bytes, WebPFile.MetadataType.EXIF);
+                byte[] exifBytes = WebPFile.GetExifBytes(bytes);
                 if (exifBytes != null)
                 {
                     exifMetadata = ExifParser.Parse(exifBytes);
@@ -197,7 +145,7 @@ namespace WebPFileType
 
             Document doc = GetOrientedDocument(bytes, out List<PropertyItem> exifMetadata);
 
-            byte[] colorProfileBytes = GetMetadataBytes(bytes, WebPFile.MetadataType.ColorProfile);
+            byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
             if (colorProfileBytes != null)
             {
                 PropertyItem colorProfileItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
@@ -217,10 +165,10 @@ namespace WebPFileType
                 }
             }
 
-            byte[] xmpBytes = GetMetadataBytes(bytes, WebPFile.MetadataType.XMP);
+            byte[] xmpBytes = WebPFile.GetXmpBytes(bytes);
             if (xmpBytes != null)
             {
-                doc.Metadata.SetUserValue(WebPXMP, Convert.ToBase64String(xmpBytes, Base64FormattingOptions.None));
+                doc.Metadata.SetUserValue(WebPMetadataNames.XMP, Convert.ToBase64String(xmpBytes, Base64FormattingOptions.None));
             }
 
             return doc;
@@ -267,249 +215,13 @@ namespace WebPFileType
             return quality == 100;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "RCS1075", Justification = "Ignore any errors thrown by SetResolution.")]
-        private static void LoadProperties(Bitmap bitmap, MeasurementUnit dpuUnit, double dpuX, double dpuY, IEnumerable<PropertyItem> propertyItems)
-        {
-
-            // Sometimes GDI+ does not honor the resolution tags that we
-            // put in manually via the EXIF properties.
-            float dpiX;
-            float dpiY;
-
-            switch (dpuUnit)
-            {
-                case MeasurementUnit.Centimeter:
-                    dpiX = (float)Document.DotsPerCmToDotsPerInch(dpuX);
-                    dpiY = (float)Document.DotsPerCmToDotsPerInch(dpuY);
-                    break;
-
-                case MeasurementUnit.Inch:
-                    dpiX = (float)dpuX;
-                    dpiY = (float)dpuY;
-                    break;
-
-                default:
-                case MeasurementUnit.Pixel:
-                    dpiX = 1.0f;
-                    dpiY = 1.0f;
-                    break;
-            }
-
-            try
-            {
-                bitmap.SetResolution(dpiX, dpiY);
-            }
-            catch (Exception)
-            {
-                // Ignore error
-            }
-
-            foreach (PropertyItem pi in propertyItems)
-            {
-                try
-                {
-                    bitmap.SetPropertyItem(pi);
-                }
-                catch (ArgumentException)
-                {
-                    // Ignore error: the image does not support property items
-                }
-            }
-        }
-
-        private static List<PropertyItem> GetMetadataFromDocument(Document doc)
-        {
-            List<PropertyItem> items = new List<PropertyItem>();
-
-            Metadata metadata = doc.Metadata;
-
-            string[] exifKeys = metadata.GetKeys(Metadata.ExifSectionName);
-
-            if (exifKeys.Length > 0)
-            {
-                items.Capacity = exifKeys.Length;
-
-                foreach (string key in exifKeys)
-                {
-                    string blob = metadata.GetValue(Metadata.ExifSectionName, key);
-                    try
-                    {
-                        PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
-
-                        // GDI+ does not support the Interoperability IFD tags.
-                        if (!IsInteroperabilityIFDTag(pi))
-                        {
-                            items.Add(pi);
-                        }
-                    }
-                    catch
-                    {
-                        // Ignore any items that cannot be deserialized.
-                    }
-                }
-            }
-
-            return items;
-
-            bool IsInteroperabilityIFDTag(PropertyItem propertyItem)
-            {
-                if (propertyItem.Id == 1)
-                {
-                    // The tag number 1 is used by both the GPS IFD (GPSLatitudeRef) and the Interoperability IFD (InteroperabilityIndex).
-                    // The EXIF specification states that InteroperabilityIndex should be a four character ASCII field.
-
-                    return propertyItem.Type == (short)ExifTagType.Ascii && propertyItem.Len == 4;
-                }
-                else if (propertyItem.Id == 2)
-                {
-                    // The tag number 2 is used by both the GPS IFD (GPSLatitude) and the Interoperability IFD (InteroperabilityVersion).
-                    // The DCF specification states that InteroperabilityVersion should be a four byte field.
-                    switch ((ExifTagType)propertyItem.Type)
-                    {
-                        case ExifTagType.Byte:
-                        case ExifTagType.Undefined:
-                            return propertyItem.Len == 4;
-                        default:
-                            return false;
-                    }
-                }
-                else
-                {
-                    switch (propertyItem.Id)
-                    {
-                        case 4096: // Interoperability IFD - RelatedImageFileFormat
-                        case 4097: // Interoperability IFD - RelatedImageWidth
-                        case 4098: // Interoperability IFD - RelatedImageHeight
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-            }
-        }
-
-        private static WebPFile.MetadataParams GetMetadata(Document doc, Surface scratchSurface)
-        {
-            byte[] iccProfileBytes = null;
-            byte[] exifBytes = null;
-            byte[] xmpBytes = null;
-
-            string colorProfile = doc.Metadata.GetUserValue(WebPColorProfile);
-            if (!string.IsNullOrEmpty(colorProfile))
-            {
-                iccProfileBytes = Convert.FromBase64String(colorProfile);
-            }
-
-            string exif = doc.Metadata.GetUserValue(WebPEXIF);
-            if (!string.IsNullOrEmpty(exif))
-            {
-                exifBytes = Convert.FromBase64String(exif);
-            }
-
-            string xmp = doc.Metadata.GetUserValue(WebPXMP);
-            if (!string.IsNullOrEmpty(xmp))
-            {
-                xmpBytes = Convert.FromBase64String(xmp);
-            }
-
-            if (iccProfileBytes == null || exifBytes == null)
-            {
-                List<PropertyItem> propertyItems = GetMetadataFromDocument(doc);
-
-                if (propertyItems.Count > 0)
-                {
-                    if (iccProfileBytes == null)
-                    {
-                        PropertyItem item = GetAndRemoveExifValue(ref propertyItems, ExifTagID.IccProfileData);
-
-                        if (item != null)
-                        {
-                            iccProfileBytes = item.Value.CloneT();
-                        }
-                    }
-
-                    if (exifBytes == null)
-                    {
-                        using (MemoryStream stream = new MemoryStream())
-                        {
-                            using (Bitmap bmp = scratchSurface.CreateAliasedBitmap())
-                            {
-                                LoadProperties(bmp, doc.DpuUnit, doc.DpuX, doc.DpuY, propertyItems);
-                                bmp.Save(stream, ImageFormat.Jpeg);
-                            }
-
-                            exifBytes = JPEGReader.ExtractEXIF(stream);
-                        }
-                    }
-                }
-            }
-
-            if (iccProfileBytes != null || exifBytes != null || xmpBytes != null)
-            {
-                return new WebPFile.MetadataParams(iccProfileBytes, exifBytes, xmpBytes);
-            }
-
-            return null;
-        }
-
         protected override void OnSaveT(Document input, Stream output, PropertyBasedSaveConfigToken token, Surface scratchSurface, ProgressEventHandler progressCallback)
         {
-            WebPFile.WebPReportProgress encProgress = new WebPFile.WebPReportProgress(delegate (int percent)
-            {
-                progressCallback(this, new ProgressEventArgs(percent));
-            });
-
             int quality = token.GetProperty<Int32Property>(PropertyNames.Quality).Value;
             WebPPreset preset = (WebPPreset)token.GetProperty(PropertyNames.Preset).Value;
             bool keepMetadata = token.GetProperty<BooleanProperty>(PropertyNames.KeepMetadata).Value;
 
-            WebPFile.EncodeParams encParams = new WebPFile.EncodeParams
-            {
-                quality = quality,
-                preset = preset
-            };
-
-            using (RenderArgs ra = new RenderArgs(scratchSurface))
-            {
-                input.Render(ra, true);
-            }
-
-            WebPFile.MetadataParams metadata = null;
-            if (keepMetadata)
-            {
-                metadata = GetMetadata(input, scratchSurface);
-            }
-
-            WebPFile.WebPSave(WriteImageCallback, scratchSurface, encParams, metadata, encProgress);
-
-            void WriteImageCallback(IntPtr image, UIntPtr imageSize)
-            {
-                // 81920 is the largest multiple of 4096 that is below the large object heap threshold.
-                const int MaxBufferSize = 81920;
-
-                long size = checked((long)imageSize.ToUInt64());
-
-                int bufferSize = (int)Math.Min(size, MaxBufferSize);
-
-                byte[] streamBuffer = new byte[bufferSize];
-
-                output.SetLength(size);
-
-                long offset = 0;
-                long remaining = size;
-
-                while (remaining > 0)
-                {
-                    int copySize = (int)Math.Min(MaxBufferSize, remaining);
-
-                    System.Runtime.InteropServices.Marshal.Copy(new IntPtr(image.ToInt64() + offset), streamBuffer, 0, copySize);
-
-                    output.Write(streamBuffer, 0, copySize);
-
-                    offset += copySize;
-                    remaining -= copySize;
-                }
-            }
+            WebPFile.Save(input, output, quality, preset, keepMetadata, scratchSurface, progressCallback);
         }
     }
 }

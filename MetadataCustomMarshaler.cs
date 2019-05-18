@@ -85,7 +85,7 @@ namespace WebPFileType
                 return IntPtr.Zero;
             }
 
-            WebPFile.MetadataParams metadata = (WebPFile.MetadataParams)ManagedObj;
+            WebPNative.MetadataParams metadata = (WebPNative.MetadataParams)ManagedObj;
 
             IntPtr nativeStructure = Marshal.AllocHGlobal(NativeMetadataParamsSize);
 
