@@ -235,19 +235,17 @@ namespace WebPFileType
         /// <summary>
         /// The WebP save function.
         /// </summary>
-        /// <param name="outputAllocator">The allocator for the managed output buffer.</param>
+        /// <param name="writeImageCallback">The callback used to write the WebP image.</param>
         /// <param name="input">The input surface.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <param name="callback">The callback.</param>
-        /// <returns>
-        /// A pointer to the pinned managed array.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="outputAllocator"/> is null.
+        /// <param name="parameters">The encode parameters.</param>
+        /// <param name="metadata">The image metadata.</param>
+        /// <param name="callback">The progress callback.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="writeImageCallback"/> is null.
         /// or
-        /// <paramref name="input"/> is null.
-        /// </exception>
+        /// <paramref name="input"/> is null.</exception>
         /// <exception cref="FormatException">The image exceeds 16383 pixels in width and/or height.</exception>
+        /// <exception cref="OutOfMemoryException">Insufficient memory to save the image.</exception>
+        /// <exception cref="WebPException">The encoder returned a non-memory related error.</exception>
         internal static void WebPSave(
             WebPWriteImage writeImageCallback,
             Surface input,
