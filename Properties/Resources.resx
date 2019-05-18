@@ -164,7 +164,7 @@
     <comment>{0} is the name of the P/Invoke method.</comment>
   </data>
   <data name="EncoderMetadataError" xml:space="preserve">
-    <value>An error occurred when encoding the WebP meta-data.</value>
+    <value>An error occurred when encoding the WebP metadata.</value>
   </data>
   <data name="KeepMetadata_Text" xml:space="preserve">
     <value>Keep Metadata</value>

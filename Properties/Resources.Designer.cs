@@ -88,7 +88,7 @@ namespace WebPFileType.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An error occurred when encoding the WebP meta-data..
+        ///   Looks up a localized string similar to An error occurred when encoding the WebP metadata..
         /// </summary>
         internal static string EncoderMetadataError {
             get {
