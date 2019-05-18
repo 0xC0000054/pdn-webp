@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="EncodingMethod" xml:space="preserve">
-    <value>Encoding Quality / Speed</value>
-  </data>
-  <data name="EncodingPasses" xml:space="preserve">
-    <value>Encoding Passes</value>
-  </data>
   <data name="InvalidWebPImage" xml:space="preserve">
     <value>The file is not a valid WebP Image.</value>
   </data>

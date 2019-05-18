@@ -97,24 +97,6 @@ namespace WebPFileType.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Encoding Quality / Speed.
-        /// </summary>
-        internal static string EncodingMethod {
-            get {
-                return ResourceManager.GetString("EncodingMethod", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Encoding Passes.
-        /// </summary>
-        internal static string EncodingPasses {
-            get {
-                return ResourceManager.GetString("EncodingPasses", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Insufficient memory to save the image..
         /// </summary>
         internal static string InsufficientMemoryOnSave {
