@@ -59,9 +59,9 @@ static bool HasTransparency(const void* data, int width, int height, int stride)
 static int ProgressReport(int percent, const WebPPicture* picture)
 {
     ProgressFn callback = reinterpret_cast<ProgressFn>(picture->user_data);
-    callback(percent);
+    bool continueProcessing = callback(percent);
 
-    return 1;
+    return continueProcessing ? 1 : 0;
 }
 
 static int EncodeImageMetadata(

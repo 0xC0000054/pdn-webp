@@ -26,7 +26,7 @@ extern "C" {
 #define DLLEXPORT __declspec(dllimport)
 #endif
 
-typedef void (__stdcall *ProgressFn)(int progress);
+typedef bool (__stdcall *ProgressFn)(int progress);
 
 typedef void (__stdcall *WriteImageFn)(const uint8_t* image, const size_t imageSize);
 

@@ -57,7 +57,8 @@ namespace WebPFileType
         }
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        internal delegate void WebPReportProgress(int progress);
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal delegate bool WebPReportProgress(int progress);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         internal delegate void WebPWriteImage(IntPtr image, UIntPtr imageSize);
@@ -294,6 +295,8 @@ namespace WebPFileType
                         throw new WebPException(Resources.ApiVersionMismatch);
                     case WebPEncodingError.MetadataEncoding:
                         throw new WebPException(Resources.EncoderMetadataError);
+                    case WebPEncodingError.UserAbort:
+                        throw new OperationCanceledException();
                     case WebPEncodingError.NullParameter:
                     case WebPEncodingError.InvalidConfiguration:
                     case WebPEncodingError.PartitionZeroOverflow:

@@ -166,7 +166,18 @@ namespace WebPFileType
 
             if (progressCallback != null)
             {
-                encProgress = (int percent) => progressCallback(null, new ProgressEventArgs(percent, true));
+                encProgress = delegate(int percent)
+                {
+                    try
+                    {
+                        progressCallback(null, new ProgressEventArgs(percent, true));
+                        return true;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return false;
+                    }
+                };
             }
 
             WebPNative.WebPSave(WriteImageCallback, scratchSurface, encParams, metadata, encProgress);
