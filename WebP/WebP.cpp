@@ -147,7 +147,7 @@ static int EncodeImageMetadata(
         case WEBP_MUX_BAD_DATA:
         case WEBP_MUX_NOT_ENOUGH_DATA:
         default:
-            encodeError = errMuxEncodeMetaData;
+            encodeError = errMuxEncodeMetadata;
             break;
         }
     }

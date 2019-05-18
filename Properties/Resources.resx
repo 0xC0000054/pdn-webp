@@ -163,7 +163,7 @@
     <value>One of the {0} parameters is not valid.</value>
     <comment>{0} is the name of the P/Invoke method.</comment>
   </data>
-  <data name="EncoderMetaDataError" xml:space="preserve">
+  <data name="EncoderMetadataError" xml:space="preserve">
     <value>An error occurred when encoding the WebP meta-data.</value>
   </data>
   <data name="KeepMetadata_Text" xml:space="preserve">

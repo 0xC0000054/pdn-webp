@@ -90,9 +90,9 @@ namespace WebPFileType.Properties {
         /// <summary>
         ///   Looks up a localized string similar to An error occurred when encoding the WebP meta-data..
         /// </summary>
-        internal static string EncoderMetaDataError {
+        internal static string EncoderMetadataError {
             get {
-                return ResourceManager.GetString("EncoderMetaDataError", resourceCulture);
+                return ResourceManager.GetString("EncoderMetadataError", resourceCulture);
             }
         }
         

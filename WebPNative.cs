@@ -41,7 +41,7 @@ namespace WebPFileType
 
         private enum WebPEncodingError : int
         {
-            MetaDataEncoding = -2,
+            MetadataEncoding = -2,
             ApiVersionMismatch = -1,
             Ok = 0,
             OutOfMemory = 1,           // memory error allocating objects
@@ -292,8 +292,8 @@ namespace WebPFileType
                         throw new WebPException(Resources.EncoderFileTooBig);
                     case WebPEncodingError.ApiVersionMismatch:
                         throw new WebPException(Resources.ApiVersionMismatch);
-                    case WebPEncodingError.MetaDataEncoding:
-                        throw new WebPException(Resources.EncoderMetaDataError);
+                    case WebPEncodingError.MetadataEncoding:
+                        throw new WebPException(Resources.EncoderMetadataError);
                     case WebPEncodingError.NullParameter:
                     case WebPEncodingError.InvalidConfiguration:
                     case WebPEncodingError.PartitionZeroOverflow:
