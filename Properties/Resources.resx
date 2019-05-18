@@ -127,7 +127,7 @@
     <value>WebP encoder API version mismatch.</value>
   </data>
   <data name="EncoderFileTooBig" xml:space="preserve">
-    <value>Total file size must be less than 4GB</value>
+    <value>The total file size must be less than 4GB.</value>
   </data>
   <data name="EncoderGenericError" xml:space="preserve">
     <value>An error occurred when encoding the WebP file.</value>

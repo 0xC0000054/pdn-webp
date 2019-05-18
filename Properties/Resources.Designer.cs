@@ -70,7 +70,7 @@ namespace WebPFileType.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Total file size must be less than 4GB.
+        ///   Looks up a localized string similar to The total file size must be less than 4GB..
         /// </summary>
         internal static string EncoderFileTooBig {
             get {

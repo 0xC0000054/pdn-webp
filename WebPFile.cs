@@ -126,7 +126,16 @@ namespace WebPFileType
         /// <summary>
         /// The WebP save function.
         /// </summary>
+        /// <param name="input">The input Document.</param>
+        /// <param name="output">The output Stream.</param>
+        /// <param name="quality">The WebP save quality.</param>
+        /// <param name="preset">The WebP encoding preset.</param>
+        /// <param name="keepMetadata"><c>true</c> if metadata should be preserved; otherwise <c>false</c>.</param>
+        /// <param name="scratchSurface">The scratch surface.</param>
+        /// <param name="progressCallback">The progress callback.</param>
         /// <exception cref="FormatException">The image exceeds 16383 pixels in width and/or height.</exception>
+        /// <exception cref="OutOfMemoryException">Insufficient memory to save the image.</exception>
+        /// <exception cref="WebPException">The encoder returned a non-memory related error.</exception>
         internal static void Save(
             Document input,
             Stream output,
