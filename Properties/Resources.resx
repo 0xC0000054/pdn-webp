@@ -124,7 +124,7 @@
     <value>Encoding Passes</value>
   </data>
   <data name="InvalidWebPImage" xml:space="preserve">
-    <value>Invalid WebP Image.</value>
+    <value>The file is not a valid WebP Image.</value>
   </data>
   <data name="Quality_Text" xml:space="preserve">
     <value>Quality</value>
