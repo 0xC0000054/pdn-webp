@@ -72,7 +72,7 @@ DLLEXPORT uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSiz
 
 DLLEXPORT void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetadataType type);
 
-#define errVersionMismatch -1.
+#define errVersionMismatch -1
 
 #define errMuxEncodeMetadata -2
 
