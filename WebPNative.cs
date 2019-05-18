@@ -12,6 +12,7 @@
 
 using PaintDotNet;
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using WebPFileType.Properties;
 
@@ -222,7 +223,7 @@ namespace WebPFileType
                     case VP8StatusCode.OutOfMemory:
                         throw new OutOfMemoryException();
                     case VP8StatusCode.InvalidParam:
-                        throw new WebPException(Resources.InvalidParameter);
+                        throw new WebPException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidParameterFormat, nameof(WebPLoad)));
                     case VP8StatusCode.BitStreamError:
                     case VP8StatusCode.UnsupportedFeature:
                     case VP8StatusCode.NotEnoughData:

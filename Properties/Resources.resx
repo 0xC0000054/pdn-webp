@@ -159,8 +159,9 @@
   <data name="Preset_Text" xml:space="preserve">
     <value>Preset</value>
   </data>
-  <data name="InvalidParameter" xml:space="preserve">
-    <value>Invalid parameter.</value>
+  <data name="InvalidParameterFormat" xml:space="preserve">
+    <value>One of the {0} parameters is not valid.</value>
+    <comment>{0} is the name of the P/Invoke method.</comment>
   </data>
   <data name="EncoderMetaDataError" xml:space="preserve">
     <value>An error occurred when encoding the WebP meta-data.</value>

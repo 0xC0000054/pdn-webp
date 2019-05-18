@@ -115,11 +115,11 @@ namespace WebPFileType.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid parameter..
+        ///   Looks up a localized string similar to One of the {0} parameters is not valid..
         /// </summary>
-        internal static string InvalidParameter {
+        internal static string InvalidParameterFormat {
             get {
-                return ResourceManager.GetString("InvalidParameter", resourceCulture);
+                return ResourceManager.GetString("InvalidParameterFormat", resourceCulture);
             }
         }
         
