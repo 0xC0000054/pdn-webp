@@ -21,18 +21,17 @@ bool __stdcall WebPGetDimensions(const uint8_t* iData, size_t iDataSize, int* oW
 int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride)
 {
     WebPDecoderConfig config;
-    WebPDecBuffer* const output_buffer = &config.output;
 
     if (!WebPInitDecoderConfig(&config))
     {
         return errVersionMismatch;
     }
 
-    output_buffer->colorspace = MODE_BGRA;
-    output_buffer->is_external_memory = 1;
-    output_buffer->u.RGBA.rgba = outData;
-    output_buffer->u.RGBA.size = outSize;
-    output_buffer->u.RGBA.stride = outStride;
+    config.output.colorspace = MODE_BGRA;
+    config.output.is_external_memory = 1;
+    config.output.u.RGBA.rgba = outData;
+    config.output.u.RGBA.size = outSize;
+    config.output.u.RGBA.stride = outStride;
 
     return WebPDecode(data, dataSize, &config);
 }
