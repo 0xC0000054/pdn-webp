@@ -145,6 +145,11 @@ namespace WebPFileType
             Surface scratchSurface,
             ProgressEventHandler progressCallback)
         {
+            if (input.Width > WebPNative.WebPMaxDimension || input.Height > WebPNative.WebPMaxDimension)
+            {
+                throw new FormatException(Resources.InvalidImageDimensions);
+            }
+
             WebPNative.EncodeParams encParams = new WebPNative.EncodeParams
             {
                 quality = quality,

@@ -98,7 +98,8 @@ namespace WebPFileType
             }
         }
 
-        private const int WebPMaxDimension = 16383;
+        internal const int WebPMaxDimension = 16383;
+
         [System.Security.SuppressUnmanagedCodeSecurity]
         private unsafe static class WebP_32
         {
@@ -245,7 +246,6 @@ namespace WebPFileType
         /// <exception cref="ArgumentNullException"><paramref name="writeImageCallback"/> is null.
         /// or
         /// <paramref name="input"/> is null.</exception>
-        /// <exception cref="FormatException">The image exceeds 16383 pixels in width and/or height.</exception>
         /// <exception cref="OutOfMemoryException">Insufficient memory to save the image.</exception>
         /// <exception cref="WebPException">The encoder returned a non-memory related error.</exception>
         internal static void WebPSave(
@@ -263,11 +263,6 @@ namespace WebPFileType
             if (input == null)
             {
                 throw new ArgumentNullException(nameof(input));
-            }
-
-            if (input.Width > WebPMaxDimension || input.Height > WebPMaxDimension)
-            {
-                throw new FormatException(Resources.InvalidImageDimensions);
             }
 
             WebPEncodingError retVal = WebPEncodingError.Ok;
