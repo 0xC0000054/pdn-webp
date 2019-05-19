@@ -297,6 +297,8 @@ namespace WebPFileType
                         throw new WebPException(Resources.EncoderMetadataError);
                     case WebPEncodingError.UserAbort:
                         throw new OperationCanceledException();
+                    case WebPEncodingError.BadDimension:
+                        throw new WebPException(Resources.InvalidImageDimensions);
                     case WebPEncodingError.NullParameter:
                     case WebPEncodingError.InvalidConfiguration:
                     case WebPEncodingError.PartitionZeroOverflow:
