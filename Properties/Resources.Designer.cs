@@ -70,6 +70,15 @@ namespace WebPFileType.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The WebP encoder returned an I/O error..
+        /// </summary>
+        internal static string EncoderBadWrite {
+            get {
+                return ResourceManager.GetString("EncoderBadWrite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The total file size must be less than 4GB..
         /// </summary>
         internal static string EncoderFileTooBig {
@@ -88,11 +97,47 @@ namespace WebPFileType.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The WebP encoder configuration is invalid..
+        /// </summary>
+        internal static string EncoderInvalidConfiguration {
+            get {
+                return ResourceManager.GetString("EncoderInvalidConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred when encoding the WebP metadata..
         /// </summary>
         internal static string EncoderMetadataError {
             get {
                 return ResourceManager.GetString("EncoderMetadataError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A WebP encoder parameter is null..
+        /// </summary>
+        internal static string EncoderNullParameter {
+            get {
+                return ResourceManager.GetString("EncoderNullParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The partition is larger than 16 Mb..
+        /// </summary>
+        internal static string EncoderPartitionOverflow {
+            get {
+                return ResourceManager.GetString("EncoderPartitionOverflow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Partition #0 is larger than 512 Kb..
+        /// </summary>
+        internal static string EncoderPartitionZeroOverflow {
+            get {
+                return ResourceManager.GetString("EncoderPartitionZeroOverflow", resourceCulture);
             }
         }
         

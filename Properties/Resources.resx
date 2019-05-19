@@ -169,4 +169,19 @@
   <data name="KeepMetadata_Text" xml:space="preserve">
     <value>Keep Metadata</value>
   </data>
+  <data name="EncoderBadWrite" xml:space="preserve">
+    <value>The WebP encoder returned an I/O error.</value>
+  </data>
+  <data name="EncoderInvalidConfiguration" xml:space="preserve">
+    <value>The WebP encoder configuration is invalid.</value>
+  </data>
+  <data name="EncoderNullParameter" xml:space="preserve">
+    <value>A WebP encoder parameter is null.</value>
+  </data>
+  <data name="EncoderPartitionOverflow" xml:space="preserve">
+    <value>The partition is larger than 16 Mb.</value>
+  </data>
+  <data name="EncoderPartitionZeroOverflow" xml:space="preserve">
+    <value>Partition #0 is larger than 512 Kb.</value>
+  </data>
 </root>

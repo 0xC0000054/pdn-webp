@@ -13,6 +13,7 @@
 using PaintDotNet;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
 using WebPFileType.Properties;
 
@@ -295,10 +296,15 @@ namespace WebPFileType
                     case WebPEncodingError.BadDimension:
                         throw new WebPException(Resources.InvalidImageDimensions);
                     case WebPEncodingError.NullParameter:
+                        throw new WebPException(Resources.EncoderNullParameter);
                     case WebPEncodingError.InvalidConfiguration:
+                        throw new WebPException(Resources.EncoderInvalidConfiguration);
                     case WebPEncodingError.PartitionZeroOverflow:
+                        throw new WebPException(Resources.EncoderPartitionZeroOverflow);
                     case WebPEncodingError.PartitionOverflow:
+                        throw new WebPException(Resources.EncoderPartitionOverflow);
                     case WebPEncodingError.BadWrite:
+                        throw new IOException(Resources.EncoderBadWrite);
                     default:
                         throw new WebPException(Resources.EncoderGenericError);
                 }
