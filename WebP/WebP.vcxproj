@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="scoped.h" />
     <ClInclude Include="WebP.h" />
   </ItemGroup>
   <ItemGroup>

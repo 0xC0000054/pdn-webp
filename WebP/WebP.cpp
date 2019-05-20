@@ -12,6 +12,7 @@
 
 #include <memory.h>
 #include "WebP.h"
+#include "scoped.h"
 
 bool __stdcall WebPGetDimensions(const uint8_t* iData, size_t iDataSize, int* oWidth, int* oHeight)
 {
@@ -74,7 +75,7 @@ static int EncodeImageMetadata(
         return VP8_ENC_ERROR_NULL_PARAMETER;
     }
 
-    WebPMux* mux = WebPMuxNew();
+    ScopedWebPMux mux(WebPMuxNew());
     if (mux == nullptr)
     {
         return VP8_ENC_ERROR_OUT_OF_MEMORY;
@@ -84,7 +85,7 @@ static int EncodeImageMetadata(
     imageData.bytes = image;
     imageData.size = imageSize;
 
-    WebPMuxError muxError = WebPMuxSetImage(mux, &imageData, 0);
+    WebPMuxError muxError = WebPMuxSetImage(mux.get(), &imageData, 0);
 
     if (muxError == WEBP_MUX_OK)
     {
@@ -95,7 +96,7 @@ static int EncodeImageMetadata(
             chunkData.bytes = metadata->iccProfile;
             chunkData.size = metadata->iccProfileSize;
 
-            muxError = WebPMuxSetChunk(mux, "ICCP", &chunkData, 1);
+            muxError = WebPMuxSetChunk(mux.get(), "ICCP", &chunkData, 1);
         }
 
         if (muxError == WEBP_MUX_OK && metadata->exifSize > 0)
@@ -103,7 +104,7 @@ static int EncodeImageMetadata(
             chunkData.bytes = metadata->exif;
             chunkData.size = metadata->exifSize;
 
-            muxError = WebPMuxSetChunk(mux, "EXIF", &chunkData, 1);
+            muxError = WebPMuxSetChunk(mux.get(), "EXIF", &chunkData, 1);
         }
 
         if (muxError == WEBP_MUX_OK && metadata->xmpSize > 0)
@@ -111,25 +112,21 @@ static int EncodeImageMetadata(
             chunkData.bytes = metadata->xmp;
             chunkData.size = metadata->xmpSize;
 
-            muxError = WebPMuxSetChunk(mux, "XMP ", &chunkData, 1);
+            muxError = WebPMuxSetChunk(mux.get(), "XMP ", &chunkData, 1);
         }
 
         if (muxError == WEBP_MUX_OK)
         {
-            WebPData assembledData;
+            ScopedWebPMuxAssembler assembler(mux.get());
 
-            muxError = WebPMuxAssemble(mux, &assembledData);
+            muxError = assembler.GetStatus();
 
             if (muxError == WEBP_MUX_OK)
             {
-                writeImageCallback(assembledData.bytes, assembledData.size);
-
-                WebPDataClear(&assembledData);
+                writeImageCallback(assembler.GetBuffer(), assembler.GetBufferSize());
             }
         }
     }
-    WebPMuxDelete(mux);
-    mux = nullptr;
 
     int encodeError = VP8_ENC_OK;
 
@@ -170,10 +167,15 @@ int __stdcall WebPSave(
     }
 
     WebPConfig config;
-    WebPPicture pic;
-    WebPMemoryWriter wrt;
+    ScopedWebPPicture pic;
+    ScopedWebPMemoryWriter wrt;
 
-    if (!WebPConfigPreset(&config, static_cast<WebPPreset>(params->preset), params->quality) || !WebPPictureInit(&pic))
+    if (pic == nullptr || wrt == nullptr)
+    {
+        return VP8_ENC_ERROR_OUT_OF_MEMORY;
+    }
+
+    if (!WebPConfigPreset(&config, static_cast<WebPPreset>(params->preset), params->quality) || !pic.IsInitalized())
     {
         return errVersionMismatch; // WebP API version mismatch
     }
@@ -184,7 +186,7 @@ int __stdcall WebPSave(
     if (params->quality == 100)
     {
         config.lossless = 1;
-        pic.use_argb = 1;
+        pic->use_argb = 1;
 
         switch (params->preset)
         {
@@ -200,16 +202,15 @@ int __stdcall WebPSave(
         }
     }
 
-    pic.width = width;
-    pic.height = height;
+    pic->width = width;
+    pic->height = height;
 
-    WebPMemoryWriterInit(&wrt);
-    pic.writer = WebPMemoryWrite;
-    pic.custom_ptr = &wrt;
+    pic->writer = WebPMemoryWrite;
+    pic->custom_ptr = wrt.Get();
 
     if (HasTransparency(bitmap, width, height, stride))
     {
-        if (WebPPictureImportBGRA(&pic, reinterpret_cast<const uint8_t*>(bitmap), stride) == 0)
+        if (WebPPictureImportBGRA(pic.Get(), reinterpret_cast<const uint8_t*>(bitmap), stride) == 0)
         {
             return VP8_ENC_ERROR_OUT_OF_MEMORY;
         }
@@ -217,7 +218,7 @@ int __stdcall WebPSave(
     else
     {
         // If the image does not have any transparency import using the BGRX method which will ignore the alpha channel.
-        if (WebPPictureImportBGRX(&pic, reinterpret_cast<const uint8_t*>(bitmap), stride) == 0)
+        if (WebPPictureImportBGRX(pic.Get(), reinterpret_cast<const uint8_t*>(bitmap), stride) == 0)
         {
             return VP8_ENC_ERROR_OUT_OF_MEMORY;
         }
@@ -225,28 +226,26 @@ int __stdcall WebPSave(
 
     if (callback != nullptr)
     {
-        pic.user_data = callback;
-        pic.progress_hook = ProgressReport;
+        pic->user_data = callback;
+        pic->progress_hook = ProgressReport;
     }
 
     int error = VP8_ENC_OK;
-    if (WebPEncode(&config, &pic) != 0) // C-style Boolean
+    if (WebPEncode(&config, pic.Get()) != 0) // C-style Boolean
     {
         if (metadata != nullptr)
         {
-            error = EncodeImageMetadata(wrt.mem, wrt.size, metadata, writeImageCallback);
+            error = EncodeImageMetadata(wrt.GetBuffer(), wrt.GetBufferSize(), metadata, writeImageCallback);
         }
         else
         {
-            writeImageCallback(wrt.mem, wrt.size);
+            writeImageCallback(wrt.GetBuffer(), wrt.GetBufferSize());
         }
     }
     else
     {
-        error = static_cast<int>(pic.error_code);
+        error = static_cast<int>(pic->error_code);
     }
-    WebPMemoryWriterClear(&wrt);
-    WebPPictureFree(&pic); // free the allocated memory and return the error code if necessary.
 
     return error;
 }
@@ -259,10 +258,10 @@ uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, Metadat
     webpData.bytes = data;
     webpData.size = dataSize;
 
-    WebPDemuxer* demux = WebPDemux(&webpData);
+    ScopedWebPDemuxer demux(WebPDemux(&webpData));
     if (demux != nullptr)
     {
-        uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
+        uint32_t flags = WebPDemuxGetI(demux.get(), WEBP_FF_FORMAT_FLAGS);
 
         WebPChunkIterator iter;
         memset(&iter, 0, sizeof(WebPChunkIterator));
@@ -273,19 +272,19 @@ uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, Metadat
         case ColorProfile:
             if ((flags & ICCP_FLAG) != 0)
             {
-                result = WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
+                result = WebPDemuxGetChunk(demux.get(), "ICCP", 1, &iter);
             }
         break;
         case EXIF:
             if ((flags & EXIF_FLAG) != 0)
             {
-                result = WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
+                result = WebPDemuxGetChunk(demux.get(), "EXIF", 1, &iter);
             }
             break;
         case XMP:
             if ((flags & XMP_FLAG) != 0)
             {
-                result = WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
+                result = WebPDemuxGetChunk(demux.get(), "XMP ", 1, &iter);
             }
             break;
         }
@@ -296,7 +295,6 @@ uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, Metadat
         }
 
         WebPDemuxReleaseChunkIterator(&iter);
-        WebPDemuxDelete(demux);
     }
 
     return outSize;
@@ -308,10 +306,10 @@ void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* ou
     webpData.bytes = data;
     webpData.size = dataSize;
 
-    WebPDemuxer* demux = WebPDemux(&webpData);
+    ScopedWebPDemuxer demux(WebPDemux(&webpData));
     if (demux != nullptr)
     {
-        uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
+        uint32_t flags = WebPDemuxGetI(demux.get(), WEBP_FF_FORMAT_FLAGS);
 
         WebPChunkIterator iter;
         memset(&iter, 0, sizeof(WebPChunkIterator));
@@ -322,19 +320,19 @@ void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* ou
         case ColorProfile:
             if ((flags & ICCP_FLAG) != 0)
             {
-                result = WebPDemuxGetChunk(demux, "ICCP", 1, &iter);
+                result = WebPDemuxGetChunk(demux.get(), "ICCP", 1, &iter);
             }
         break;
         case EXIF:
             if ((flags & EXIF_FLAG) != 0)
             {
-                result = WebPDemuxGetChunk(demux, "EXIF", 1, &iter);
+                result = WebPDemuxGetChunk(demux.get(), "EXIF", 1, &iter);
             }
             break;
         case XMP:
             if ((flags & XMP_FLAG) != 0)
             {
-                result = WebPDemuxGetChunk(demux, "XMP ", 1, &iter);
+                result = WebPDemuxGetChunk(demux.get(), "XMP ", 1, &iter);
             }
             break;
         }
@@ -345,6 +343,5 @@ void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* ou
         }
 
         WebPDemuxReleaseChunkIterator(&iter);
-        WebPDemuxDelete(demux);
     }
 }
