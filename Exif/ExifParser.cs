@@ -264,10 +264,12 @@ namespace WebPFileType.Exif
                             break;
                         case TiffTags.StripOffsets:
                         case TiffTags.StripByteCounts:
+                        case TiffTags.SubIFDs:
                         case TiffTags.ThumbnailOffset:
                         case TiffTags.ThumbnailLength:
                             // Skip the thumbnail and/or preview images.
                             // The StripOffsets and StripByteCounts tags are used to store a preview image in some formats.
+                            // The SubIFDs tag is used to store thumbnails in TIFF and for storing other data in some camera formats.
                             //
                             // Note that some cameras will also store a thumbnail as part of their private data in the EXIF MakerNote tag.
                             // The EXIF MakerNote tag is treated as an opaque blob, so those thumbnails will be preserved.
@@ -778,6 +780,7 @@ namespace WebPFileType.Exif
         {
             internal const ushort StripOffsets = 273;
             internal const ushort StripByteCounts = 279;
+            internal const ushort SubIFDs = 330;
             internal const ushort ThumbnailOffset = 513;
             internal const ushort ThumbnailLength = 514;
             internal const ushort ExifIFD = 34665;
