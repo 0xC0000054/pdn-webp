@@ -23,7 +23,7 @@ struct webp_mux_deleter
 {
     void operator()(WebPMux* mux)
     {
-        if (mux)
+        if (mux != nullptr)
         {
             WebPMuxDelete(mux);
         }
@@ -37,7 +37,7 @@ class ScopedWebPMuxAssembler
 public:
     ScopedWebPMuxAssembler(WebPMux* mux) : data(new(std::nothrow)WebPData)
     {
-        if (data)
+        if (data != nullptr)
         {
             status = WebPMuxAssemble(mux, data);
         }
@@ -54,7 +54,7 @@ public:
 
     const uint8_t* GetBuffer() const
     {
-        if (data)
+        if (data != nullptr)
         {
             return data->bytes;
         }
@@ -66,7 +66,7 @@ public:
 
     size_t GetBufferSize() const
     {
-        if (data)
+        if (data != nullptr)
         {
             return data->size;
         }
@@ -83,7 +83,7 @@ public:
 
     void Release()
     {
-        if (data)
+        if (data != nullptr)
         {
             WebPDataClear(data);
             delete data;
@@ -110,7 +110,7 @@ struct webp_demux_deleter
 {
     void operator()(WebPDemuxer* mux)
     {
-        if (mux)
+        if (mux != nullptr)
         {
             WebPDemuxDelete(mux);
         }
@@ -125,7 +125,7 @@ public:
 
     ScopedWebPPicture() : picture(new(std::nothrow)WebPPicture), initialized(false)
     {
-        if (picture)
+        if (picture != nullptr)
         {
             initialized = WebPPictureInit(picture) != 0;
         }
@@ -148,7 +148,7 @@ public:
 
     void Release()
     {
-        if (picture)
+        if (picture != nullptr)
         {
             if (initialized)
             {
@@ -191,7 +191,7 @@ public:
 
     ScopedWebPMemoryWriter() : writer(new(std::nothrow)WebPMemoryWriter)
     {
-        if (writer)
+        if (writer != nullptr)
         {
             WebPMemoryWriterInit(writer);
         }
@@ -209,7 +209,7 @@ public:
 
     uint8_t* GetBuffer() const
     {
-        if (writer)
+        if (writer != nullptr)
         {
             return writer->mem;
         }
@@ -221,7 +221,7 @@ public:
 
     size_t GetBufferSize() const
     {
-        if (writer)
+        if (writer != nullptr)
         {
             return writer->size;
         }
@@ -233,7 +233,7 @@ public:
 
     void Release()
     {
-        if (writer)
+        if (writer != nullptr)
         {
             WebPMemoryWriterClear(writer);
 
