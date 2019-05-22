@@ -22,7 +22,7 @@ using WebPFileType.Properties;
 
 namespace WebPFileType
 {
-    static class WebPFile
+    internal static class WebPFile
     {
         /// <summary>
         /// Gets the color profile from the WebP image.
