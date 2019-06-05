@@ -435,8 +435,8 @@ namespace WebPFileType.Exif
                     lo = (uint)((buffer[readOffset + 4] << 24) | (buffer[readOffset + 5] << 16) | (buffer[readOffset + 6] << 8) | buffer[readOffset + 7]);
                     break;
                 case Endianess.Little:
-                    hi = (uint)(buffer[readOffset] | (buffer[readOffset + 1] << 8) | (buffer[readOffset + 2] << 16) | (buffer[readOffset + 3] << 24));
-                    lo = (uint)(buffer[readOffset + 4] | (buffer[readOffset + 5] << 8) | (buffer[readOffset + 6] << 16) | (buffer[readOffset + 7] << 24));
+                    lo = (uint)(buffer[readOffset] | (buffer[readOffset + 1] << 8) | (buffer[readOffset + 2] << 16) | (buffer[readOffset + 3] << 24));
+                    hi = (uint)(buffer[readOffset + 4] | (buffer[readOffset + 5] << 8) | (buffer[readOffset + 6] << 16) | (buffer[readOffset + 7] << 24));
                     break;
                 default:
                     throw new InvalidOperationException("Unsupported byte order: " + endianess.ToString());
