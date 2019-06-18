@@ -34,7 +34,10 @@ namespace WebPFileType
             KeepMetadata
         }
 
-        public WebPFileType() : base("WebP", FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress, new string[] { ".webp" })
+        public WebPFileType()
+            : base("WebP",
+                  FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress,
+                  new string[] { ".webp" })
         {
         }
 
