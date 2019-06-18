@@ -210,10 +210,7 @@ namespace WebPFileType.Exif
         {
             VerifyNotDisposed();
 
-            if ((readOffset + sizeof(byte)) > readLength)
-            {
-                FillBuffer(sizeof(byte));
-            }
+            EnsureBuffer(sizeof(byte));
 
             byte val = buffer[readOffset];
             readOffset += sizeof(byte);
@@ -317,10 +314,7 @@ namespace WebPFileType.Exif
         {
             VerifyNotDisposed();
 
-            if ((readOffset + sizeof(ushort)) > readLength)
-            {
-                FillBuffer(sizeof(ushort));
-            }
+            EnsureBuffer(sizeof(ushort));
 
             ushort val;
 
@@ -362,10 +356,7 @@ namespace WebPFileType.Exif
         {
             VerifyNotDisposed();
 
-            if ((readOffset + sizeof(uint)) > readLength)
-            {
-                FillBuffer(sizeof(uint));
-            }
+            EnsureBuffer(sizeof(uint));
 
             uint val;
 
@@ -420,10 +411,7 @@ namespace WebPFileType.Exif
         {
             VerifyNotDisposed();
 
-            if ((readOffset + sizeof(ulong)) > readLength)
-            {
-                FillBuffer(sizeof(ulong));
-            }
+            EnsureBuffer(sizeof(ulong));
 
             uint hi;
             uint lo;
@@ -468,16 +456,26 @@ namespace WebPFileType.Exif
                 return string.Empty;
             }
 
-            if ((readOffset + length) > readLength)
-            {
-                FillBuffer(length);
-            }
+            EnsureBuffer(length);
 
             string value = System.Text.Encoding.ASCII.GetString(buffer, readOffset, length);
 
             readOffset += length;
 
             return value;
+        }
+
+        /// <summary>
+        /// Ensures that the buffer contains at least the number of bytes requested.
+        /// </summary>
+        /// <param name="count">The minimum number of bytes the buffer should contain.</param>
+        /// <exception cref="EndOfStreamException">The end of the stream has been reached.</exception>
+        private void EnsureBuffer(int count)
+        {
+            if ((readOffset + count) > readLength)
+            {
+                FillBuffer(count);
+            }
         }
 
         /// <summary>
