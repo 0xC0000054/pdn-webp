@@ -157,7 +157,7 @@ int __stdcall WebPSave(
     const int width,
     const int height,
     const int stride,
-    const EncodeParams* params,
+    const EncodeParams* encodeOptions,
     const MetadataParams* metadata,
     ProgressFn callback)
 {
@@ -175,7 +175,7 @@ int __stdcall WebPSave(
         return VP8_ENC_ERROR_OUT_OF_MEMORY;
     }
 
-    if (!WebPConfigPreset(&config, static_cast<WebPPreset>(params->preset), params->quality) || !pic.IsInitalized())
+    if (!WebPConfigPreset(&config, static_cast<WebPPreset>(encodeOptions->preset), encodeOptions->quality) || !pic.IsInitalized())
     {
         return errVersionMismatch; // WebP API version mismatch
     }
@@ -183,12 +183,12 @@ int __stdcall WebPSave(
     config.method = 6; // 6 is the highest quality encoding
     config.thread_level = 1;
 
-    if (params->quality == 100)
+    if (encodeOptions->quality == 100)
     {
         config.lossless = 1;
         pic->use_argb = 1;
 
-        switch (params->preset)
+        switch (encodeOptions->preset)
         {
         case WEBP_PRESET_PHOTO:
             config.image_hint = WEBP_HINT_PHOTO;

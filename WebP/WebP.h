@@ -71,7 +71,7 @@ DLLEXPORT int __stdcall WebPSave(
     const int width,
     const int height,
     const int stride,
-    const EncodeParams* params,
+    const EncodeParams* encodeOptions,
     const MetadataParams* metadata,
     ProgressFn progressCallback);
 
