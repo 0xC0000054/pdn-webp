@@ -67,7 +67,7 @@ DLLEXPORT int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* 
 
 DLLEXPORT int __stdcall WebPSave(
     const WriteImageFn writeImageCallback,
-    const void* iBitmap,
+    const void* bitmap,
     const int width,
     const int height,
     const int stride,
