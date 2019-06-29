@@ -161,7 +161,7 @@ int __stdcall WebPSave(
     const MetadataParams* metadata,
     ProgressFn callback)
 {
-    if (writeImageCallback == nullptr)
+    if (writeImageCallback == nullptr || bitmap == nullptr || encodeOptions == nullptr)
     {
         return VP8_ENC_ERROR_NULL_PARAMETER;
     }
