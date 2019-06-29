@@ -75,7 +75,7 @@ DLLEXPORT int __stdcall WebPSave(
     const MetadataParams* metadata,
     ProgressFn progressCallback);
 
-DLLEXPORT uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize,  MetadataType type);
+DLLEXPORT uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, MetadataType type);
 
 DLLEXPORT void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetadataType type);
 
