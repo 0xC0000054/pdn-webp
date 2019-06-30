@@ -59,10 +59,12 @@ namespace WebPFileType
                     {
                         Marshal.FreeHGlobal(metadata->iccProfile);
                     }
+
                     if (metadata->exif != IntPtr.Zero)
                     {
                         Marshal.FreeHGlobal(metadata->exif);
                     }
+
                     if (metadata->xmp != IntPtr.Zero)
                     {
                         Marshal.FreeHGlobal(metadata->xmp);
