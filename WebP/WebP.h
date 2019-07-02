@@ -61,7 +61,7 @@ typedef struct MetadataParams
     size_t xmpSize;
 }MetadataParams;
 
-DLLEXPORT bool __stdcall WebPGetDimensions(const uint8_t* iData, size_t iData_size, int* oWidth, int* oHeight);
+DLLEXPORT bool __stdcall WebPGetDimensions(const uint8_t* data, size_t dataSize, int* width, int* height);
 
 DLLEXPORT int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride);
 

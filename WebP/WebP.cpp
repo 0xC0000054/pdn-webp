@@ -14,9 +14,9 @@
 #include "WebP.h"
 #include "scoped.h"
 
-bool __stdcall WebPGetDimensions(const uint8_t* iData, size_t iDataSize, int* oWidth, int* oHeight)
+bool __stdcall WebPGetDimensions(const uint8_t* data, size_t dataSize, int* width, int* height)
 {
-    return (WebPGetInfo(iData, iDataSize, oWidth, oHeight) != 0);
+    return (WebPGetInfo(data, dataSize, width, height) != 0);
 }
 
 int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride)
