@@ -189,6 +189,11 @@ namespace WebPFileType
 
             void WriteImageCallback(IntPtr image, UIntPtr imageSize)
             {
+                if (image == IntPtr.Zero || imageSize == UIntPtr.Zero)
+                {
+                    return;
+                }
+
                 // 81920 is the largest multiple of 4096 that is below the large object heap threshold.
                 const int MaxBufferSize = 81920;
 
