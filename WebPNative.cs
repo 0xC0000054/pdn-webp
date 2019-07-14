@@ -62,7 +62,7 @@ namespace WebPFileType
         internal delegate bool WebPReportProgress(int progress);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        internal delegate void WebPWriteImage(IntPtr image, UIntPtr imageSize);
+        private delegate WebPEncodingError WebPWriteImage(IntPtr image, UIntPtr imageSize);
 
         [StructLayout(LayoutKind.Sequential)]
         internal sealed class EncodeParams
@@ -250,21 +250,19 @@ namespace WebPFileType
         /// <exception cref="OutOfMemoryException">Insufficient memory to save the image.</exception>
         /// <exception cref="WebPException">The encoder returned a non-memory related error.</exception>
         internal static void WebPSave(
-            WebPWriteImage writeImageCallback,
             Surface input,
+            Stream output,
             EncodeParams parameters,
             MetadataParams metadata,
             WebPReportProgress callback)
         {
-            if (writeImageCallback == null)
-            {
-                throw new ArgumentNullException(nameof(writeImageCallback));
-            }
-
             if (input == null)
             {
                 throw new ArgumentNullException(nameof(input));
             }
+
+            StreamIOHandler handler = new StreamIOHandler(output);
+            WebPWriteImage writeImageCallback = handler.WriteImageCallback;
 
             WebPEncodingError retVal = WebPEncodingError.Ok;
 
@@ -304,7 +302,14 @@ namespace WebPFileType
                     case WebPEncodingError.PartitionOverflow:
                         throw new WebPException(Resources.EncoderPartitionOverflow);
                     case WebPEncodingError.BadWrite:
-                        throw new IOException(Resources.EncoderBadWrite);
+                        if (handler.WriteException != null)
+                        {
+                            throw new IOException(Resources.EncoderBadWrite, handler.WriteException);
+                        }
+                        else
+                        {
+                            throw new IOException(Resources.EncoderBadWrite);
+                        }
                     default:
                         throw new WebPException(Resources.EncoderGenericError);
                 }
@@ -342,6 +347,76 @@ namespace WebPFileType
                 {
                     WebP_32.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
+            }
+        }
+
+        private sealed class StreamIOHandler
+        {
+            private readonly Stream output;
+
+            public StreamIOHandler(Stream output)
+            {
+                this.output = output ?? throw new ArgumentNullException(nameof(output));
+            }
+
+            public Exception WriteException { get; private set; }
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage(
+                "Microsoft.Design",
+                "CA1031:DoNotCatchGeneralExceptionTypes",
+                Justification = "The exception will be re-thrown after WebPSave returns the error code.")]
+            public WebPEncodingError WriteImageCallback(IntPtr image, UIntPtr imageSize)
+            {
+                if (image == IntPtr.Zero)
+                {
+                    return WebPEncodingError.NullParameter;
+                }
+
+                if (imageSize == UIntPtr.Zero)
+                {
+                    // Ignore zero-length images.
+                    return WebPEncodingError.Ok;
+                }
+
+                // 81920 is the largest multiple of 4096 that is below the large object heap threshold.
+                const int MaxBufferSize = 81920;
+
+                try
+                {
+                    long size = checked((long)imageSize.ToUInt64());
+
+                    int bufferSize = (int)Math.Min(size, MaxBufferSize);
+
+                    byte[] streamBuffer = new byte[bufferSize];
+
+                    output.SetLength(size);
+
+                    long offset = 0;
+                    long remaining = size;
+
+                    while (remaining > 0)
+                    {
+                        int copySize = (int)Math.Min(MaxBufferSize, remaining);
+
+                        Marshal.Copy(new IntPtr(image.ToInt64() + offset), streamBuffer, 0, copySize);
+
+                        output.Write(streamBuffer, 0, copySize);
+
+                        offset += copySize;
+                        remaining -= copySize;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return WebPEncodingError.UserAbort;
+                }
+                catch (Exception ex)
+                {
+                    WriteException = ex;
+                    return WebPEncodingError.BadWrite;
+                }
+
+                return WebPEncodingError.Ok;
             }
         }
     }

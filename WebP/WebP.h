@@ -35,7 +35,7 @@ typedef bool (__stdcall *ProgressFn)(int progress);
 // The write image callback.
 // This saves memory when writing large images by allowing the caller to read the image in chunks from
 // the WebPMemoryWriter's buffer instead requiring that new memory be allocated to store the entire image.
-typedef void (__stdcall *WriteImageFn)(const uint8_t* image, const size_t imageSize);
+typedef WebPEncodingError (__stdcall *WriteImageFn)(const uint8_t* image, const size_t imageSize);
 
 typedef struct EncodeParams
 {

@@ -81,6 +81,8 @@ static int EncodeImageMetadata(
         return VP8_ENC_ERROR_OUT_OF_MEMORY;
     }
 
+    int encodeError = VP8_ENC_OK;
+
     WebPData imageData;
     imageData.bytes = image;
     imageData.size = imageSize;
@@ -123,14 +125,12 @@ static int EncodeImageMetadata(
 
             if (muxError == WEBP_MUX_OK)
             {
-                writeImageCallback(assembler.GetBuffer(), assembler.GetBufferSize());
+                encodeError = writeImageCallback(assembler.GetBuffer(), assembler.GetBufferSize());
             }
         }
     }
 
-    int encodeError = VP8_ENC_OK;
-
-    if (muxError != WEBP_MUX_OK)
+    if (muxError != WEBP_MUX_OK && encodeError == VP8_ENC_OK)
     {
         switch (muxError)
         {
@@ -239,7 +239,7 @@ int __stdcall WebPSave(
         }
         else
         {
-            writeImageCallback(wrt.GetBuffer(), wrt.GetBufferSize());
+            error = writeImageCallback(wrt.GetBuffer(), wrt.GetBufferSize());
         }
     }
     else

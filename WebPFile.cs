@@ -185,41 +185,7 @@ namespace WebPFileType
                 };
             }
 
-            WebPNative.WebPSave(WriteImageCallback, scratchSurface, encParams, metadata, encProgress);
-
-            void WriteImageCallback(IntPtr image, UIntPtr imageSize)
-            {
-                if (image == IntPtr.Zero || imageSize == UIntPtr.Zero)
-                {
-                    return;
-                }
-
-                // 81920 is the largest multiple of 4096 that is below the large object heap threshold.
-                const int MaxBufferSize = 81920;
-
-                long size = checked((long)imageSize.ToUInt64());
-
-                int bufferSize = (int)Math.Min(size, MaxBufferSize);
-
-                byte[] streamBuffer = new byte[bufferSize];
-
-                output.SetLength(size);
-
-                long offset = 0;
-                long remaining = size;
-
-                while (remaining > 0)
-                {
-                    int copySize = (int)Math.Min(MaxBufferSize, remaining);
-
-                    Marshal.Copy(new IntPtr(image.ToInt64() + offset), streamBuffer, 0, copySize);
-
-                    output.Write(streamBuffer, 0, copySize);
-
-                    offset += copySize;
-                    remaining -= copySize;
-                }
-            }
+            WebPNative.WebPSave(scratchSurface, output, encParams, metadata, encProgress);
         }
 
         private static WebPNative.MetadataParams CreateWebPMetadata(Document doc, Surface scratchSurface)
