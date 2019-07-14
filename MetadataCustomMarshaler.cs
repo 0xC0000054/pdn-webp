@@ -18,6 +18,7 @@ namespace WebPFileType
     internal sealed class MetadataCustomMarshaler : ICustomMarshaler
     {
         // This must be kept in sync with the MetadataParams structure in WebP.h.
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1049:TypesThatOwnNativeResourcesShouldBeDisposable")]
         [StructLayout(LayoutKind.Sequential)]
         private struct NativeMetadataParams
         {
