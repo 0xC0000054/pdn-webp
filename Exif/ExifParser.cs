@@ -48,7 +48,7 @@ namespace WebPFileType.Exif
         /// A collection containing the EXIF properties.
         /// </returns>
         /// <exception cref="ArgumentNullException"><paramref name="exifBytes"/> is null.</exception>
-        internal static List<PropertyItem> Parse(byte[] exifBytes)
+        internal static ExifValueCollection Parse(byte[] exifBytes)
         {
             if (exifBytes == null)
             {
@@ -91,7 +91,7 @@ namespace WebPFileType.Exif
                 stream?.Dispose();
             }
 
-            return propertyItems;
+            return new ExifValueCollection(propertyItems);
         }
 
         private static Endianess? TryDetectTiffByteOrder(Stream stream)

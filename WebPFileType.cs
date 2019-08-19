@@ -46,21 +46,7 @@ namespace WebPFileType
             return new FileType[] { new WebPFileType()};
         }
 
-        private static PropertyItem GetAndRemoveExifValue(ref List<PropertyItem> exifMetadata, ExifTagID tag)
-        {
-            int tagID = unchecked((ushort)tag);
-
-            PropertyItem value = exifMetadata.Find(p => p.Id == tagID);
-
-            if (value != null)
-            {
-                exifMetadata.RemoveAll(p => p.Id == tagID);
-            }
-
-            return value;
-        }
-
-        private static Document GetOrientedDocument(byte[] bytes, out List<PropertyItem> exifMetadata)
+        private static Document GetOrientedDocument(byte[] bytes, out ExifValueCollection exifMetadata)
         {
             exifMetadata = null;
 
@@ -77,7 +63,7 @@ namespace WebPFileType
 
                     if (exifMetadata.Count > 0)
                     {
-                        PropertyItem orientationProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.Orientation);
+                        PropertyItem orientationProperty = exifMetadata.GetAndRemoveValue(ExifTagID.Orientation);
                         if (orientationProperty != null)
                         {
                             RotateFlipType transform = PropertyItemHelpers.GetOrientationTransform(orientationProperty);
@@ -87,9 +73,9 @@ namespace WebPFileType
                             }
                         }
 
-                        PropertyItem xResProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.XResolution);
-                        PropertyItem yResProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.YResolution);
-                        PropertyItem resUnitProperty = GetAndRemoveExifValue(ref exifMetadata, ExifTagID.ResolutionUnit);
+                        PropertyItem xResProperty = exifMetadata.GetAndRemoveValue(ExifTagID.XResolution);
+                        PropertyItem yResProperty = exifMetadata.GetAndRemoveValue(ExifTagID.YResolution);
+                        PropertyItem resUnitProperty = exifMetadata.GetAndRemoveValue(ExifTagID.ResolutionUnit);
                         if (xResProperty != null && yResProperty != null && resUnitProperty != null)
                         {
                             if (PropertyItemHelpers.TryDecodeRational(xResProperty, out double xRes) &&
@@ -146,7 +132,7 @@ namespace WebPFileType
 
             input.ProperRead(bytes, 0, (int)input.Length);
 
-            Document doc = GetOrientedDocument(bytes, out List<PropertyItem> exifMetadata);
+            Document doc = GetOrientedDocument(bytes, out ExifValueCollection exifMetadata);
 
             byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
             if (colorProfileBytes != null)
