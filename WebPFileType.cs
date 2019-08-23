@@ -66,7 +66,7 @@ namespace WebPFileType
                         PropertyItem orientationProperty = exifMetadata.GetAndRemoveValue(ExifTagID.Orientation);
                         if (orientationProperty != null)
                         {
-                            RotateFlipType transform = PropertyItemHelpers.GetOrientationTransform(orientationProperty);
+                            RotateFlipType transform = MetadataHelpers.GetOrientationTransform(orientationProperty);
                             if (transform != RotateFlipType.RotateNoneFlipNone)
                             {
                                 image.RotateFlip(transform);
@@ -78,9 +78,9 @@ namespace WebPFileType
                         PropertyItem resUnitProperty = exifMetadata.GetAndRemoveValue(ExifTagID.ResolutionUnit);
                         if (xResProperty != null && yResProperty != null && resUnitProperty != null)
                         {
-                            if (PropertyItemHelpers.TryDecodeRational(xResProperty, out double xRes) &&
-                                PropertyItemHelpers.TryDecodeRational(yResProperty, out double yRes) &&
-                                PropertyItemHelpers.TryDecodeShort(resUnitProperty, out ushort resUnit))
+                            if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
+                                MetadataHelpers.TryDecodeRational(yResProperty, out double yRes) &&
+                                MetadataHelpers.TryDecodeShort(resUnitProperty, out ushort resUnit))
                             {
                                 if (xRes > 0.0 && yRes > 0.0)
                                 {

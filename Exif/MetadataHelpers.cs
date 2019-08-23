@@ -15,7 +15,7 @@ using System.Drawing.Imaging;
 
 namespace WebPFileType.Exif
 {
-    internal static class PropertyItemHelpers
+    internal static class MetadataHelpers
     {
         internal static RotateFlipType GetOrientationTransform(PropertyItem propertyItem)
         {

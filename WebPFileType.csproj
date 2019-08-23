@@ -98,7 +98,7 @@
     <Compile Include="Exif\ExifParser.cs" />
     <Compile Include="Exif\ExifValueCollection.cs" />
     <Compile Include="Exif\JPEGReader.cs" />
-    <Compile Include="Exif\PropertyItemHelpers.cs" />
+    <Compile Include="Exif\MetadataHelpers.cs" />
     <Compile Include="WebPMetadataNames.cs" />
     <Compile Include="MetadataCustomMarshaler.cs" />
     <Compile Include="PluginSupportInfo.cs" />
