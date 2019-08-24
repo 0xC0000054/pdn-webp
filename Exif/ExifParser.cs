@@ -518,19 +518,10 @@ namespace WebPFileType.Exif
                 {
                     bytes = new byte[4];
 
-                    if (offsetIsBigEndian)
+                    fixed (byte* ptr = bytes)
                     {
-                        bytes[0] = (byte)((offset >> 24) & 0x000000ff);
-                        bytes[1] = (byte)((offset >> 16) & 0x000000ff);
-                        bytes[2] = (byte)((offset >> 8) & 0x000000ff);
-                        bytes[3] = (byte)(offset & 0x000000ff);
-                    }
-                    else
-                    {
-                        bytes[0] = (byte)(offset & 0x000000ff);
-                        bytes[1] = (byte)((offset >> 8) & 0x000000ff);
-                        bytes[2] = (byte)((offset >> 16) & 0x000000ff);
-                        bytes[3] = (byte)((offset >> 24) & 0x000000ff);
+                        // The offset is stored as little-endian in memory.
+                        *(uint*)ptr = offset;
                     }
                 }
 
