@@ -213,18 +213,18 @@ namespace WebPFileType
 
             if (iccProfileBytes == null || exifBytes == null)
             {
-                Dictionary<ushort, MetadataEntry> propertyItems = GetMetadataFromDocument(doc);
+                Dictionary<MetadataKey, MetadataEntry> propertyItems = GetMetadataFromDocument(doc);
 
                 if (propertyItems != null)
                 {
                     if (iccProfileBytes == null)
                     {
-                        const int ICCProfileId = unchecked((ushort)ExifTagID.IccProfileData);
+                        MetadataKey iccProfileKey = MetadataKeys.Image.InterColorProfile;
 
-                        if (propertyItems.TryGetValue(ICCProfileId, out MetadataEntry iccProfileItem))
+                        if (propertyItems.TryGetValue(iccProfileKey, out MetadataEntry iccProfileItem))
                         {
                             iccProfileBytes = iccProfileItem.GetData();
-                            propertyItems.Remove(ICCProfileId);
+                            propertyItems.Remove(iccProfileKey);
                         }
                     }
 
@@ -243,9 +243,9 @@ namespace WebPFileType
             return null;
         }
 
-        private static Dictionary<ushort, MetadataEntry> GetMetadataFromDocument(Document doc)
+        private static Dictionary<MetadataKey, MetadataEntry> GetMetadataFromDocument(Document doc)
         {
-            Dictionary<ushort, MetadataEntry> items = null;
+            Dictionary<MetadataKey, MetadataEntry> items = null;
 
             Metadata metadata = doc.Metadata;
 
@@ -253,7 +253,7 @@ namespace WebPFileType
 
             if (exifKeys.Length > 0)
             {
-                items = new Dictionary<ushort, MetadataEntry>(exifKeys.Length);
+                items = new Dictionary<MetadataKey, MetadataEntry>(exifKeys.Length);
 
                 foreach (string key in exifKeys)
                 {
@@ -262,12 +262,11 @@ namespace WebPFileType
                     {
                         PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
 
-                        MetadataSection section = ExifTagHelper.GuessTagSection(pi);
-                        ushort tagId = (ushort)pi.Id;
+                        MetadataKey metadataKey = new MetadataKey(ExifTagHelper.GuessTagSection(pi), (ushort)pi.Id);
 
-                        if (!items.ContainsKey(tagId))
+                        if (!items.ContainsKey(metadataKey))
                         {
-                            items.Add(tagId, new MetadataEntry(section, tagId, (TagDataType)pi.Type, pi.Value));
+                            items.Add(metadataKey, new MetadataEntry(metadataKey, (TagDataType)pi.Type, pi.Value));
                         }
                     }
                     catch

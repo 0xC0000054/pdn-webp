@@ -24,7 +24,7 @@ namespace WebPFileType.Exif
 
         private const int FirstIFDOffset = 8;
 
-        public ExifWriter(Document doc, IDictionary<ushort, MetadataEntry> entries)
+        public ExifWriter(Document doc, IDictionary<MetadataKey, MetadataEntry> entries)
         {
             metadata = CreateTagDictionary(doc, entries);
         }
@@ -280,7 +280,7 @@ namespace WebPFileType.Exif
 
         private static Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> CreateTagDictionary(
             Document doc,
-            IDictionary<ushort, MetadataEntry> entries)
+            IDictionary<MetadataKey, MetadataEntry> entries)
         {
             Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> metadataEntries = new Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>>
             {
@@ -315,11 +315,11 @@ namespace WebPFileType.Exif
                                                   TagDataType.Long,
                                                   MetadataHelpers.EncodeLong((uint)doc.Height)));
 
-                entries.Remove(MetadataKeys.Image.ImageWidth.TagId);
-                entries.Remove(MetadataKeys.Image.ImageLength.TagId);
+                entries.Remove(MetadataKeys.Image.ImageWidth);
+                entries.Remove(MetadataKeys.Image.ImageLength);
                 // These tags should not be included in uncompressed images.
-                entries.Remove(MetadataKeys.Exif.PixelXDimension.TagId);
-                entries.Remove(MetadataKeys.Exif.PixelYDimension.TagId);
+                entries.Remove(MetadataKeys.Exif.PixelXDimension);
+                entries.Remove(MetadataKeys.Exif.PixelYDimension);
             }
             else
             {
@@ -333,14 +333,14 @@ namespace WebPFileType.Exif
                                                   TagDataType.Long,
                                                   MetadataHelpers.EncodeLong((uint)doc.Height)));
 
-                entries.Remove(MetadataKeys.Exif.PixelXDimension.TagId);
-                entries.Remove(MetadataKeys.Exif.PixelYDimension.TagId);
+                entries.Remove(MetadataKeys.Exif.PixelXDimension);
+                entries.Remove(MetadataKeys.Exif.PixelYDimension);
                 // These tags should not be included in compressed images.
-                entries.Remove(MetadataKeys.Image.ImageWidth.TagId);
-                entries.Remove(MetadataKeys.Image.ImageLength.TagId);
+                entries.Remove(MetadataKeys.Image.ImageWidth);
+                entries.Remove(MetadataKeys.Image.ImageLength);
             }
 
-            foreach (KeyValuePair<ushort, MetadataEntry> kvp in entries)
+            foreach (KeyValuePair<MetadataKey, MetadataEntry> kvp in entries)
             {
                 MetadataEntry entry = kvp.Value;
 
@@ -374,9 +374,9 @@ namespace WebPFileType.Exif
             return metadataEntries;
         }
 
-        private static bool IsUncompressedImage(IDictionary<ushort, MetadataEntry> entries)
+        private static bool IsUncompressedImage(IDictionary<MetadataKey, MetadataEntry> entries)
         {
-            return entries.ContainsKey(MetadataKeys.Image.ImageWidth.TagId);
+            return entries.ContainsKey(MetadataKeys.Image.ImageWidth);
         }
 
         private static void AddVersionEntries(ref Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> metadataEntries)
