@@ -11,17 +11,16 @@
 ////////////////////////////////////////////////////////////////////////
 
 using System.Drawing;
-using System.Drawing.Imaging;
 
 namespace WebPFileType.Exif
 {
     internal static class MetadataHelpers
     {
-        internal static RotateFlipType GetOrientationTransform(PropertyItem propertyItem)
+        internal static RotateFlipType GetOrientationTransform(MetadataEntry entry)
         {
             RotateFlipType transform = RotateFlipType.RotateNoneFlipNone;
 
-            if (TryDecodeShort(propertyItem, out ushort exifValue))
+            if (TryDecodeShort(entry, out ushort exifValue))
             {
                 if (exifValue >= 1 && exifValue <= 8)
                 {
@@ -86,19 +85,21 @@ namespace WebPFileType.Exif
             };
         }
 
-        internal static bool TryDecodeRational(PropertyItem propertyItem, out double value)
+        internal static bool TryDecodeRational(MetadataEntry entry, out double value)
         {
             uint numerator;
             uint denominator;
-            try
-            {
-                PaintDotNet.Exif.DecodeRationalValue(propertyItem, out numerator, out denominator);
-            }
-            catch
+
+            if (entry.Type != TagDataType.Rational || entry.LengthInBytes != 8)
             {
                 value = 0.0;
                 return false;
             }
+
+            byte[] data = entry.GetDataReadOnly();
+
+            numerator = (uint)(data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24));
+            denominator = (uint)(data[4] | (data[5] << 8) | (data[6] << 16) | (data[7] << 24));
 
             if (denominator == 0)
             {
@@ -111,22 +112,19 @@ namespace WebPFileType.Exif
             return true;
         }
 
-        internal static bool TryDecodeShort(PropertyItem propertyItem, out ushort value)
+        internal static bool TryDecodeShort(MetadataEntry entry, out ushort value)
         {
-            bool result;
-
-            try
-            {
-                value = PaintDotNet.Exif.DecodeShortValue(propertyItem);
-                result = true;
-            }
-            catch
+            if (entry.Type != TagDataType.Short || entry.LengthInBytes != 2)
             {
                 value = 0;
-                result = false;
+                return false;
             }
 
-            return result;
+            byte[] data = entry.GetDataReadOnly();
+
+            value = (ushort)(data[0] | (data[1] << 8));
+
+            return true;
         }
     }
 }

@@ -14,36 +14,35 @@ using PaintDotNet;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 
 namespace WebPFileType.Exif
 {
-    internal sealed class ExifValueCollection : IEnumerable<PropertyItem>
+    internal sealed class ExifValueCollection : IEnumerable<MetadataEntry>
     {
-        private readonly List<PropertyItem> exifMetadata;
+        private readonly List<MetadataEntry> exifMetadata;
 
-        public ExifValueCollection(List<PropertyItem> items)
+        public ExifValueCollection(List<MetadataEntry> items)
         {
             exifMetadata = items ?? throw new ArgumentNullException(nameof(items));
         }
 
         public int Count => exifMetadata.Count;
 
-        public PropertyItem GetAndRemoveValue(ExifTagID tag)
+        public MetadataEntry GetAndRemoveValue(ExifTagID tag)
         {
-            int tagID = unchecked((ushort)tag);
+            ushort tagID = unchecked((ushort)tag);
 
-            PropertyItem value = exifMetadata.Find(p => p.Id == tagID);
+            MetadataEntry value = exifMetadata.Find(p => p.TagId == tagID);
 
             if (value != null)
             {
-                exifMetadata.RemoveAll(p => p.Id == tagID);
+                exifMetadata.RemoveAll(p => p.TagId == tagID);
             }
 
             return value;
         }
 
-        public IEnumerator<PropertyItem> GetEnumerator()
+        public IEnumerator<MetadataEntry> GetEnumerator()
         {
             return exifMetadata.GetEnumerator();
         }

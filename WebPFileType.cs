@@ -63,7 +63,7 @@ namespace WebPFileType
 
                     if (exifMetadata.Count > 0)
                     {
-                        PropertyItem orientationProperty = exifMetadata.GetAndRemoveValue(ExifTagID.Orientation);
+                        MetadataEntry orientationProperty = exifMetadata.GetAndRemoveValue(ExifTagID.Orientation);
                         if (orientationProperty != null)
                         {
                             RotateFlipType transform = MetadataHelpers.GetOrientationTransform(orientationProperty);
@@ -73,9 +73,9 @@ namespace WebPFileType
                             }
                         }
 
-                        PropertyItem xResProperty = exifMetadata.GetAndRemoveValue(ExifTagID.XResolution);
-                        PropertyItem yResProperty = exifMetadata.GetAndRemoveValue(ExifTagID.YResolution);
-                        PropertyItem resUnitProperty = exifMetadata.GetAndRemoveValue(ExifTagID.ResolutionUnit);
+                        MetadataEntry xResProperty = exifMetadata.GetAndRemoveValue(ExifTagID.XResolution);
+                        MetadataEntry yResProperty = exifMetadata.GetAndRemoveValue(ExifTagID.YResolution);
+                        MetadataEntry resUnitProperty = exifMetadata.GetAndRemoveValue(ExifTagID.ResolutionUnit);
                         if (xResProperty != null && yResProperty != null && resUnitProperty != null)
                         {
                             if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
@@ -148,9 +148,14 @@ namespace WebPFileType
 
             if (exifMetadata != null)
             {
-                foreach (PropertyItem item in exifMetadata)
+                foreach (MetadataEntry entry in exifMetadata)
                 {
-                    doc.Metadata.AddExifValues(new PropertyItem[] { item });
+                    PropertyItem propertyItem = entry.TryCreateGdipPropertyItem();
+
+                    if (propertyItem != null)
+                    {
+                        doc.Metadata.AddExifValues(new PropertyItem[] { propertyItem });
+                    }
                 }
             }
 

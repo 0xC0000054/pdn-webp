@@ -12,7 +12,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -36,7 +35,7 @@ namespace WebPFileType.Exif
                 throw new ArgumentNullException(nameof(exifBytes));
             }
 
-            List<PropertyItem> propertyItems = new List<PropertyItem>();
+            List<MetadataEntry> metadataEntries = new List<MetadataEntry>();
 
             MemoryStream stream = null;
             try
@@ -59,7 +58,7 @@ namespace WebPFileType.Exif
 
                             List<ParserIFDEntry> entries = ParseDirectories(reader, ifdOffset);
 
-                            propertyItems.AddRange(ConvertIFDEntriesToPropertyItems(reader, entries));
+                            metadataEntries.AddRange(ConvertIFDEntriesToMetadataEntries(reader, entries));
                         }
                     }
                 }
@@ -72,7 +71,7 @@ namespace WebPFileType.Exif
                 stream?.Dispose();
             }
 
-            return new ExifValueCollection(propertyItems);
+            return new ExifValueCollection(metadataEntries);
         }
 
         private static Endianess? TryDetectTiffByteOrder(Stream stream)
@@ -103,19 +102,14 @@ namespace WebPFileType.Exif
             }
         }
 
-        private static ICollection<PropertyItem> ConvertIFDEntriesToPropertyItems(EndianBinaryReader reader, List<ParserIFDEntry> entries)
+        private static ICollection<MetadataEntry> ConvertIFDEntriesToMetadataEntries(EndianBinaryReader reader, List<ParserIFDEntry> entries)
         {
-            List<PropertyItem> propertyItems = new List<PropertyItem>(entries.Count);
+            List<MetadataEntry> metadataEntries = new List<MetadataEntry>(entries.Count);
             bool swapNumberByteOrder = reader.Endianess == Endianess.Big;
 
             for (int i = 0; i < entries.Count; i++)
             {
                 ParserIFDEntry entry = entries[i];
-
-                if (!TagDataTypeUtil.IsKnownToGDIPlus(entry.Type))
-                {
-                    continue;
-                }
 
                 byte[] propertyData;
                 if (entry.OffsetFieldContainsValue)
@@ -149,7 +143,7 @@ namespace WebPFileType.Exif
 
                     if (swapNumberByteOrder)
                     {
-                        // GDI+ converts all multi-byte numbers to little-endian when creating a PropertyItem.
+                        // Paint.NET converts all multi-byte numbers to little-endian.
                         switch (entry.Type)
                         {
                             case TagDataType.Short:
@@ -178,16 +172,10 @@ namespace WebPFileType.Exif
                     }
                 }
 
-                PropertyItem propertyItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
-                propertyItem.Id = entry.Tag;
-                propertyItem.Type = (short)entry.Type;
-                propertyItem.Len = propertyData.Length;
-                propertyItem.Value = (byte[])propertyData.Clone();
-
-                propertyItems.Add(propertyItem);
+                metadataEntries.Add(new MetadataEntry(entry.Section, entry.Tag, entry.Type, propertyData));
             }
 
-            return propertyItems;
+            return metadataEntries;
         }
 
         private static List<ParserIFDEntry> ParseDirectories(EndianBinaryReader reader, uint firstIFDOffset)
@@ -197,12 +185,15 @@ namespace WebPFileType.Exif
             bool foundExif = false;
             bool foundGps = false;
 
-            Queue<uint> ifdOffsets = new Queue<uint>();
-            ifdOffsets.Enqueue(firstIFDOffset);
+            Queue<MetadataOffset> ifdOffsets = new Queue<MetadataOffset>();
+            ifdOffsets.Enqueue(new MetadataOffset(MetadataSection.Image, firstIFDOffset));
 
             while (ifdOffsets.Count > 0)
             {
-                uint offset = ifdOffsets.Dequeue();
+                MetadataOffset metadataOffset = ifdOffsets.Dequeue();
+
+                MetadataSection section = metadataOffset.Section;
+                uint offset = metadataOffset.Offset;
 
                 if (offset >= reader.Length)
                 {
@@ -221,7 +212,7 @@ namespace WebPFileType.Exif
 
                 for (int i = 0; i < count; i++)
                 {
-                    ParserIFDEntry entry = new ParserIFDEntry(reader);
+                    ParserIFDEntry entry = new ParserIFDEntry(reader, section);
 
                     switch (entry.Tag)
                     {
@@ -229,14 +220,14 @@ namespace WebPFileType.Exif
                             if (!foundExif)
                             {
                                 foundExif = true;
-                                ifdOffsets.Enqueue(entry.Offset);
+                                ifdOffsets.Enqueue(new MetadataOffset(MetadataSection.Exif, entry.Offset));
                             }
                             break;
                         case TiffConstants.Tags.GpsIFD:
                             if (!foundGps)
                             {
                                 foundGps = true;
-                                ifdOffsets.Enqueue(entry.Offset);
+                                ifdOffsets.Enqueue(new MetadataOffset(MetadataSection.Gps, entry.Offset));
                             }
                             break;
                         case TiffConstants.Tags.InteropIFD:
@@ -346,10 +337,11 @@ namespace WebPFileType.Exif
             private readonly bool offsetIsBigEndian;
 #pragma warning restore IDE0032 // Use auto property
 
-            public ParserIFDEntry(EndianBinaryReader reader)
+            public ParserIFDEntry(EndianBinaryReader reader, MetadataSection section)
             {
                 entry = new IFDEntry(reader);
                 offsetIsBigEndian = reader.Endianess == Endianess.Big;
+                Section = section;
             }
 
             public ushort Tag => entry.Tag;
@@ -367,6 +359,8 @@ namespace WebPFileType.Exif
                     return TagDataTypeUtil.ValueFitsInOffsetField(Type, Count);
                 }
             }
+
+            public MetadataSection Section { get; }
 
             public unsafe byte[] GetValueBytesFromOffset()
             {
@@ -664,6 +658,19 @@ namespace WebPFileType.Exif
 
                 return valueString;
             }
+        }
+
+        private readonly struct MetadataOffset
+        {
+            public MetadataOffset(MetadataSection section, uint offset)
+            {
+                Section = section;
+                Offset = offset;
+            }
+
+            public MetadataSection Section { get; }
+
+            public uint Offset { get; }
         }
     }
 }
