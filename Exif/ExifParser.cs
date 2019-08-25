@@ -88,11 +88,13 @@ namespace WebPFileType.Exif
                 return null;
             }
 
-            if (byte1 == 0x4D && byte2 == 0x4D)
+            ushort byteOrderMarker = (ushort)(byte1 | (byte2 << 8));
+
+            if (byteOrderMarker == TiffConstants.BigEndianByteOrderMarker)
             {
                 return Endianess.Big;
             }
-            else if (byte1 == 0x49 && byte2 == 0x49)
+            else if (byteOrderMarker == TiffConstants.LittleEndianByteOrderMarker)
             {
                 return Endianess.Little;
             }

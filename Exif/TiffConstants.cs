@@ -14,6 +14,7 @@ namespace WebPFileType.Exif
 {
     internal static class TiffConstants
     {
+        internal const ushort BigEndianByteOrderMarker = 0x4d4d;
         internal const ushort LittleEndianByteOrderMarker = 0x4949;
         internal const ushort Signature = 42;
 
