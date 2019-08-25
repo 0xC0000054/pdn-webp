@@ -12,7 +12,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 
 namespace WebPFileType.Exif
 {
@@ -56,7 +55,8 @@ namespace WebPFileType.Exif
             return data;
         }
 
-        public PropertyItem TryCreateGdipPropertyItem()
+#if PDN_3_5_X
+        public System.Drawing.Imaging.PropertyItem TryCreateGdipPropertyItem()
         {
             // Skip the Interoperability IFD because GDI+ does not support it.
             // https://docs.microsoft.com/en-us/windows/desktop/gdiplus/-gdiplus-constant-image-property-tag-constants
@@ -65,7 +65,7 @@ namespace WebPFileType.Exif
                 return null;
             }
 
-            PropertyItem propertyItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
+            System.Drawing.Imaging.PropertyItem propertyItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
 
             propertyItem.Id = TagId;
             propertyItem.Type = (short)Type;
@@ -74,6 +74,37 @@ namespace WebPFileType.Exif
 
             return propertyItem;
         }
+#else
+        public PaintDotNet.Imaging.ExifPropertyItem CreateExifPropertyItem()
+        {
+            PaintDotNet.Imaging.ExifSection exifSection;
+            switch (Section)
+            {
+                case MetadataSection.Image:
+                    exifSection = PaintDotNet.Imaging.ExifSection.Image;
+                    break;
+                case MetadataSection.Exif:
+                    exifSection = PaintDotNet.Imaging.ExifSection.Photo;
+                    break;
+                case MetadataSection.Gps:
+                    exifSection = PaintDotNet.Imaging.ExifSection.GpsInfo;
+                    break;
+                case MetadataSection.Interop:
+                    exifSection = PaintDotNet.Imaging.ExifSection.Interop;
+                    break;
+                default:
+                    throw new InvalidOperationException(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                                                                      "Unexpected {0} type: {1}",
+                                                                      nameof(MetadataSection),
+                                                                      (int)Section));
+            }
+
+            return new PaintDotNet.Imaging.ExifPropertyItem(exifSection,
+                                                            TagId,
+                                                            new PaintDotNet.Imaging.ExifValue((PaintDotNet.Imaging.ExifValueType)Type,
+                                                                                              (byte[])data.Clone()));
+        }
+#endif
 
         public override bool Equals(object obj)
         {

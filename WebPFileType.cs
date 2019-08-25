@@ -13,7 +13,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using PaintDotNet;
 using PaintDotNet.IndirectUI;
@@ -34,12 +33,24 @@ namespace WebPFileType
             KeepMetadata
         }
 
+#if PDN_3_5_X
         public WebPFileType()
-            : base("WebP",
-                  FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress,
-                  new string[] { ".webp" })
+           : base("WebP",
+                 FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress,
+                 new string[] { ".webp" })
         {
         }
+#else
+        public WebPFileType()
+            : base("WebP",
+                  new FileTypeOptions
+                  {
+                      LoadExtensions = new string[] { ".webp" },
+                      SaveExtensions = new string[] { ".webp" }
+                  })
+        {
+        }
+#endif
 
         public FileType[] GetFileTypeInstances()
         {
@@ -137,25 +148,36 @@ namespace WebPFileType
             byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
             if (colorProfileBytes != null)
             {
-                PropertyItem colorProfileItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
+#if PDN_3_5_X
+                System.Drawing.Imaging.PropertyItem colorProfileItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
                 colorProfileItem.Id = unchecked((ushort)ExifTagID.IccProfileData);
                 colorProfileItem.Type = (short)ExifTagType.Undefined;
                 colorProfileItem.Len = colorProfileBytes.Length;
                 colorProfileItem.Value = colorProfileBytes.CloneT();
 
-                doc.Metadata.AddExifValues(new PropertyItem[] { colorProfileItem });
+                doc.Metadata.AddExifValues(new System.Drawing.Imaging.PropertyItem[] { colorProfileItem });
+#else
+                doc.Metadata.AddExifPropertyItem(PaintDotNet.Imaging.ExifSection.Image,
+                                                 unchecked((ushort)ExifTagID.IccProfileData),
+                                                 new PaintDotNet.Imaging.ExifValue(PaintDotNet.Imaging.ExifValueType.Undefined,
+                                                                                   colorProfileBytes.CloneT()));
+#endif
             }
 
             if (exifMetadata != null)
             {
                 foreach (MetadataEntry entry in exifMetadata)
                 {
-                    PropertyItem propertyItem = entry.TryCreateGdipPropertyItem();
+#if PDN_3_5_X
+                    System.Drawing.Imaging.PropertyItem propertyItem = entry.TryCreateGdipPropertyItem();
 
                     if (propertyItem != null)
                     {
-                        doc.Metadata.AddExifValues(new PropertyItem[] { propertyItem });
+                        doc.Metadata.AddExifValues(new System.Drawing.Imaging.PropertyItem[] { propertyItem });
                     }
+#else
+                    doc.Metadata.AddExifPropertyItem(entry.CreateExifPropertyItem());
+#endif
                 }
             }
 

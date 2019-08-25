@@ -249,6 +249,7 @@ namespace WebPFileType
 
             Metadata metadata = doc.Metadata;
 
+#if PDN_3_5_X
             string[] exifKeys = metadata.GetKeys(Metadata.ExifSectionName);
 
             if (exifKeys.Length > 0)
@@ -275,6 +276,53 @@ namespace WebPFileType
                     }
                 }
             }
+#else
+            PaintDotNet.Imaging.ExifPropertyItem[] exifProperties = metadata.GetExifPropertyItems();
+
+            if (exifProperties.Length > 0)
+            {
+                items = new Dictionary<MetadataKey, MetadataEntry>(exifProperties.Length);
+
+                foreach (PaintDotNet.Imaging.ExifPropertyItem property in exifProperties)
+                {
+                    MetadataSection section;
+                    switch (property.Path.Section)
+                    {
+                        case PaintDotNet.Imaging.ExifSection.Image:
+                            section = MetadataSection.Image;
+                            break;
+                        case PaintDotNet.Imaging.ExifSection.Photo:
+                            section = MetadataSection.Exif;
+                            break;
+                        case PaintDotNet.Imaging.ExifSection.Interop:
+                            section = MetadataSection.Interop;
+                            break;
+                        case PaintDotNet.Imaging.ExifSection.GpsInfo:
+                            section = MetadataSection.Gps;
+                            break;
+                        default:
+                            throw new InvalidOperationException(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                                                                              "Unexpected {0} type: {1}",
+                                                                              nameof(PaintDotNet.Imaging.ExifSection),
+                                                                              (int)property.Path.Section));
+                    }
+
+                    MetadataKey metadataKey = new MetadataKey(section, property.Path.TagID);
+                    IReadOnlyList<byte> data = property.Value.Data;
+
+                    byte[] clonedData = new byte[data.Count];
+                    for (int i = 0; i < clonedData.Length; i++)
+                    {
+                        clonedData[i] = data[i];
+                    }
+
+                    if (!items.ContainsKey(metadataKey))
+                    {
+                        items.Add(metadataKey, new MetadataEntry(metadataKey, (TagDataType)property.Value.Type, clonedData));
+                    }
+                }
+            }
+#endif
 
             return items;
         }
