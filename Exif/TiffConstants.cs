@@ -20,6 +20,7 @@ namespace WebPFileType.Exif
         internal static class Tags
         {
             internal const ushort StripOffsets = 273;
+            internal const ushort RowsPerStrip = 278;
             internal const ushort StripByteCounts = 279;
             internal const ushort SubIFDs = 330;
             internal const ushort ThumbnailOffset = 513;

@@ -244,6 +244,7 @@ namespace WebPFileType.Exif
                             // https://docs.microsoft.com/en-us/windows/desktop/gdiplus/-gdiplus-constant-image-property-tag-constants
                             break;
                         case TiffConstants.Tags.StripOffsets:
+                        case TiffConstants.Tags.RowsPerStrip:
                         case TiffConstants.Tags.StripByteCounts:
                         case TiffConstants.Tags.SubIFDs:
                         case TiffConstants.Tags.ThumbnailOffset:
