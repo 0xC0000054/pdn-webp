@@ -30,13 +30,9 @@ namespace WebPFileType.Exif
                 case TagDataType.Short:
                 case TagDataType.Long:
                 case TagDataType.Rational:
-                case TagDataType.SByte:
                 case TagDataType.Undefined:
-                case TagDataType.SShort:
                 case TagDataType.SLong:
                 case TagDataType.SRational:
-                case TagDataType.Float:
-                case TagDataType.Double:
                     return true;
                 default:
                     return false;
