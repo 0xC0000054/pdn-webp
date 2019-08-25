@@ -21,25 +21,6 @@ namespace WebPFileType.Exif
 {
     internal static class ExifParser
     {
-        private const ushort TiffSignature = 42;
-
-        private enum TagDataType : ushort
-        {
-            Byte = 1,
-            Ascii = 2,
-            Short = 3,
-            Long = 4,
-            Rational = 5,
-            SByte = 6,
-            Undefined = 7,
-            SShort = 8,
-            SLong = 9,
-            SRational = 10,
-            Float = 11,
-            Double = 12,
-            IFD = 13
-        }
-
         /// <summary>
         /// Parses the EXIF data into a collection of properties.
         /// </summary>
@@ -72,11 +53,11 @@ namespace WebPFileType.Exif
 
                         ushort signature = reader.ReadUInt16();
 
-                        if (signature == TiffSignature)
+                        if (signature == TiffConstants.Signature)
                         {
                             uint ifdOffset = reader.ReadUInt32();
 
-                            List<IFDEntry> entries = ParseDirectories(reader, ifdOffset);
+                            List<ParserIFDEntry> entries = ParseDirectories(reader, ifdOffset);
 
                             propertyItems.AddRange(ConvertIFDEntriesToPropertyItems(reader, entries));
                         }
@@ -122,14 +103,14 @@ namespace WebPFileType.Exif
             }
         }
 
-        private static ICollection<PropertyItem> ConvertIFDEntriesToPropertyItems(EndianBinaryReader reader, List<IFDEntry> entries)
+        private static ICollection<PropertyItem> ConvertIFDEntriesToPropertyItems(EndianBinaryReader reader, List<ParserIFDEntry> entries)
         {
             List<PropertyItem> propertyItems = new List<PropertyItem>(entries.Count);
             bool swapNumberByteOrder = reader.Endianess == Endianess.Big;
 
             for (int i = 0; i < entries.Count; i++)
             {
-                IFDEntry entry = entries[i];
+                ParserIFDEntry entry = entries[i];
 
                 if (!TagDataTypeUtil.IsKnownToGDIPlus(entry.Type))
                 {
@@ -209,9 +190,9 @@ namespace WebPFileType.Exif
             return propertyItems;
         }
 
-        private static List<IFDEntry> ParseDirectories(EndianBinaryReader reader, uint firstIFDOffset)
+        private static List<ParserIFDEntry> ParseDirectories(EndianBinaryReader reader, uint firstIFDOffset)
         {
-            List<IFDEntry> items = new List<IFDEntry>();
+            List<ParserIFDEntry> items = new List<ParserIFDEntry>();
 
             bool foundExif = false;
             bool foundGps = false;
@@ -240,33 +221,33 @@ namespace WebPFileType.Exif
 
                 for (int i = 0; i < count; i++)
                 {
-                    IFDEntry entry = new IFDEntry(reader);
+                    ParserIFDEntry entry = new ParserIFDEntry(reader);
 
                     switch (entry.Tag)
                     {
-                        case TiffTags.ExifIFD:
+                        case TiffConstants.Tags.ExifIFD:
                             if (!foundExif)
                             {
                                 foundExif = true;
                                 ifdOffsets.Enqueue(entry.Offset);
                             }
                             break;
-                        case TiffTags.GpsIFD:
+                        case TiffConstants.Tags.GpsIFD:
                             if (!foundGps)
                             {
                                 foundGps = true;
                                 ifdOffsets.Enqueue(entry.Offset);
                             }
                             break;
-                        case TiffTags.InteropIFD:
+                        case TiffConstants.Tags.InteropIFD:
                             // Skip the Interoperability IFD because GDI+ does not support it.
                             // https://docs.microsoft.com/en-us/windows/desktop/gdiplus/-gdiplus-constant-image-property-tag-constants
                             break;
-                        case TiffTags.StripOffsets:
-                        case TiffTags.StripByteCounts:
-                        case TiffTags.SubIFDs:
-                        case TiffTags.ThumbnailOffset:
-                        case TiffTags.ThumbnailLength:
+                        case TiffConstants.Tags.StripOffsets:
+                        case TiffConstants.Tags.StripByteCounts:
+                        case TiffConstants.Tags.SubIFDs:
+                        case TiffConstants.Tags.ThumbnailOffset:
+                        case TiffConstants.Tags.ThumbnailLength:
                             // Skip the thumbnail and/or preview images.
                             // The StripOffsets and StripByteCounts tags are used to store a preview image in some formats.
                             // The SubIFDs tag is used to store thumbnails in TIFF and for storing other data in some camera formats.
@@ -357,58 +338,32 @@ namespace WebPFileType.Exif
             return values;
         }
 
-        private readonly struct IFDEntry
+        private readonly struct ParserIFDEntry
         {
 #pragma warning disable IDE0032 // Use auto property
-            private readonly ushort tag;
-            private readonly TagDataType type;
-            private readonly uint count;
-            private readonly uint offset;
+            private readonly IFDEntry entry;
             private readonly bool offsetIsBigEndian;
 #pragma warning restore IDE0032 // Use auto property
 
-            public IFDEntry(EndianBinaryReader reader)
+            public ParserIFDEntry(EndianBinaryReader reader)
             {
-                tag = reader.ReadUInt16();
-                type = (TagDataType)reader.ReadUInt16();
-                count = reader.ReadUInt32();
-                offset = reader.ReadUInt32();
+                entry = new IFDEntry(reader);
                 offsetIsBigEndian = reader.Endianess == Endianess.Big;
             }
 
-            public ushort Tag => tag;
+            public ushort Tag => entry.Tag;
 
-            public TagDataType Type => type;
+            public TagDataType Type => entry.Type;
 
-            public uint Count => count;
+            public uint Count => entry.Count;
 
-            public uint Offset => offset;
+            public uint Offset => entry.Offset;
 
             public bool OffsetFieldContainsValue
             {
                 get
                 {
-                    switch (type)
-                    {
-                        case TagDataType.Byte:
-                        case TagDataType.Ascii:
-                        case TagDataType.Undefined:
-                        case TagDataType.SByte:
-                            return count <= 4;
-                        case TagDataType.Short:
-                        case TagDataType.SShort:
-                            return count <= 2;
-                        case TagDataType.Long:
-                        case TagDataType.SLong:
-                        case TagDataType.Float:
-                        case TagDataType.IFD:
-                            return count == 1;
-                        case TagDataType.Rational:
-                        case TagDataType.SRational:
-                        case TagDataType.Double:
-                        default:
-                            return false;
-                    }
+                    return TagDataTypeUtil.ValueFitsInOffsetField(Type, Count);
                 }
             }
 
@@ -418,6 +373,10 @@ namespace WebPFileType.Exif
                 {
                     return null;
                 }
+
+                TagDataType type = entry.Type;
+                uint count = entry.Count;
+                uint offset = entry.Offset;
 
                 // GDI+ always stores data in little-endian byte order.
                 byte[] bytes;
@@ -533,24 +492,28 @@ namespace WebPFileType.Exif
                 if (OffsetFieldContainsValue)
                 {
                     return string.Format("Tag={0}, Type={1}, Count={2}, Value={3}",
-                                         tag.ToString(CultureInfo.InvariantCulture),
-                                         type.ToString(),
-                                         count.ToString(CultureInfo.InvariantCulture),
+                                         entry.Tag.ToString(CultureInfo.InvariantCulture),
+                                         entry.Type.ToString(),
+                                         entry.Count.ToString(CultureInfo.InvariantCulture),
                                          GetValueStringFromOffset());
                 }
                 else
                 {
                     return string.Format("Tag={0}, Type={1}, Count={2}, Offset=0x{3}",
-                                         tag.ToString(CultureInfo.InvariantCulture),
-                                         type.ToString(),
-                                         count.ToString(CultureInfo.InvariantCulture),
-                                         offset.ToString("X", CultureInfo.InvariantCulture));
+                                         entry.Tag.ToString(CultureInfo.InvariantCulture),
+                                         entry.Type.ToString(),
+                                         entry.Count.ToString(CultureInfo.InvariantCulture),
+                                         entry.Offset.ToString("X", CultureInfo.InvariantCulture));
                 }
             }
 
             private string GetValueStringFromOffset()
             {
                 string valueString;
+
+                TagDataType type = entry.Type;
+                uint count = entry.Count;
+                uint offset = entry.Offset;
 
                 int typeSizeInBytes = TagDataTypeUtil.GetSizeInBytes(type);
 
@@ -700,83 +663,6 @@ namespace WebPFileType.Exif
 
                 return valueString;
             }
-        }
-
-        private static class TagDataTypeUtil
-        {
-            /// <summary>
-            /// Determines whether the <see cref="TagDataType"/> is known to GDI+.
-            /// </summary>
-            /// <param name="type">The tag type.</param>
-            /// <returns>
-            /// <see langword="true"/> if the tag type is known to GDI+; otherwise, <see langword="false"/>.
-            /// </returns>
-            public static bool IsKnownToGDIPlus(TagDataType type)
-            {
-                switch (type)
-                {
-                    case TagDataType.Byte:
-                    case TagDataType.Ascii:
-                    case TagDataType.Short:
-                    case TagDataType.Long:
-                    case TagDataType.Rational:
-                    case TagDataType.SByte:
-                    case TagDataType.Undefined:
-                    case TagDataType.SShort:
-                    case TagDataType.SLong:
-                    case TagDataType.SRational:
-                    case TagDataType.Float:
-                    case TagDataType.Double:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-
-            /// <summary>
-            /// Gets the size in bytes of a <see cref="TagDataType"/> value.
-            /// </summary>
-            /// <param name="type">The tag type.</param>
-            /// <returns>
-            /// The size of the value in bytes.
-            /// </returns>
-            public static int GetSizeInBytes(TagDataType type)
-            {
-                switch (type)
-                {
-                    case TagDataType.Byte:
-                    case TagDataType.Ascii:
-                    case TagDataType.Undefined:
-                    case TagDataType.SByte:
-                        return 1;
-                    case TagDataType.Short:
-                    case TagDataType.SShort:
-                        return 2;
-                    case TagDataType.Long:
-                    case TagDataType.SLong:
-                    case TagDataType.Float:
-                    case TagDataType.IFD:
-                        return 4;
-                    case TagDataType.Rational:
-                    case TagDataType.SRational:
-                    case TagDataType.Double:
-                        return 8;
-                    default:
-                        return 0;
-                }
-            }
-        }
-
-        private static class TiffTags
-        {
-            internal const ushort StripOffsets = 273;
-            internal const ushort StripByteCounts = 279;
-            internal const ushort SubIFDs = 330;
-            internal const ushort ThumbnailOffset = 513;
-            internal const ushort ThumbnailLength = 514;
-            internal const ushort ExifIFD = 34665;
-            internal const ushort GpsIFD = 34853;
-            internal const ushort InteropIFD = 40965;
         }
     }
 }

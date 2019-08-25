@@ -16,7 +16,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
 using WebPFileType.Exif;
 using WebPFileType.Properties;
 
@@ -214,35 +213,24 @@ namespace WebPFileType
 
             if (iccProfileBytes == null || exifBytes == null)
             {
-                List<PropertyItem> propertyItems = GetMetadataFromDocument(doc);
+                Dictionary<ushort, MetadataEntry> propertyItems = GetMetadataFromDocument(doc);
 
-                if (propertyItems.Count > 0)
+                if (propertyItems != null)
                 {
                     if (iccProfileBytes == null)
                     {
                         const int ICCProfileId = unchecked((ushort)ExifTagID.IccProfileData);
 
-                        PropertyItem item = propertyItems.Find(p => p.Id == ICCProfileId);
-
-                        if (item != null)
+                        if (propertyItems.TryGetValue(ICCProfileId, out MetadataEntry iccProfileItem))
                         {
-                            iccProfileBytes = item.Value.CloneT();
-                            propertyItems.RemoveAll(p => p.Id == ICCProfileId);
+                            iccProfileBytes = iccProfileItem.GetData();
+                            propertyItems.Remove(ICCProfileId);
                         }
                     }
 
                     if (exifBytes == null)
                     {
-                        using (MemoryStream stream = new MemoryStream())
-                        {
-                            using (Bitmap bmp = scratchSurface.CreateAliasedBitmap())
-                            {
-                                LoadProperties(bmp, doc.DpuUnit, doc.DpuX, doc.DpuY, propertyItems);
-                                bmp.Save(stream, ImageFormat.Jpeg);
-                            }
-
-                            exifBytes = JPEGReader.ExtractEXIF(stream);
-                        }
+                        exifBytes = new ExifWriter(doc, propertyItems).CreateExifBlob();
                     }
                 }
             }
@@ -255,60 +243,9 @@ namespace WebPFileType
             return null;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "RCS1075", Justification = "Ignore any errors thrown by SetResolution.")]
-        private static void LoadProperties(Bitmap bitmap, MeasurementUnit dpuUnit, double dpuX, double dpuY, IEnumerable<PropertyItem> propertyItems)
+        private static Dictionary<ushort, MetadataEntry> GetMetadataFromDocument(Document doc)
         {
-            // The following code is from Paint.NET 3.36.
-
-            // Sometimes GDI+ does not honor the resolution tags that we
-            // put in manually via the EXIF properties.
-            float dpiX;
-            float dpiY;
-
-            switch (dpuUnit)
-            {
-                case MeasurementUnit.Centimeter:
-                    dpiX = (float)Document.DotsPerCmToDotsPerInch(dpuX);
-                    dpiY = (float)Document.DotsPerCmToDotsPerInch(dpuY);
-                    break;
-
-                case MeasurementUnit.Inch:
-                    dpiX = (float)dpuX;
-                    dpiY = (float)dpuY;
-                    break;
-
-                default:
-                case MeasurementUnit.Pixel:
-                    dpiX = 1.0f;
-                    dpiY = 1.0f;
-                    break;
-            }
-
-            try
-            {
-                bitmap.SetResolution(dpiX, dpiY);
-            }
-            catch (Exception)
-            {
-                // Ignore error
-            }
-
-            foreach (PropertyItem pi in propertyItems)
-            {
-                try
-                {
-                    bitmap.SetPropertyItem(pi);
-                }
-                catch (ArgumentException)
-                {
-                    // Ignore error: the image does not support property items
-                }
-            }
-        }
-
-        private static List<PropertyItem> GetMetadataFromDocument(Document doc)
-        {
-            List<PropertyItem> items = new List<PropertyItem>();
+            Dictionary<ushort, MetadataEntry> items = null;
 
             Metadata metadata = doc.Metadata;
 
@@ -316,7 +253,7 @@ namespace WebPFileType
 
             if (exifKeys.Length > 0)
             {
-                items.Capacity = exifKeys.Length;
+                items = new Dictionary<ushort, MetadataEntry>(exifKeys.Length);
 
                 foreach (string key in exifKeys)
                 {
@@ -325,10 +262,12 @@ namespace WebPFileType
                     {
                         PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
 
-                        // GDI+ does not support the Interoperability IFD tags.
-                        if (!IsInteroperabilityIFDTag(pi))
+                        MetadataSection section = ExifTagHelper.GuessTagSection(pi);
+                        ushort tagId = (ushort)pi.Id;
+
+                        if (!items.ContainsKey(tagId))
                         {
-                            items.Add(pi);
+                            items.Add(tagId, new MetadataEntry(section, tagId, (TagDataType)pi.Type, pi.Value));
                         }
                     }
                     catch
@@ -339,42 +278,6 @@ namespace WebPFileType
             }
 
             return items;
-
-            bool IsInteroperabilityIFDTag(PropertyItem propertyItem)
-            {
-                if (propertyItem.Id == 1)
-                {
-                    // The tag number 1 is used by both the GPS IFD (GPSLatitudeRef) and the Interoperability IFD (InteroperabilityIndex).
-                    // The EXIF specification states that InteroperabilityIndex should be a four character ASCII field.
-
-                    return propertyItem.Type == (short)ExifTagType.Ascii && propertyItem.Len == 4;
-                }
-                else if (propertyItem.Id == 2)
-                {
-                    // The tag number 2 is used by both the GPS IFD (GPSLatitude) and the Interoperability IFD (InteroperabilityVersion).
-                    // The DCF specification states that InteroperabilityVersion should be a four byte field.
-                    switch ((ExifTagType)propertyItem.Type)
-                    {
-                        case ExifTagType.Byte:
-                        case ExifTagType.Undefined:
-                            return propertyItem.Len == 4;
-                        default:
-                            return false;
-                    }
-                }
-                else
-                {
-                    switch (propertyItem.Id)
-                    {
-                        case 4096: // Interoperability IFD - RelatedImageFileFormat
-                        case 4097: // Interoperability IFD - RelatedImageWidth
-                        case 4098: // Interoperability IFD - RelatedImageHeight
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-            }
         }
 
         /// <summary>

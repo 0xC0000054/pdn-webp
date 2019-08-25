@@ -66,6 +66,26 @@ namespace WebPFileType.Exif
             return transform;
         }
 
+        internal static byte[] EncodeLong(uint value)
+        {
+            return new byte[]
+            {
+                (byte)(value & 0xff),
+                (byte)(value >> 8),
+                (byte)(value >> 16),
+                (byte)(value >> 24)
+            };
+        }
+
+        internal static byte[] EncodeShort(ushort value)
+        {
+            return new byte[]
+            {
+                (byte)(value & 0xff),
+                (byte)(value >> 8)
+            };
+        }
+
         internal static bool TryDecodeRational(PropertyItem propertyItem, out double value)
         {
             uint numerator;
