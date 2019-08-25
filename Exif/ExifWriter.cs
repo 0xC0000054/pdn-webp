@@ -18,7 +18,7 @@ using System.Linq;
 
 namespace WebPFileType.Exif
 {
-    internal class ExifWriter
+    internal sealed class ExifWriter
     {
         private readonly Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> metadata;
 
