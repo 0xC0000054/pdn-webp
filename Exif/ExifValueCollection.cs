@@ -14,9 +14,12 @@ using PaintDotNet;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace WebPFileType.Exif
 {
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(ExifValueCollectionDebugView))]
     internal sealed class ExifValueCollection : IEnumerable<MetadataEntry>
     {
         private readonly List<MetadataEntry> exifMetadata;
@@ -50,6 +53,25 @@ namespace WebPFileType.Exif
         IEnumerator IEnumerable.GetEnumerator()
         {
             return exifMetadata.GetEnumerator();
+        }
+
+        private sealed class ExifValueCollectionDebugView
+        {
+            private readonly ExifValueCollection collection;
+
+            public ExifValueCollectionDebugView(ExifValueCollection collection)
+            {
+                this.collection = collection ?? throw new ArgumentNullException(nameof(collection));
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public MetadataEntry[] Items
+            {
+                get
+                {
+                    return collection.exifMetadata.ToArray();
+                }
+            }
         }
     }
 }
