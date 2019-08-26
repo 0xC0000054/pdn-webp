@@ -11,9 +11,11 @@
 ////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 
 namespace WebPFileType.Exif
 {
+    [DebuggerDisplay("{DebuggerDisplay, nq}")]
     internal readonly struct MetadataKey : IEquatable<MetadataKey>
     {
         public MetadataKey(MetadataSection section, ushort tagId)
@@ -25,6 +27,15 @@ namespace WebPFileType.Exif
         public MetadataSection Section { get; }
 
         public ushort TagId { get; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return string.Format("{0}, Tag# {1} (0x{1:X})", Section, TagId);
+            }
+        }
 
         public override bool Equals(object obj)
         {

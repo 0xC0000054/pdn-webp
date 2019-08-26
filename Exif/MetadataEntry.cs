@@ -12,9 +12,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace WebPFileType.Exif
 {
+    [DebuggerDisplay("{DebuggerDisplay, nq}")]
     internal sealed class MetadataEntry : IEquatable<MetadataEntry>
     {
         private readonly byte[] data;
@@ -44,6 +46,15 @@ namespace WebPFileType.Exif
         public ushort TagId { get; }
 
         public TagDataType Type { get; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return string.Format("{0}, Tag# {1} (0x{1:X}), {2}", Section, TagId, Type);
+            }
+        }
 
         public byte[] GetData()
         {
