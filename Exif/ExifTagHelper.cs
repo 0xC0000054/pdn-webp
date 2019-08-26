@@ -116,7 +116,7 @@ namespace WebPFileType.Exif
             else if (propertyItem.Id == 2)
             {
                 // The tag number 2 is used by both the GPS IFD (GPSLatitude) and the Interoperability IFD (InteroperabilityVersion).
-                // The DCF specification states that GPSLatitude should be 3 rational numbers.
+                // The EXIF specification states that GPSLatitude should be 3 rational numbers.
 
                 return propertyItem.Type == (short)TagDataType.Rational && propertyItem.Value.Length == 24;
             }
