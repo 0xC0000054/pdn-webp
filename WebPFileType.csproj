@@ -56,6 +56,9 @@
       if "$(ConfigurationName)" == "Debug" copy "$(TargetDir)$(TargetName).pdb" "D:\Program Files\Paint.NET\FileTypes" /y
     </PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' != 'net35' ">
     <Reference Include="PaintDotNet.Base">
       <HintPath>D:\Program Files\paint.net\PaintDotNet.Base.dll</HintPath>
