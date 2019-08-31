@@ -258,6 +258,8 @@ namespace WebPFileType.Exif
                             packedOffset |= (uint)data[2] << 16;
                             packedOffset |= (uint)data[3] << 24;
                             break;
+                        default:
+                            throw new InvalidOperationException("data.Length must be in the range of [1-4].");
                     }
 
                     ifdEntries.Add(new IFDEntry(entry.TagId, entry.Type, count, packedOffset));
