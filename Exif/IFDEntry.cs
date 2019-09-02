@@ -54,10 +54,10 @@ namespace WebPFileType.Exif
 
             unchecked
             {
-                hashCode = hashCode * -1521134295 + Tag.GetHashCode();
-                hashCode = hashCode * -1521134295 + Count.GetHashCode();
-                hashCode = hashCode * -1521134295 + Type.GetHashCode();
-                hashCode = hashCode * -1521134295 + Offset.GetHashCode();
+                hashCode = (hashCode * -1521134295) + Tag.GetHashCode();
+                hashCode = (hashCode * -1521134295) + Count.GetHashCode();
+                hashCode = (hashCode * -1521134295) + Type.GetHashCode();
+                hashCode = (hashCode * -1521134295) + Offset.GetHashCode();
             }
 
             return hashCode;

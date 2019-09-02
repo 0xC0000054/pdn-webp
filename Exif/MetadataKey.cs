@@ -58,8 +58,8 @@ namespace WebPFileType.Exif
 
             unchecked
             {
-                hashCode = hashCode * -1521134295 + Section.GetHashCode();
-                hashCode = hashCode * -1521134295 + TagId.GetHashCode();
+                hashCode = (hashCode * -1521134295) + Section.GetHashCode();
+                hashCode = (hashCode * -1521134295) + TagId.GetHashCode();
             }
 
             return hashCode;
