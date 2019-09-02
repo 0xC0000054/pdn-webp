@@ -186,6 +186,7 @@ namespace WebPFileType.Exif
 
             bool foundExif = false;
             bool foundGps = false;
+            bool foundInterop = false;
 
             Queue<MetadataOffset> ifdOffsets = new Queue<MetadataOffset>();
             ifdOffsets.Enqueue(new MetadataOffset(MetadataSection.Image, firstIFDOffset));
@@ -233,8 +234,11 @@ namespace WebPFileType.Exif
                             }
                             break;
                         case TiffConstants.Tags.InteropIFD:
-                            // Skip the Interoperability IFD because GDI+ does not support it.
-                            // https://docs.microsoft.com/en-us/windows/desktop/gdiplus/-gdiplus-constant-image-property-tag-constants
+                            if (!foundInterop)
+                            {
+                                foundInterop = true;
+                                ifdOffsets.Enqueue(new MetadataOffset(MetadataSection.Interop, entry.Offset));
+                            }
                             break;
                         case TiffConstants.Tags.StripOffsets:
                         case TiffConstants.Tags.RowsPerStrip:
