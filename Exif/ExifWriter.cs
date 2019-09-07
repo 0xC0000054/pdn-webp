@@ -369,8 +369,6 @@ namespace WebPFileType.Exif
                 }
             }
 
-            Dictionary<ushort, MetadataEntry> imageSectionMetadata = metadataEntries[MetadataSection.Image];
-
             AddVersionEntries(ref metadataEntries);
 
             return metadataEntries;
