@@ -69,9 +69,7 @@ namespace WebPFileType.Exif
 
         internal static MetadataSection GuessTagSection(PropertyItem propertyItem)
         {
-            MetadataKey[] values;
-
-            if (GusssTagSectionHelper.tiffAndExifTags.TryGetValue(propertyItem.Id, out values))
+            if (GusssTagSectionHelper.tiffAndExifTags.TryGetValue(propertyItem.Id, out MetadataKey[] values))
             {
                 if (values.Length == 1)
                 {
