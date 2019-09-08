@@ -308,16 +308,11 @@ namespace WebPFileType
                     }
 
                     MetadataKey metadataKey = new MetadataKey(section, property.Path.TagID);
-                    IReadOnlyList<byte> data = property.Value.Data;
-
-                    byte[] clonedData = new byte[data.Count];
-                    for (int i = 0; i < clonedData.Length; i++)
-                    {
-                        clonedData[i] = data[i];
-                    }
 
                     if (!items.ContainsKey(metadataKey))
                     {
+                        byte[] clonedData = PaintDotNet.Collections.EnumerableExtensions.ToArrayEx(property.Value.Data);
+
                         items.Add(metadataKey, new MetadataEntry(metadataKey, (TagDataType)property.Value.Type, clonedData));
                     }
                 }
