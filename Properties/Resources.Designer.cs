@@ -180,81 +180,81 @@ namespace WebPFileType.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Keep Metadata.
         /// </summary>
-        internal static string KeepMetadata_Text {
+        internal static string KeepMetadata_Description {
             get {
-                return ResourceManager.GetString("KeepMetadata_Text", resourceCulture);
+                return ResourceManager.GetString("KeepMetadata_Description", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Default.
         /// </summary>
-        internal static string Preset_Default_Name {
+        internal static string Preset_Default_DisplayName {
             get {
-                return ResourceManager.GetString("Preset_Default_Name", resourceCulture);
+                return ResourceManager.GetString("Preset_Default_DisplayName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Drawing.
         /// </summary>
-        internal static string Preset_Drawing_Name {
+        internal static string Preset_Drawing_DisplayName {
             get {
-                return ResourceManager.GetString("Preset_Drawing_Name", resourceCulture);
+                return ResourceManager.GetString("Preset_Drawing_DisplayName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Icon.
         /// </summary>
-        internal static string Preset_Icon_Name {
+        internal static string Preset_Icon_DisplayName {
             get {
-                return ResourceManager.GetString("Preset_Icon_Name", resourceCulture);
+                return ResourceManager.GetString("Preset_Icon_DisplayName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Photo.
         /// </summary>
-        internal static string Preset_Photo_Name {
+        internal static string Preset_Photo_DisplayName {
             get {
-                return ResourceManager.GetString("Preset_Photo_Name", resourceCulture);
+                return ResourceManager.GetString("Preset_Photo_DisplayName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Picture.
         /// </summary>
-        internal static string Preset_Picture_Name {
+        internal static string Preset_Picture_DisplayName {
             get {
-                return ResourceManager.GetString("Preset_Picture_Name", resourceCulture);
+                return ResourceManager.GetString("Preset_Picture_DisplayName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Preset.
         /// </summary>
-        internal static string Preset_Text {
+        internal static string Preset_DisplayName {
             get {
-                return ResourceManager.GetString("Preset_Text", resourceCulture);
+                return ResourceManager.GetString("Preset_DisplayName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Text.
         /// </summary>
-        internal static string Preset_Text_Name {
+        internal static string Preset_Text_DisplayName {
             get {
-                return ResourceManager.GetString("Preset_Text_Name", resourceCulture);
+                return ResourceManager.GetString("Preset_Text_DisplayName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Quality.
         /// </summary>
-        internal static string Quality_Text {
+        internal static string Quality_DisplayName {
             get {
-                return ResourceManager.GetString("Quality_Text", resourceCulture);
+                return ResourceManager.GetString("Quality_DisplayName", resourceCulture);
             }
         }
     }

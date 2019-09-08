@@ -208,18 +208,18 @@ namespace WebPFileType
 
             PropertyControlInfo presetPCI = info.FindControlForPropertyName(PropertyNames.Preset);
 
-            presetPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = Resources.Preset_Text;
-            presetPCI.SetValueDisplayName(WebPPreset.Default, Resources.Preset_Default_Name);
-            presetPCI.SetValueDisplayName(WebPPreset.Drawing, Resources.Preset_Drawing_Name);
-            presetPCI.SetValueDisplayName(WebPPreset.Icon, Resources.Preset_Icon_Name);
-            presetPCI.SetValueDisplayName(WebPPreset.Photo, Resources.Preset_Photo_Name);
-            presetPCI.SetValueDisplayName(WebPPreset.Picture, Resources.Preset_Picture_Name);
-            presetPCI.SetValueDisplayName(WebPPreset.Text, Resources.Preset_Text_Name);
+            presetPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = Resources.Preset_DisplayName;
+            presetPCI.SetValueDisplayName(WebPPreset.Default, Resources.Preset_Default_DisplayName);
+            presetPCI.SetValueDisplayName(WebPPreset.Drawing, Resources.Preset_Drawing_DisplayName);
+            presetPCI.SetValueDisplayName(WebPPreset.Icon, Resources.Preset_Icon_DisplayName);
+            presetPCI.SetValueDisplayName(WebPPreset.Photo, Resources.Preset_Photo_DisplayName);
+            presetPCI.SetValueDisplayName(WebPPreset.Picture, Resources.Preset_Picture_DisplayName);
+            presetPCI.SetValueDisplayName(WebPPreset.Text, Resources.Preset_Text_DisplayName);
 
-            info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, Resources.Quality_Text);
+            info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, Resources.Quality_DisplayName);
 
             info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.DisplayName, string.Empty);
-            info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.Description, Resources.KeepMetadata_Text);
+            info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.Description, Resources.KeepMetadata_Description);
 
             return info;
         }

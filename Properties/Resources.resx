@@ -120,7 +120,7 @@
   <data name="InvalidWebPImage" xml:space="preserve">
     <value>The file is not a valid WebP Image.</value>
   </data>
-  <data name="Quality_Text" xml:space="preserve">
+  <data name="Quality_DisplayName" xml:space="preserve">
     <value>Quality</value>
   </data>
   <data name="ApiVersionMismatch" xml:space="preserve">
@@ -138,25 +138,25 @@
   <data name="InvalidImageDimensions" xml:space="preserve">
     <value>The dimensions of a WebP image must be 16383x16383 or less.</value>
   </data>
-  <data name="Preset_Default_Name" xml:space="preserve">
+  <data name="Preset_Default_DisplayName" xml:space="preserve">
     <value>Default</value>
   </data>
-  <data name="Preset_Drawing_Name" xml:space="preserve">
+  <data name="Preset_Drawing_DisplayName" xml:space="preserve">
     <value>Drawing</value>
   </data>
-  <data name="Preset_Icon_Name" xml:space="preserve">
+  <data name="Preset_Icon_DisplayName" xml:space="preserve">
     <value>Icon</value>
   </data>
-  <data name="Preset_Photo_Name" xml:space="preserve">
+  <data name="Preset_Photo_DisplayName" xml:space="preserve">
     <value>Photo</value>
   </data>
-  <data name="Preset_Picture_Name" xml:space="preserve">
+  <data name="Preset_Picture_DisplayName" xml:space="preserve">
     <value>Picture</value>
   </data>
-  <data name="Preset_Text_Name" xml:space="preserve">
+  <data name="Preset_Text_DisplayName" xml:space="preserve">
     <value>Text</value>
   </data>
-  <data name="Preset_Text" xml:space="preserve">
+  <data name="Preset_DisplayName" xml:space="preserve">
     <value>Preset</value>
   </data>
   <data name="InvalidParameterFormat" xml:space="preserve">
@@ -166,7 +166,7 @@
   <data name="EncoderMetadataError" xml:space="preserve">
     <value>An error occurred when encoding the WebP metadata.</value>
   </data>
-  <data name="KeepMetadata_Text" xml:space="preserve">
+  <data name="KeepMetadata_Description" xml:space="preserve">
     <value>Keep Metadata</value>
   </data>
   <data name="EncoderBadWrite" xml:space="preserve">
