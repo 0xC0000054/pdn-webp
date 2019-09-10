@@ -217,7 +217,13 @@ namespace WebPFileType
 
                 if (propertyItems != null)
                 {
-                    if (iccProfileBytes == null)
+                    ExifColorSpace exifColorSpace = ExifColorSpace.Srgb;
+
+                    if (iccProfileBytes != null)
+                    {
+                        exifColorSpace = ExifColorSpace.Uncalibrated;
+                    }
+                    else
                     {
                         MetadataKey iccProfileKey = MetadataKeys.Image.InterColorProfile;
 
@@ -225,12 +231,13 @@ namespace WebPFileType
                         {
                             iccProfileBytes = iccProfileItem.GetData();
                             propertyItems.Remove(iccProfileKey);
+                            exifColorSpace = ExifColorSpace.Uncalibrated;
                         }
                     }
 
                     if (exifBytes == null)
                     {
-                        exifBytes = new ExifWriter(doc, propertyItems).CreateExifBlob();
+                        exifBytes = new ExifWriter(doc, propertyItems, exifColorSpace).CreateExifBlob();
                     }
                 }
             }

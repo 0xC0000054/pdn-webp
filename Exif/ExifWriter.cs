@@ -24,9 +24,9 @@ namespace WebPFileType.Exif
 
         private const int FirstIFDOffset = 8;
 
-        public ExifWriter(Document doc, IDictionary<MetadataKey, MetadataEntry> entries)
+        public ExifWriter(Document doc, IDictionary<MetadataKey, MetadataEntry> entries, ExifColorSpace exifColorSpace)
         {
-            metadata = CreateTagDictionary(doc, entries);
+            metadata = CreateTagDictionary(doc, entries, exifColorSpace);
         }
 
         public byte[] CreateExifBlob()
@@ -282,7 +282,8 @@ namespace WebPFileType.Exif
 
         private static Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> CreateTagDictionary(
             Document doc,
-            IDictionary<MetadataKey, MetadataEntry> entries)
+            IDictionary<MetadataKey, MetadataEntry> entries,
+            ExifColorSpace exifColorSpace)
         {
             Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> metadataEntries = new Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>>
             {
@@ -340,6 +341,15 @@ namespace WebPFileType.Exif
                 // These tags should not be included in compressed images.
                 entries.Remove(MetadataKeys.Image.ImageWidth);
                 entries.Remove(MetadataKeys.Image.ImageLength);
+            }
+
+            // Add the EXIF color space tag.
+            if (!entries.ContainsKey(MetadataKeys.Exif.ColorSpace))
+            {
+                metadataEntries[MetadataSection.Exif].Add(MetadataKeys.Exif.ColorSpace.TagId,
+                                                          new MetadataEntry(MetadataKeys.Exif.ColorSpace,
+                                                                            TagDataType.Short,
+                                                                            MetadataHelpers.EncodeShort((ushort)exifColorSpace)));
             }
 
             foreach (KeyValuePair<MetadataKey, MetadataEntry> kvp in entries)
