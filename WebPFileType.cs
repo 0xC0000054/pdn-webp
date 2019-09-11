@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using PaintDotNet;
 using PaintDotNet.IndirectUI;
 using PaintDotNet.IO;
@@ -166,7 +167,7 @@ namespace WebPFileType
 
             if (exifMetadata != null)
             {
-                foreach (MetadataEntry entry in exifMetadata)
+                foreach (MetadataEntry entry in exifMetadata.Distinct())
                 {
 #if PDN_3_5_X
                     System.Drawing.Imaging.PropertyItem propertyItem = entry.TryCreateGdipPropertyItem();
