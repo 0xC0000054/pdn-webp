@@ -134,7 +134,7 @@ namespace WebPFileType.Exif
                 return false;
             }
 
-            return Section == other.Section;
+            return Section == other.Section && TagId == other.TagId;
         }
 
         public override int GetHashCode()
