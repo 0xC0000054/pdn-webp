@@ -379,7 +379,7 @@ namespace WebPFileType.Exif
                 uint count = entry.Count;
                 uint offset = entry.Offset;
 
-                // GDI+ always stores data in little-endian byte order.
+                // Paint.NET always stores data in little-endian byte order.
                 byte[] bytes;
                 if (type == TagDataType.Byte ||
                     type == TagDataType.Ascii ||
