@@ -31,15 +31,13 @@ namespace WebPFileType.Exif
 
         public int Count => exifMetadata.Count;
 
-        public MetadataEntry GetAndRemoveValue(ExifTagID tag)
+        public MetadataEntry GetAndRemoveValue(MetadataKey key)
         {
-            ushort tagID = unchecked((ushort)tag);
-
-            MetadataEntry value = exifMetadata.Find(p => p.TagId == tagID);
+            MetadataEntry value = exifMetadata.Find(p => p.Section == key.Section &&  p.TagId == key.TagId);
 
             if (value != null)
             {
-                exifMetadata.RemoveAll(p => p.TagId == tagID);
+                exifMetadata.RemoveAll(p => p.Section == key.Section && p.TagId == key.TagId);
             }
 
             return value;

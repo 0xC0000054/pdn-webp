@@ -75,7 +75,7 @@ namespace WebPFileType
 
                     if (exifMetadata.Count > 0)
                     {
-                        MetadataEntry orientationProperty = exifMetadata.GetAndRemoveValue(ExifTagID.Orientation);
+                        MetadataEntry orientationProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.Orientation);
                         if (orientationProperty != null)
                         {
                             RotateFlipType transform = MetadataHelpers.GetOrientationTransform(orientationProperty);
@@ -85,9 +85,9 @@ namespace WebPFileType
                             }
                         }
 
-                        MetadataEntry xResProperty = exifMetadata.GetAndRemoveValue(ExifTagID.XResolution);
-                        MetadataEntry yResProperty = exifMetadata.GetAndRemoveValue(ExifTagID.YResolution);
-                        MetadataEntry resUnitProperty = exifMetadata.GetAndRemoveValue(ExifTagID.ResolutionUnit);
+                        MetadataEntry xResProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.XResolution);
+                        MetadataEntry yResProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.YResolution);
+                        MetadataEntry resUnitProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.ResolutionUnit);
                         if (xResProperty != null && yResProperty != null && resUnitProperty != null)
                         {
                             if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
