@@ -33,7 +33,7 @@ namespace WebPFileType.Exif
 
         public MetadataEntry GetAndRemoveValue(MetadataKey key)
         {
-            MetadataEntry value = exifMetadata.Find(p => p.Section == key.Section &&  p.TagId == key.TagId);
+            MetadataEntry value = exifMetadata.Find(p => p.Section == key.Section && p.TagId == key.TagId);
 
             if (value != null)
             {
