@@ -12,7 +12,7 @@
 
 namespace WebPFileType
 {
-    public enum WebPPreset
+    internal enum WebPPreset
     {
         Default = 0,
         Picture,
