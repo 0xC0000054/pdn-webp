@@ -30,12 +30,7 @@ namespace WebPFileType
 {
     [PluginSupportInfo(typeof(PluginSupportInfo))]
     public sealed class WebPFileType :
-        PropertyBasedFileType,
-#if PDN_3_5_X
-        IFileTypeFactory
-#else
-        IFileTypeFactory2
-#endif
+        PropertyBasedFileType
     {
         private enum PropertyNames
         {
@@ -54,12 +49,6 @@ namespace WebPFileType
 #else
         private readonly IWebPFileTypeStrings strings;
 
-        // This constructor is still needed because IFileTypeFactory is implemented here instead of in a separate class
-        public WebPFileType()
-            : this(null)
-        {
-        }
-
         public WebPFileType(IFileTypeHost host)
             : base("WebP",
                   new FileTypeOptions
@@ -72,18 +61,6 @@ namespace WebPFileType
             {
                 this.strings = host.Services.GetService<IWebPFileTypeStrings>();
             }
-        }
-#endif
-
-#if PDN_3_5_X
-        public FileType[] GetFileTypeInstances()
-        {
-            return new FileType[] { new WebPFileType()};
-        }
-#else
-        public FileType[] GetFileTypeInstances(IFileTypeHost host)
-        {
-            return new FileType[] { new WebPFileType(host) };
         }
 #endif
 
