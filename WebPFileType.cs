@@ -19,12 +19,7 @@ using PaintDotNet;
 using PaintDotNet.IndirectUI;
 using PaintDotNet.IO;
 using PaintDotNet.PropertySystem;
-#if PDN_3_5_X
-#else
-using PaintDotNet.WebP;
-#endif
 using WebPFileType.Exif;
-using WebPFileType.Properties;
 
 namespace WebPFileType
 {
@@ -39,16 +34,17 @@ namespace WebPFileType
             KeepMetadata
         }
 
+        private readonly IWebPStringResourceManager strings;
+
 #if PDN_3_5_X
         public WebPFileType()
            : base("WebP",
                  FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress,
                  new string[] { ".webp" })
         {
+            strings = new BuiltinStringResourceManager();
         }
 #else
-        private readonly IWebPFileTypeStrings strings;
-
         public WebPFileType(IFileTypeHost host)
             : base("WebP",
                   new FileTypeOptions
@@ -59,37 +55,18 @@ namespace WebPFileType
         {
             if (host != null)
             {
-                this.strings = host.Services.GetService<IWebPFileTypeStrings>();
+                strings = new PdnLocalizedStringResourceManager(host.Services.GetService<PaintDotNet.WebP.IWebPFileTypeStrings>());
+            }
+            else
+            {
+                strings = new BuiltinStringResourceManager();
             }
         }
 #endif
 
-// NOTE: This enum is a copy of PDN 4.2.5+'s WebPFileTypeStringNames. It can be removed if PDN 3.5.X support is dropped.
-//       Also, only UI strings are included. Errors still load their strings locally (no real need to localize, plus
-//       the plumbing for IWebPFileTypeStrings would get nasty).
-#if PDN_3_5_X
-        private enum WebPFileTypeStringNames
+        private string GetString(string name)
         {
-            KeepMetadata_Description = 0,
-            Preset_Default_DisplayName = 1,
-            Preset_DisplayName = 2,
-            Preset_Drawing_DisplayName = 3,
-            Preset_Icon_DisplayName = 4,
-            Preset_Photo_DisplayName = 5,
-            Preset_Picture_DisplayName = 6,
-            Preset_Text_DisplayName = 7,
-            Quality_DisplayName = 8,
-        }
-#endif
-
-        private string GetString(WebPFileTypeStringNames name)
-        {
-#if PDN_3_5_X
-            return Resources.ResourceManager.GetString(name.ToString());
-#else
-            return this.strings?.TryGetString(name)
-                ?? Resources.ResourceManager.GetString(name.ToString());
-#endif
+            return strings.GetString(name);
         }
 
         private static Document GetOrientedDocument(byte[] bytes, out ExifValueCollection exifMetadata)
@@ -243,18 +220,18 @@ namespace WebPFileType
 
             PropertyControlInfo presetPCI = info.FindControlForPropertyName(PropertyNames.Preset);
 
-            presetPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = GetString(WebPFileTypeStringNames.Preset_DisplayName);
-            presetPCI.SetValueDisplayName(WebPPreset.Default, GetString(WebPFileTypeStringNames.Preset_Default_DisplayName));
-            presetPCI.SetValueDisplayName(WebPPreset.Drawing, GetString(WebPFileTypeStringNames.Preset_Drawing_DisplayName));
-            presetPCI.SetValueDisplayName(WebPPreset.Icon, GetString(WebPFileTypeStringNames.Preset_Icon_DisplayName));
-            presetPCI.SetValueDisplayName(WebPPreset.Photo, GetString(WebPFileTypeStringNames.Preset_Photo_DisplayName));
-            presetPCI.SetValueDisplayName(WebPPreset.Picture, GetString(WebPFileTypeStringNames.Preset_Picture_DisplayName));
-            presetPCI.SetValueDisplayName(WebPPreset.Text, GetString(WebPFileTypeStringNames.Preset_Text_DisplayName));
+            presetPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = GetString("Preset_DisplayName");
+            presetPCI.SetValueDisplayName(WebPPreset.Default, GetString("Preset_Default_DisplayName"));
+            presetPCI.SetValueDisplayName(WebPPreset.Drawing, GetString("Preset_Drawing_DisplayName"));
+            presetPCI.SetValueDisplayName(WebPPreset.Icon, GetString("Preset_Icon_DisplayName"));
+            presetPCI.SetValueDisplayName(WebPPreset.Photo, GetString("Preset_Photo_DisplayName"));
+            presetPCI.SetValueDisplayName(WebPPreset.Picture, GetString("Preset_Picture_DisplayName"));
+            presetPCI.SetValueDisplayName(WebPPreset.Text, GetString("Preset_Text_DisplayName"));
 
-            info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, GetString(WebPFileTypeStringNames.Quality_DisplayName));
+            info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, GetString("Quality_DisplayName"));
 
             info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.DisplayName, string.Empty);
-            info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.Description, GetString(WebPFileTypeStringNames.KeepMetadata_Description));
+            info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.Description, GetString("KeepMetadata_Description"));
 
             return info;
         }
