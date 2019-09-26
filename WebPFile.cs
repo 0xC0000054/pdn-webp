@@ -158,7 +158,7 @@ namespace WebPFileType
                 input.Render(ra, true);
             }
 
-            WebPNative.MetadataParams metadata = CreateWebPMetadata(input, scratchSurface);
+            WebPNative.MetadataParams metadata = CreateWebPMetadata(input);
 
             WebPNative.WebPReportProgress encProgress = null;
 
@@ -181,7 +181,7 @@ namespace WebPFileType
             WebPNative.WebPSave(scratchSurface, output, encParams, metadata, encProgress);
         }
 
-        private static WebPNative.MetadataParams CreateWebPMetadata(Document doc, Surface scratchSurface)
+        private static WebPNative.MetadataParams CreateWebPMetadata(Document doc)
         {
             byte[] iccProfileBytes = null;
             byte[] exifBytes = null;
