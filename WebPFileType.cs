@@ -31,7 +31,7 @@ namespace WebPFileType
         {
             Preset,
             Quality,
-            KeepMetadata
+            KeepMetadata // Obsolete, but retained to keep the value from being reused for a different property.
         }
 
         private readonly IWebPStringResourceManager strings;
@@ -208,7 +208,6 @@ namespace WebPFileType
             {
                 StaticListChoiceProperty.CreateForEnum(PropertyNames.Preset, WebPPreset.Photo, false),
                 new Int32Property(PropertyNames.Quality, 95, 0, 100, false),
-                new BooleanProperty(PropertyNames.KeepMetadata, true, false)
             };
 
             return new PropertyCollection(props);
@@ -230,9 +229,6 @@ namespace WebPFileType
 
             info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, GetString("Quality_DisplayName"));
 
-            info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.DisplayName, string.Empty);
-            info.SetPropertyControlValue(PropertyNames.KeepMetadata, ControlInfoPropertyNames.Description, GetString("KeepMetadata_Description"));
-
             return info;
         }
 
@@ -247,9 +243,8 @@ namespace WebPFileType
         {
             int quality = token.GetProperty<Int32Property>(PropertyNames.Quality).Value;
             WebPPreset preset = (WebPPreset)token.GetProperty(PropertyNames.Preset).Value;
-            bool keepMetadata = token.GetProperty<BooleanProperty>(PropertyNames.KeepMetadata).Value;
 
-            WebPFile.Save(input, output, quality, preset, keepMetadata, scratchSurface, progressCallback);
+            WebPFile.Save(input, output, quality, preset, scratchSurface, progressCallback);
         }
     }
 }

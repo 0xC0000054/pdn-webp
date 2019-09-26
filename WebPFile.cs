@@ -129,7 +129,6 @@ namespace WebPFileType
         /// <param name="output">The output Stream.</param>
         /// <param name="quality">The WebP save quality.</param>
         /// <param name="preset">The WebP encoding preset.</param>
-        /// <param name="keepMetadata"><c>true</c> if metadata should be preserved; otherwise <c>false</c>.</param>
         /// <param name="scratchSurface">The scratch surface.</param>
         /// <param name="progressCallback">The progress callback.</param>
         /// <exception cref="FormatException">The image exceeds 16383 pixels in width and/or height.</exception>
@@ -140,7 +139,6 @@ namespace WebPFileType
             Stream output,
             int quality,
             WebPPreset preset,
-            bool keepMetadata,
             Surface scratchSurface,
             ProgressEventHandler progressCallback)
         {
@@ -160,11 +158,7 @@ namespace WebPFileType
                 input.Render(ra, true);
             }
 
-            WebPNative.MetadataParams metadata = null;
-            if (keepMetadata)
-            {
-                metadata = CreateWebPMetadata(input, scratchSurface);
-            }
+            WebPNative.MetadataParams metadata = CreateWebPMetadata(input, scratchSurface);
 
             WebPNative.WebPReportProgress encProgress = null;
 
