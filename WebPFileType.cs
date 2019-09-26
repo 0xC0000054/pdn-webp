@@ -31,7 +31,9 @@ namespace WebPFileType
         {
             Preset,
             Quality,
-            KeepMetadata // Obsolete, but retained to keep the value from being reused for a different property.
+            KeepMetadata, // Obsolete, but retained to keep the value from being reused for a different property.
+            ForumLink,
+            GitHubLink
         }
 
         private readonly IWebPStringResourceManager strings;
@@ -208,6 +210,11 @@ namespace WebPFileType
             {
                 StaticListChoiceProperty.CreateForEnum(PropertyNames.Preset, WebPPreset.Photo, false),
                 new Int32Property(PropertyNames.Quality, 95, 0, 100, false),
+#if !PDN_3_5_X
+                new UriProperty(PropertyNames.ForumLink, new Uri("https://forums.getpaint.net/topic/21773-webp-filetype/")),
+                new UriProperty(PropertyNames.GitHubLink, new Uri("https://github.com/0xC0000054/pdn-webp"))
+#endif
+
             };
 
             return new PropertyCollection(props);
@@ -228,6 +235,16 @@ namespace WebPFileType
             presetPCI.SetValueDisplayName(WebPPreset.Text, GetString("Preset_Text_DisplayName"));
 
             info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, GetString("Quality_DisplayName"));
+
+#if !PDN_3_5_X
+            PropertyControlInfo forumLinkPCI = info.FindControlForPropertyName(PropertyNames.ForumLink);
+            forumLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = GetString("ForumLink_DisplayName");
+            forumLinkPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = GetString("ForumLink_Description");
+
+            PropertyControlInfo githubLinkPCI = info.FindControlForPropertyName(PropertyNames.GitHubLink);
+            githubLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
+            githubLinkPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = "GitHub"; // GitHub is a brand name that should not be localized.
+#endif
 
             return info;
         }

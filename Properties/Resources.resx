@@ -181,4 +181,10 @@
   <data name="EncoderPartitionZeroOverflow" xml:space="preserve">
     <value>Partition #0 is larger than 512 Kb.</value>
   </data>
+  <data name="ForumLink_Description" xml:space="preserve">
+    <value>Forum Discussion</value>
+  </data>
+  <data name="ForumLink_DisplayName" xml:space="preserve">
+    <value>More Info</value>
+  </data>
 </root>
