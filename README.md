@@ -2,6 +2,11 @@
 
 A [Paint.NET](http://www.getpaint.net) filetype plugin that loads and saves [WebP](https://developers.google.com/speed/webp/) images.
 
+### This plugin is bundled with Paint.NET 4.2.5 and later.
+
+If you need the features from a newer version you can still install the plugin.   
+The plugin will override the bundled version if it has higher version number.
+
 ## Installing the plugin
 
 1. Close Paint.NET.
