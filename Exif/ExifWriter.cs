@@ -94,8 +94,6 @@ namespace WebPFileType.Exif
 
         private IFDInfo BuildIFDEntries()
         {
-            Dictionary<MetadataSection, IFDEntryInfo> ifdEntries = new Dictionary<MetadataSection, IFDEntryInfo>();
-
             Dictionary<ushort, MetadataEntry> imageMetadata = metadata[MetadataSection.Image];
             Dictionary<ushort, MetadataEntry> exifMetadata = metadata[MetadataSection.Exif];
 
