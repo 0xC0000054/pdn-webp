@@ -96,7 +96,7 @@ namespace WebPFileType.Exif
                 case TagDataType.SLong:
                 case TagDataType.Float:
                 case TagDataType.IFD:
-                    return count == 1;
+                    return count <= 1;
                 case TagDataType.Rational:
                 case TagDataType.SRational:
                 case TagDataType.Double:
