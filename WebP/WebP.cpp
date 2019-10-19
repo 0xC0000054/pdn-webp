@@ -34,7 +34,11 @@ int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, s
     config.output.u.RGBA.size = outSize;
     config.output.u.RGBA.stride = outStride;
 
-    return WebPDecode(data, dataSize, &config);
+    VP8StatusCode status = WebPDecode(data, dataSize, &config);
+
+    WebPFreeDecBuffer(&config.output);
+
+    return status;
 }
 
 static bool HasTransparency(const void* data, int width, int height, int stride)
