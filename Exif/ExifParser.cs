@@ -379,6 +379,11 @@ namespace WebPFileType.Exif
                 uint count = entry.Count;
                 uint offset = entry.Offset;
 
+                if (count == 0)
+                {
+                    return EmptyArray<byte>.Value;
+                }
+
                 // Paint.NET always stores data in little-endian byte order.
                 byte[] bytes;
                 if (type == TagDataType.Byte ||
@@ -515,6 +520,11 @@ namespace WebPFileType.Exif
                 TagDataType type = entry.Type;
                 uint count = entry.Count;
                 uint offset = entry.Offset;
+
+                if (count == 0)
+                {
+                    return string.Empty;
+                }
 
                 int typeSizeInBytes = TagDataTypeUtil.GetSizeInBytes(type);
 

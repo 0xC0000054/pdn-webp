@@ -233,31 +233,36 @@ namespace WebPFileType.Exif
                 {
                     uint packedOffset = 0;
 
-                    byte[] data = entry.GetDataReadOnly();
-
-                    // The data is always in little-endian byte order.
-                    switch (data.Length)
+                    // Some applications may write EXIF fields with a count of zero.
+                    // See https://github.com/0xC0000054/pdn-webp/issues/6.
+                    if (count > 0)
                     {
-                        case 1:
-                            packedOffset |= data[0];
-                            break;
-                        case 2:
-                            packedOffset |= data[0];
-                            packedOffset |= (uint)data[1] << 8;
-                            break;
-                        case 3:
-                            packedOffset |= data[0];
-                            packedOffset |= (uint)data[1] << 8;
-                            packedOffset |= (uint)data[2] << 16;
-                            break;
-                        case 4:
-                            packedOffset |= data[0];
-                            packedOffset |= (uint)data[1] << 8;
-                            packedOffset |= (uint)data[2] << 16;
-                            packedOffset |= (uint)data[3] << 24;
-                            break;
-                        default:
-                            throw new InvalidOperationException("data.Length must be in the range of [1-4].");
+                        byte[] data = entry.GetDataReadOnly();
+
+                        // The data is always in little-endian byte order.
+                        switch (data.Length)
+                        {
+                            case 1:
+                                packedOffset |= data[0];
+                                break;
+                            case 2:
+                                packedOffset |= data[0];
+                                packedOffset |= (uint)data[1] << 8;
+                                break;
+                            case 3:
+                                packedOffset |= data[0];
+                                packedOffset |= (uint)data[1] << 8;
+                                packedOffset |= (uint)data[2] << 16;
+                                break;
+                            case 4:
+                                packedOffset |= data[0];
+                                packedOffset |= (uint)data[1] << 8;
+                                packedOffset |= (uint)data[2] << 16;
+                                packedOffset |= (uint)data[3] << 24;
+                                break;
+                            default:
+                                throw new InvalidOperationException("data.Length must be in the range of [1-4].");
+                        }
                     }
 
                     ifdEntries.Add(new IFDEntry(entry.TagId, entry.Type, count, packedOffset));

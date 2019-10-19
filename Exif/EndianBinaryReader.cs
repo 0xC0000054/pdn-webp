@@ -523,10 +523,5 @@ namespace WebPFileType.Exif
                 throw new ObjectDisposedException(nameof(EndianBinaryReader));
             }
         }
-
-        private static class EmptyArray<T>
-        {
-            public static readonly T[] Value = new T[0];
-        }
     }
 }
