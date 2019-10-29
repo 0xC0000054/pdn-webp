@@ -260,20 +260,25 @@ namespace WebPFileType
                 foreach (string key in exifKeys)
                 {
                     string blob = metadata.GetValue(Metadata.ExifSectionName, key);
+                    PropertyItem pi = null;
+
                     try
                     {
-                        PropertyItem pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
+                        pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
+                    }
+                    catch
+                    {
+                        // Ignore any items that cannot be deserialized.
+                    }
 
+                    if (pi != null)
+                    {
                         MetadataKey metadataKey = new MetadataKey(ExifTagHelper.GuessTagSection(pi), (ushort)pi.Id);
 
                         if (!items.ContainsKey(metadataKey))
                         {
                             items.Add(metadataKey, new MetadataEntry(metadataKey, (TagDataType)pi.Type, pi.Value));
                         }
-                    }
-                    catch
-                    {
-                        // Ignore any items that cannot be deserialized.
                     }
                 }
             }
