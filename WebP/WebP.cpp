@@ -345,7 +345,7 @@ void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* ou
 
         if (result != 0)
         {
-            memcpy_s(outData, outSize, iter.chunk.bytes, outSize);
+            memcpy_s(outData, outSize, iter.chunk.bytes, iter.chunk.size);
         }
 
         WebPDemuxReleaseChunkIterator(&iter);
