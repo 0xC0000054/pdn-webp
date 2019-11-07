@@ -51,7 +51,9 @@ static bool HasTransparency(const void* data, int width, int height, int stride)
         for (int x = 0; x < width; x++)
         {
             if (ptr[3] < 255)
+            {
                 return true;
+            }
 
             ptr += 4;
         }
