@@ -111,14 +111,13 @@ namespace WebPFileType.Exif
 
                 if (value != current)
                 {
-                    long diff = value - current;
-
-                    long newOffset = readOffset + diff;
+                    long bufferStartOffset = current - readOffset;
+                    long bufferEndOffset = bufferStartOffset + readLength;
 
                     // Avoid reading from the stream if the offset is within the current buffer.
-                    if (newOffset >= 0 && newOffset <= readLength)
+                    if (value >= bufferStartOffset && value <= bufferEndOffset)
                     {
-                        readOffset = (int)newOffset;
+                        readOffset = (int)(value - bufferStartOffset);
                     }
                     else
                     {
