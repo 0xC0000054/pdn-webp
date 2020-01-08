@@ -22,39 +22,39 @@ namespace WebPFileType.Exif
 
             if (TryDecodeShort(entry, out ushort exifValue))
             {
-                if (exifValue >= 1 && exifValue <= 8)
+                if (exifValue >= TiffConstants.Orientation.TopLeft && exifValue <= TiffConstants.Orientation.LeftBottom)
                 {
                     switch (exifValue)
                     {
-                        case 1:
+                        case TiffConstants.Orientation.TopLeft:
                             // Do nothing
                             transform = RotateFlipType.RotateNoneFlipNone;
                             break;
-                        case 2:
+                        case TiffConstants.Orientation.TopRight:
                             // Flip horizontally.
                             transform = RotateFlipType.RotateNoneFlipX;
                             break;
-                        case 3:
+                        case TiffConstants.Orientation.BottomRight:
                             // Rotate 180 degrees.
                             transform = RotateFlipType.Rotate180FlipNone;
                             break;
-                        case 4:
+                        case TiffConstants.Orientation.BottomLeft:
                             // Flip vertically.
                             transform = RotateFlipType.RotateNoneFlipY;
                             break;
-                        case 5:
+                        case TiffConstants.Orientation.LeftTop:
                             // Rotate 90 degrees clockwise and flip horizontally.
                             transform = RotateFlipType.Rotate90FlipX;
                             break;
-                        case 6:
+                        case TiffConstants.Orientation.RightTop:
                             // Rotate 90 degrees clockwise.
                             transform = RotateFlipType.Rotate90FlipNone;
                             break;
-                        case 7:
+                        case TiffConstants.Orientation.RightBottom:
                             // Rotate 270 degrees clockwise and flip horizontally.
                             transform = RotateFlipType.Rotate270FlipX;
                             break;
-                        case 8:
+                        case TiffConstants.Orientation.LeftBottom:
                             // Rotate 270 degrees clockwise.
                             transform = RotateFlipType.Rotate270FlipNone;
                             break;
