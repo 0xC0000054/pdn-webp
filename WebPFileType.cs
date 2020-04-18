@@ -198,7 +198,15 @@ namespace WebPFileType
             byte[] xmpBytes = WebPFile.GetXmpBytes(bytes);
             if (xmpBytes != null)
             {
+#if PDN_3_5_X
                 doc.Metadata.SetUserValue(WebPMetadataNames.XMP, Convert.ToBase64String(xmpBytes, Base64FormattingOptions.None));
+#else
+                PaintDotNet.Imaging.XmpPacket xmpPacket = PaintDotNet.Imaging.XmpPacket.TryParse(xmpBytes);
+                if (xmpPacket != null)
+                {
+                    doc.Metadata.SetXmpPacket(xmpPacket);
+                }
+#endif
             }
 
             return doc;

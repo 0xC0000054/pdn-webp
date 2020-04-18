@@ -236,6 +236,20 @@ namespace WebPFileType
                 }
             }
 
+#if !PDN_3_5_X
+            if (xmpBytes == null)
+            {
+                PaintDotNet.Imaging.XmpPacket xmpPacket = doc.Metadata.TryGetXmpPacket();
+
+                if (xmpPacket != null)
+                {
+                    string xmpPacketAsString = xmpPacket.ToString();
+
+                    xmpBytes = System.Text.Encoding.UTF8.GetBytes(xmpPacketAsString);
+                }
+            }
+#endif
+
             if (iccProfileBytes != null || exifBytes != null || xmpBytes != null)
             {
                 return new WebPNative.MetadataParams(iccProfileBytes, exifBytes, xmpBytes);
