@@ -302,7 +302,7 @@ namespace WebPFileType.Exif
         private static unsafe byte[] SwapRationalArrayToLittleEndian(byte[] values, uint count)
         {
             // A rational value consists of two 4-byte values, a numerator and a denominator.
-            long itemCount = count * 2;
+            long itemCount = (long)count * 2;
 
             fixed (byte* pBytes = values)
             {
