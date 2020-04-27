@@ -99,15 +99,23 @@ namespace WebPFileType
             }
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct ImageInfo
+        {
+            public int width;
+            public int height;
+            [MarshalAs(UnmanagedType.U1)]
+            public bool hasAnimation;
+        }
+
         internal const int WebPMaxDimension = 16383;
 
         [System.Security.SuppressUnmanagedCodeSecurity]
         private unsafe static class WebP_32
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetDimensions")]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool WebPGetDimensions(byte* data, UIntPtr dataSize, out int width, out int height);
+            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetImageInfo")]
+            public static extern VP8StatusCode WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
@@ -139,9 +147,8 @@ namespace WebPFileType
         private unsafe static class WebP_64
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetDimensions")]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool WebPGetDimensions(byte* data, UIntPtr dataSize, out int width, out int height);
+            [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetImageInfo")]
+            public static extern VP8StatusCode WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
@@ -170,23 +177,45 @@ namespace WebPFileType
         }
 
         /// <summary>
-        /// Gets the dimension of the WebP image.
+        /// Gets the WebP image information.
         /// </summary>
         /// <param name="data">The input image data.</param>
-        /// <param name="width">The output width of the image.</param>
-        /// <param name="height">The output height of the image.</param>
-        /// <returns>true on success, otherwise false.</returns>
-        internal static unsafe bool WebPGetDimensions(byte[] data, out int width, out int height)
+        /// <param name="info">The output image information.</param>
+        /// <exception cref="OutOfMemoryException">Insufficient memory to load the WebP image.</exception>
+        /// <exception cref="WebPException">
+        /// The WebP image is invalid.
+        /// -or-
+        /// A native API parameter is invalid.
+        /// </exception>
+        internal static unsafe void WebPGetImageInfo(byte[] data, out ImageInfo info)
         {
+            VP8StatusCode status;
+
             fixed (byte* ptr = data)
             {
                 if (IntPtr.Size == 8)
                 {
-                    return WebP_64.WebPGetDimensions(ptr, new UIntPtr((ulong)data.Length), out width, out height);
+                    status = WebP_64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
                 }
                 else
                 {
-                    return WebP_32.WebPGetDimensions(ptr, new UIntPtr((ulong)data.Length), out width, out height);
+                    status = WebP_32.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
+                }
+            }
+
+            if (status != VP8StatusCode.Ok)
+            {
+                switch (status)
+                {
+                    case VP8StatusCode.OutOfMemory:
+                        throw new OutOfMemoryException();
+                    case VP8StatusCode.InvalidParam:
+                        throw new WebPException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidParameterFormat, nameof(WebPGetImageInfo)));
+                    case VP8StatusCode.BitStreamError:
+                    case VP8StatusCode.UnsupportedFeature:
+                    case VP8StatusCode.NotEnoughData:
+                    default:
+                        throw new WebPException(Resources.InvalidWebPImage);
                 }
             }
         }

@@ -83,11 +83,13 @@ namespace WebPFileType
                 throw new ArgumentNullException(nameof(webpBytes));
             }
 
-            int width;
-            int height;
-            if (!WebPNative.WebPGetDimensions(webpBytes, out width, out height))
+            WebPNative.ImageInfo imageInfo;
+
+            WebPNative.WebPGetImageInfo(webpBytes, out imageInfo);
+
+            if (imageInfo.hasAnimation)
             {
-                throw new WebPException(Resources.InvalidWebPImage);
+                throw new WebPException(Resources.AnimatedWebPNotSupported);
             }
 
             Bitmap image = null;
@@ -95,9 +97,9 @@ namespace WebPFileType
 
             try
             {
-                temp = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+                temp = new Bitmap(imageInfo.width, imageInfo.height, PixelFormat.Format32bppArgb);
 
-                BitmapData bitmapData = temp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+                BitmapData bitmapData = temp.LockBits(new Rectangle(0, 0, imageInfo.width, imageInfo.height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
                 try
                 {

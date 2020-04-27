@@ -14,9 +14,19 @@
 #include "WebP.h"
 #include "scoped.h"
 
-bool __stdcall WebPGetDimensions(const uint8_t* data, size_t dataSize, int* width, int* height)
+int __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info)
 {
-    return (WebPGetInfo(data, dataSize, width, height) != 0);
+    WebPBitstreamFeatures features;
+
+    VP8StatusCode status = WebPGetFeatures(data, dataSize, &features);
+    if (status == VP8_STATUS_OK && info)
+    {
+        info->width = features.width;
+        info->height = features.height;
+        info->hasAnimation = features.has_animation != 0;
+    }
+
+    return status;
 }
 
 int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride)
