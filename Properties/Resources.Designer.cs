@@ -266,5 +266,14 @@ namespace WebPFileType.Properties {
                 return ResourceManager.GetString("Quality_DisplayName", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The image uses a WebP feature that is not supported..
+        /// </summary>
+        internal static string UnsupportedWebPFeature {
+            get {
+                return ResourceManager.GetString("UnsupportedWebPFeature", resourceCulture);
+            }
+        }
     }
 }

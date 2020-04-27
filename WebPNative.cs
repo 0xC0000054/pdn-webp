@@ -211,8 +211,9 @@ namespace WebPFileType
                         throw new OutOfMemoryException();
                     case VP8StatusCode.InvalidParam:
                         throw new WebPException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidParameterFormat, nameof(WebPGetImageInfo)));
-                    case VP8StatusCode.BitStreamError:
                     case VP8StatusCode.UnsupportedFeature:
+                        throw new WebPException(Resources.UnsupportedWebPFeature);
+                    case VP8StatusCode.BitStreamError:
                     case VP8StatusCode.NotEnoughData:
                     default:
                         throw new WebPException(Resources.InvalidWebPImage);
@@ -256,8 +257,9 @@ namespace WebPFileType
                         throw new OutOfMemoryException();
                     case VP8StatusCode.InvalidParam:
                         throw new WebPException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidParameterFormat, nameof(WebPLoad)));
-                    case VP8StatusCode.BitStreamError:
                     case VP8StatusCode.UnsupportedFeature:
+                        throw new WebPException(Resources.UnsupportedWebPFeature);
+                    case VP8StatusCode.BitStreamError:
                     case VP8StatusCode.NotEnoughData:
                     default:
                         throw new WebPException(Resources.InvalidWebPImage);
