@@ -111,7 +111,7 @@ namespace WebPFileType
         internal const int WebPMaxDimension = 16383;
 
         [System.Security.SuppressUnmanagedCodeSecurity]
-        private unsafe static class WebP_32
+        private unsafe static class WebP_x86
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetImageInfo")]
@@ -144,7 +144,7 @@ namespace WebPFileType
         }
 
         [System.Security.SuppressUnmanagedCodeSecurity]
-        private unsafe static class WebP_64
+        private unsafe static class WebP_x64
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
             [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetImageInfo")]
@@ -193,13 +193,25 @@ namespace WebPFileType
 
             fixed (byte* ptr = data)
             {
+#if NET35 || NET47
                 if (IntPtr.Size == 8)
+#else
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+#endif
                 {
-                    status = WebP_64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
+                    status = WebP_x64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
+                }
+#if NET35 || NET47
+                else if (IntPtr.Size == 4)
+#else
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
+#endif
+                {
+                    status = WebP_x86.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
                 }
                 else
                 {
-                    status = WebP_32.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
+                    throw new PlatformNotSupportedException();
                 }
             }
 
@@ -239,13 +251,26 @@ namespace WebPFileType
             {
                 int stride = output.Stride;
                 ulong outputSize = (ulong)stride * (ulong)output.Height;
+
+#if NET35 || NET47
                 if (IntPtr.Size == 8)
+#else
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+#endif
                 {
-                    status = WebP_64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
+                    status = WebP_x64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
+                }
+#if NET35 || NET47
+                else if (IntPtr.Size == 4)
+#else
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
+#endif
+                {
+                    status = WebP_x86.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
                 }
                 else
                 {
-                    status = WebP_32.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
+                    throw new PlatformNotSupportedException();
                 }
             }
 
@@ -297,14 +322,27 @@ namespace WebPFileType
 
             WebPEncodingError retVal = WebPEncodingError.Ok;
 
+#if NET35 || NET47
             if (IntPtr.Size == 8)
+#else
+            if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+#endif
             {
-                retVal = WebP_64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
+                retVal = WebP_x64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
+            }
+#if NET35 || NET47
+            else if (IntPtr.Size == 4)
+#else
+            else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
+#endif
+            {
+                retVal = WebP_x86.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
             }
             else
             {
-                retVal = WebP_32.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
+                throw new PlatformNotSupportedException();
             }
+
             GC.KeepAlive(writeImageCallback);
 
             if (retVal != WebPEncodingError.Ok)
@@ -353,13 +391,25 @@ namespace WebPFileType
 
             fixed (byte* ptr = data)
             {
+#if NET35 || NET47
                 if (IntPtr.Size == 8)
+#else
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+#endif
                 {
-                    metadataSize = WebP_64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
+                    metadataSize = WebP_x64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
+                }
+#if NET35 || NET47
+                else if (IntPtr.Size == 4)
+#else
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
+#endif
+                {
+                    metadataSize = WebP_x86.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
                 }
                 else
                 {
-                    metadataSize = WebP_32.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
+                    throw new PlatformNotSupportedException();
                 }
             }
 
@@ -370,13 +420,25 @@ namespace WebPFileType
         {
             fixed (byte* ptr = data, outPtr = outData)
             {
+#if NET35 || NET47
                 if (IntPtr.Size == 8)
+#else
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+#endif
                 {
-                    WebP_64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
+                    WebP_x64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
+                }
+#if NET35 || NET47
+                else if (IntPtr.Size == 4)
+#else
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
+#endif
+                {
+                    WebP_x86.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
                 else
                 {
-                    WebP_32.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
+                    throw new PlatformNotSupportedException();
                 }
             }
         }
