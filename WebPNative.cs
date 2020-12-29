@@ -193,7 +193,7 @@ namespace WebPFileType
 
             fixed (byte* ptr = data)
             {
-#if NET35 || NET47
+#if NET47
                 if (IntPtr.Size == 8)
 #else
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
@@ -201,7 +201,7 @@ namespace WebPFileType
                 {
                     status = WebP_x64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
                 }
-#if NET35 || NET47
+#if NET47
                 else if (IntPtr.Size == 4)
 #else
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
@@ -252,7 +252,7 @@ namespace WebPFileType
                 int stride = output.Stride;
                 ulong outputSize = (ulong)stride * (ulong)output.Height;
 
-#if NET35 || NET47
+#if NET47
                 if (IntPtr.Size == 8)
 #else
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
@@ -260,7 +260,7 @@ namespace WebPFileType
                 {
                     status = WebP_x64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
                 }
-#if NET35 || NET47
+#if NET47
                 else if (IntPtr.Size == 4)
 #else
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
@@ -322,7 +322,7 @@ namespace WebPFileType
 
             WebPEncodingError retVal = WebPEncodingError.Ok;
 
-#if NET35 || NET47
+#if NET47
             if (IntPtr.Size == 8)
 #else
             if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
@@ -330,7 +330,7 @@ namespace WebPFileType
             {
                 retVal = WebP_x64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
             }
-#if NET35 || NET47
+#if NET47
             else if (IntPtr.Size == 4)
 #else
             else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
@@ -391,7 +391,7 @@ namespace WebPFileType
 
             fixed (byte* ptr = data)
             {
-#if NET35 || NET47
+#if NET47
                 if (IntPtr.Size == 8)
 #else
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
@@ -399,7 +399,7 @@ namespace WebPFileType
                 {
                     metadataSize = WebP_x64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
                 }
-#if NET35 || NET47
+#if NET47
                 else if (IntPtr.Size == 4)
 #else
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
@@ -420,7 +420,7 @@ namespace WebPFileType
         {
             fixed (byte* ptr = data, outPtr = outData)
             {
-#if NET35 || NET47
+#if NET47
                 if (IntPtr.Size == 8)
 #else
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
@@ -428,7 +428,7 @@ namespace WebPFileType
                 {
                     WebP_x64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
-#if NET35 || NET47
+#if NET47
                 else if (IntPtr.Size == 4)
 #else
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net47;net35;net50</TargetFrameworks>
+    <TargetFrameworks>net47;net50</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -42,13 +42,10 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <NoWarn>436</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net35' ">
-    <DefineConstants>PDN_3_5_X</DefineConstants>
-  </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net50' ">
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net50' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net47' ">
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(TargetFramework)'=='net47'">
@@ -61,7 +58,7 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net35' ">
+  <ItemGroup>
     <Reference Include="PaintDotNet.Base">
       <HintPath>D:\Program Files\paint.net\PaintDotNet.Base.dll</HintPath>
     </Reference>
@@ -70,20 +67,6 @@
     </Reference>
     <Reference Include="PaintDotNet.Data">
       <HintPath>D:\Program Files\paint.net\PaintDotNet.Data.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net35' ">
-    <Reference Include="PaintDotNet.Base">
-      <HintPath>..\PSFilterPdn\References\PaintDotNet.Base.dll</HintPath>
-    </Reference>
-    <Reference Include="PaintDotNet.Core">
-      <HintPath>..\PSFilterPdn\References\PaintDotNet.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="PaintDotNet.Data">
-      <HintPath>..\PSFilterPdn\References\PaintDotNet.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="PaintDotNet.SystemLayer">
-      <HintPath>..\PSFilterPdn\References\PaintDotNet.SystemLayer.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

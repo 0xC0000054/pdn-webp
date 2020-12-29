@@ -15,23 +15,11 @@ using PaintDotNet;
 namespace WebPFileType
 {
     public sealed class WebPFileTypeFactory :
-#if PDN_3_5_X
-        IFileTypeFactory
-#else
         IFileTypeFactory2
-#endif
     {
-
-#if PDN_3_5_X
-        public FileType[] GetFileTypeInstances()
-        {
-            return new FileType[] { new WebPFileType()};
-        }
-#else
         public FileType[] GetFileTypeInstances(IFileTypeHost host)
         {
             return new FileType[] { new WebPFileType(host) };
         }
-#endif
     }
 }

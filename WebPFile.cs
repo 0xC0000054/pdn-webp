@@ -238,7 +238,6 @@ namespace WebPFileType
                 }
             }
 
-#if !PDN_3_5_X
             if (xmpBytes == null)
             {
                 PaintDotNet.Imaging.XmpPacket xmpPacket = doc.Metadata.TryGetXmpPacket();
@@ -250,7 +249,6 @@ namespace WebPFileType
                     xmpBytes = System.Text.Encoding.UTF8.GetBytes(xmpPacketAsString);
                 }
             }
-#endif
 
             if (iccProfileBytes != null || exifBytes != null || xmpBytes != null)
             {
@@ -265,40 +263,6 @@ namespace WebPFileType
             Dictionary<MetadataKey, MetadataEntry> items = null;
 
             Metadata metadata = doc.Metadata;
-
-#if PDN_3_5_X
-            string[] exifKeys = metadata.GetKeys(Metadata.ExifSectionName);
-
-            if (exifKeys.Length > 0)
-            {
-                items = new Dictionary<MetadataKey, MetadataEntry>(exifKeys.Length);
-
-                foreach (string key in exifKeys)
-                {
-                    string blob = metadata.GetValue(Metadata.ExifSectionName, key);
-                    PropertyItem pi = null;
-
-                    try
-                    {
-                        pi = PaintDotNet.SystemLayer.PdnGraphics.DeserializePropertyItem(blob);
-                    }
-                    catch
-                    {
-                        // Ignore any items that cannot be deserialized.
-                    }
-
-                    if (pi != null)
-                    {
-                        MetadataKey metadataKey = new MetadataKey(ExifTagHelper.GuessTagSection(pi), (ushort)pi.Id);
-
-                        if (!items.ContainsKey(metadataKey))
-                        {
-                            items.Add(metadataKey, new MetadataEntry(metadataKey, (TagDataType)pi.Type, pi.Value));
-                        }
-                    }
-                }
-            }
-#else
             PaintDotNet.Imaging.ExifPropertyItem[] exifProperties = metadata.GetExifPropertyItems();
 
             if (exifProperties.Length > 0)
@@ -339,7 +303,6 @@ namespace WebPFileType
                     }
                 }
             }
-#endif
 
             return items;
         }
