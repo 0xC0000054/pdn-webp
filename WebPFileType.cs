@@ -86,7 +86,7 @@ namespace WebPFileType
                 {
                     exifMetadata = ExifParser.Parse(exifBytes);
 
-                    if (exifMetadata.Count > 0)
+                    if (exifMetadata != null)
                     {
                         MetadataEntry orientationProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.Orientation);
                         if (orientationProperty != null)

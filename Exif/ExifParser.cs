@@ -35,7 +35,7 @@ namespace WebPFileType.Exif
                 throw new ArgumentNullException(nameof(exifBytes));
             }
 
-            List<MetadataEntry> metadataEntries = new List<MetadataEntry>();
+            ExifValueCollection metadataEntries = null;
 
             MemoryStream stream = null;
             try
@@ -58,7 +58,7 @@ namespace WebPFileType.Exif
 
                             List<ParserIFDEntry> entries = ParseDirectories(reader, ifdOffset);
 
-                            metadataEntries.AddRange(ConvertIFDEntriesToMetadataEntries(reader, entries));
+                            metadataEntries = new ExifValueCollection(ConvertIFDEntriesToMetadataEntries(reader, entries));
                         }
                     }
                 }
@@ -71,7 +71,7 @@ namespace WebPFileType.Exif
                 stream?.Dispose();
             }
 
-            return new ExifValueCollection(metadataEntries);
+            return metadataEntries;
         }
 
         private static Endianess? TryDetectTiffByteOrder(Stream stream)
@@ -104,7 +104,7 @@ namespace WebPFileType.Exif
             }
         }
 
-        private static ICollection<MetadataEntry> ConvertIFDEntriesToMetadataEntries(EndianBinaryReader reader, List<ParserIFDEntry> entries)
+        private static List<MetadataEntry> ConvertIFDEntriesToMetadataEntries(EndianBinaryReader reader, List<ParserIFDEntry> entries)
         {
             List<MetadataEntry> metadataEntries = new List<MetadataEntry>(entries.Count);
             bool swapNumberByteOrder = reader.Endianess == Endianess.Big;
