@@ -38,15 +38,6 @@ namespace WebPFileType
 
         private readonly IWebPStringResourceManager strings;
 
-#if PDN_3_5_X
-        public WebPFileType()
-           : base("WebP",
-                 FileTypeFlags.SupportsLoading | FileTypeFlags.SupportsSaving | FileTypeFlags.SavesWithProgress,
-                 new string[] { ".webp" })
-        {
-            strings = new BuiltinStringResourceManager();
-        }
-#else
         public WebPFileType(IFileTypeHost host)
             : base("WebP",
                   new FileTypeOptions
@@ -64,7 +55,6 @@ namespace WebPFileType
                 strings = new BuiltinStringResourceManager();
             }
         }
-#endif
 
         private string GetString(string name)
         {
@@ -162,51 +152,28 @@ namespace WebPFileType
             byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
             if (colorProfileBytes != null)
             {
-#if PDN_3_5_X
-                System.Drawing.Imaging.PropertyItem colorProfileItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
-                colorProfileItem.Id = unchecked((ushort)ExifTagID.IccProfileData);
-                colorProfileItem.Type = (short)ExifTagType.Undefined;
-                colorProfileItem.Len = colorProfileBytes.Length;
-                colorProfileItem.Value = colorProfileBytes.CloneT();
-
-                doc.Metadata.AddExifValues(new System.Drawing.Imaging.PropertyItem[] { colorProfileItem });
-#else
                 doc.Metadata.AddExifPropertyItem(PaintDotNet.Imaging.ExifSection.Image,
                                                  unchecked((ushort)ExifTagID.IccProfileData),
                                                  new PaintDotNet.Imaging.ExifValue(PaintDotNet.Imaging.ExifValueType.Undefined,
                                                                                    colorProfileBytes.CloneT()));
-#endif
             }
 
             if (exifMetadata != null)
             {
                 foreach (MetadataEntry entry in exifMetadata.Distinct())
                 {
-#if PDN_3_5_X
-                    System.Drawing.Imaging.PropertyItem propertyItem = entry.TryCreateGdipPropertyItem();
-
-                    if (propertyItem != null)
-                    {
-                        doc.Metadata.AddExifValues(new System.Drawing.Imaging.PropertyItem[] { propertyItem });
-                    }
-#else
                     doc.Metadata.AddExifPropertyItem(entry.CreateExifPropertyItem());
-#endif
                 }
             }
 
             byte[] xmpBytes = WebPFile.GetXmpBytes(bytes);
             if (xmpBytes != null)
             {
-#if PDN_3_5_X
-                doc.Metadata.SetUserValue(WebPMetadataNames.XMP, Convert.ToBase64String(xmpBytes, Base64FormattingOptions.None));
-#else
                 PaintDotNet.Imaging.XmpPacket xmpPacket = PaintDotNet.Imaging.XmpPacket.TryParse(xmpBytes);
                 if (xmpPacket != null)
                 {
                     doc.Metadata.SetXmpPacket(xmpPacket);
                 }
-#endif
             }
 
             return doc;
@@ -218,11 +185,8 @@ namespace WebPFileType
             {
                 StaticListChoiceProperty.CreateForEnum(PropertyNames.Preset, WebPPreset.Photo, false),
                 new Int32Property(PropertyNames.Quality, 95, 0, 100, false),
-#if !PDN_3_5_X
                 new UriProperty(PropertyNames.ForumLink, new Uri("https://forums.getpaint.net/topic/21773-webp-filetype/")),
                 new UriProperty(PropertyNames.GitHubLink, new Uri("https://github.com/0xC0000054/pdn-webp"))
-#endif
-
             };
 
             return new PropertyCollection(props);
@@ -244,7 +208,6 @@ namespace WebPFileType
 
             info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, GetString("Quality_DisplayName"));
 
-#if !PDN_3_5_X
             PropertyControlInfo forumLinkPCI = info.FindControlForPropertyName(PropertyNames.ForumLink);
             forumLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = GetString("ForumLink_DisplayName");
             forumLinkPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = GetString("ForumLink_Description");
@@ -252,7 +215,6 @@ namespace WebPFileType
             PropertyControlInfo githubLinkPCI = info.FindControlForPropertyName(PropertyNames.GitHubLink);
             githubLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
             githubLinkPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = "GitHub"; // GitHub is a brand name that should not be localized.
-#endif
 
             return info;
         }

@@ -10,7 +10,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#if !PDN_3_5_X
 using PaintDotNet.WebP;
 using System;
 using System.Linq;
@@ -53,4 +52,3 @@ namespace WebPFileType
         }
     }
 }
-#endif

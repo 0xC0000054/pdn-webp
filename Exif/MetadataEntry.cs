@@ -66,26 +66,6 @@ namespace WebPFileType.Exif
             return data;
         }
 
-#if PDN_3_5_X
-        public System.Drawing.Imaging.PropertyItem TryCreateGdipPropertyItem()
-        {
-            // Skip the Interoperability IFD because GDI+ does not support it.
-            // https://docs.microsoft.com/en-us/windows/desktop/gdiplus/-gdiplus-constant-image-property-tag-constants
-            if (!TagDataTypeUtil.IsKnownToGDIPlus(Type) || Section == MetadataSection.Interop)
-            {
-                return null;
-            }
-
-            System.Drawing.Imaging.PropertyItem propertyItem = PaintDotNet.SystemLayer.PdnGraphics.CreatePropertyItem();
-
-            propertyItem.Id = TagId;
-            propertyItem.Type = (short)Type;
-            propertyItem.Len = data.Length;
-            propertyItem.Value = (byte[])data.Clone();
-
-            return propertyItem;
-        }
-#else
         public PaintDotNet.Imaging.ExifPropertyItem CreateExifPropertyItem()
         {
             PaintDotNet.Imaging.ExifSection exifSection;
@@ -115,7 +95,6 @@ namespace WebPFileType.Exif
                                                             new PaintDotNet.Imaging.ExifValue((PaintDotNet.Imaging.ExifValueType)Type,
                                                                                               (byte[])data.Clone()));
         }
-#endif
 
         public override bool Equals(object obj)
         {
