@@ -57,7 +57,7 @@ static bool HasTransparency(const void* data, int width, int height, int stride)
 
     for (int y = 0; y < height; y++)
     {
-        const uint8_t* ptr = scan0 + (y * stride);
+        const uint8_t* ptr = scan0 + (static_cast<int64_t>(y) * stride);
         for (int x = 0; x < width; x++)
         {
             if (ptr[3] < 255)
