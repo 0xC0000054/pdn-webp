@@ -52,6 +52,10 @@ public:
         Release();
     }
 
+    // Disable copying and assignment.
+    ScopedWebPMuxAssembler(const ScopedWebPMuxAssembler&) = delete;
+    const ScopedWebPMuxAssembler& operator=(ScopedWebPMuxAssembler&) = delete;
+
     const uint8_t* GetBuffer() const
     {
         if (data != nullptr)
@@ -92,16 +96,6 @@ public:
     }
 
 private:
-    // Disable copying and assignment.
-    ScopedWebPMuxAssembler(const ScopedWebPMuxAssembler&)
-    {
-    }
-
-    const ScopedWebPMuxAssembler& operator=(ScopedWebPMuxAssembler&)
-    {
-        return *this;
-    }
-
     WebPData* data;
     WebPMuxError status;
 };
@@ -135,6 +129,10 @@ public:
     {
         Release();
     }
+
+    // Disable copying and assignment.
+    ScopedWebPPicture(const ScopedWebPPicture&) = delete;
+    const ScopedWebPPicture& operator=(const ScopedWebPPicture&) = delete;
 
     WebPPicture* Get() const
     {
@@ -171,16 +169,6 @@ public:
     }
 
 private:
-    // Disable copying and assignment.
-    ScopedWebPPicture(const ScopedWebPPicture&)
-    {
-    }
-
-    const ScopedWebPPicture& operator=(const ScopedWebPPicture&)
-    {
-        return *this;
-    }
-
     WebPPicture* picture;
     bool initialized;
 };
@@ -201,6 +189,10 @@ public:
     {
         Release();
     }
+
+    // Disable copying and assignment.
+    ScopedWebPMemoryWriter(const ScopedWebPMemoryWriter&) = delete;
+    const ScopedWebPMemoryWriter& operator=(const ScopedWebPMemoryWriter&) = delete;
 
     WebPMemoryWriter* Get() const
     {
@@ -248,15 +240,5 @@ public:
     }
 
 private:
-    // Disable copying and assignment.
-    ScopedWebPMemoryWriter(const ScopedWebPMemoryWriter&)
-    {
-    }
-
-    const ScopedWebPMemoryWriter& operator=(const ScopedWebPMemoryWriter&)
-    {
-        return *this;
-    }
-
     WebPMemoryWriter* writer;
 };
