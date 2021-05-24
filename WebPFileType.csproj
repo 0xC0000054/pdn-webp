@@ -70,14 +70,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Debug\**" />
     <Compile Remove="Release\**" />
     <Compile Remove="vendor\**" />
     <Compile Remove="WebP\**" />
     <Compile Remove="x64\**" />
+    <EmbeddedResource Remove="Debug\**" />
     <EmbeddedResource Remove="Release\**" />
     <EmbeddedResource Remove="vendor\**" />
     <EmbeddedResource Remove="WebP\**" />
     <EmbeddedResource Remove="x64\**" />
+    <None Remove="Debug\**" />
     <None Remove="Release\**" />
     <None Remove="vendor\**" />
     <None Remove="WebP\**" />
