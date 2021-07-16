@@ -176,6 +176,41 @@ namespace WebPFileType
             public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
         }
 
+#if !NET47
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        private unsafe static class WebP_ARM64
+        {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
+            [DllImport("WebP_ARM64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetImageInfo")]
+            public static extern VP8StatusCode WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
+            [DllImport("WebP_ARM64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
+            public static extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
+            [DllImport("WebP_ARM64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
+            public static extern WebPEncodingError WebPSave(
+                WebPWriteImage writeImageCallback,
+                IntPtr scan0,
+                int width,
+                int height,
+                int stride,
+                EncodeParams parameters,
+                [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaler))]
+                MetadataParams metadata,
+                WebPReportProgress callback);
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
+            [DllImport("WebP_ARM64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]
+            public static extern uint GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type);
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
+            [DllImport("WebP_ARM64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
+            public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
+        }
+#endif
+
         /// <summary>
         /// Gets the WebP image information.
         /// </summary>
@@ -209,6 +244,12 @@ namespace WebPFileType
                 {
                     status = WebP_x86.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
                 }
+#if !NET47
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    status = WebP_ARM64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
+                }
+#endif
                 else
                 {
                     throw new PlatformNotSupportedException();
@@ -268,6 +309,12 @@ namespace WebPFileType
                 {
                     status = WebP_x86.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
                 }
+#if !NET47
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    status = WebP_ARM64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
+                }
+#endif
                 else
                 {
                     throw new PlatformNotSupportedException();
@@ -338,6 +385,12 @@ namespace WebPFileType
             {
                 retVal = WebP_x86.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
             }
+#if !NET47
+            else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+            {
+                retVal = WebP_ARM64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
+            }
+#endif
             else
             {
                 throw new PlatformNotSupportedException();
@@ -407,6 +460,12 @@ namespace WebPFileType
                 {
                     metadataSize = WebP_x86.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
                 }
+#if !NET47
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    metadataSize = WebP_ARM64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
+                }
+#endif
                 else
                 {
                     throw new PlatformNotSupportedException();
@@ -436,6 +495,12 @@ namespace WebPFileType
                 {
                     WebP_x86.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
+#if !NET47
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    WebP_ARM64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
+                }
+#endif
                 else
                 {
                     throw new PlatformNotSupportedException();
