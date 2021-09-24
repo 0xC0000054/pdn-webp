@@ -176,7 +176,6 @@ namespace WebPFileType
             public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
         }
 
-#if !NET47
         [System.Security.SuppressUnmanagedCodeSecurity]
         private unsafe static class WebP_ARM64
         {
@@ -209,7 +208,6 @@ namespace WebPFileType
             [DllImport("WebP_ARM64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
             public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
         }
-#endif
 
         /// <summary>
         /// Gets the WebP image information.
@@ -228,28 +226,18 @@ namespace WebPFileType
 
             fixed (byte* ptr = data)
             {
-#if NET47
-                if (IntPtr.Size == 8)
-#else
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-#endif
                 {
                     status = WebP_x64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
                 }
-#if NET47
-                else if (IntPtr.Size == 4)
-#else
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-#endif
                 {
                     status = WebP_x86.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
                 }
-#if !NET47
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
                     status = WebP_ARM64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
                 }
-#endif
                 else
                 {
                     throw new PlatformNotSupportedException();
@@ -293,28 +281,18 @@ namespace WebPFileType
                 int stride = output.Stride;
                 ulong outputSize = (ulong)stride * (ulong)output.Height;
 
-#if NET47
-                if (IntPtr.Size == 8)
-#else
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-#endif
                 {
                     status = WebP_x64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
                 }
-#if NET47
-                else if (IntPtr.Size == 4)
-#else
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-#endif
                 {
                     status = WebP_x86.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
                 }
-#if !NET47
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
                     status = WebP_ARM64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
                 }
-#endif
                 else
                 {
                     throw new PlatformNotSupportedException();
@@ -369,28 +347,18 @@ namespace WebPFileType
 
             WebPEncodingError retVal = WebPEncodingError.Ok;
 
-#if NET47
-            if (IntPtr.Size == 8)
-#else
             if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-#endif
             {
                 retVal = WebP_x64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
             }
-#if NET47
-            else if (IntPtr.Size == 4)
-#else
             else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-#endif
             {
                 retVal = WebP_x86.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
             }
-#if !NET47
             else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
             {
                 retVal = WebP_ARM64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
             }
-#endif
             else
             {
                 throw new PlatformNotSupportedException();
@@ -444,28 +412,18 @@ namespace WebPFileType
 
             fixed (byte* ptr = data)
             {
-#if NET47
-                if (IntPtr.Size == 8)
-#else
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-#endif
                 {
                     metadataSize = WebP_x64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
                 }
-#if NET47
-                else if (IntPtr.Size == 4)
-#else
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-#endif
                 {
                     metadataSize = WebP_x86.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
                 }
-#if !NET47
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
                     metadataSize = WebP_ARM64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
                 }
-#endif
                 else
                 {
                     throw new PlatformNotSupportedException();
@@ -479,28 +437,18 @@ namespace WebPFileType
         {
             fixed (byte* ptr = data, outPtr = outData)
             {
-#if NET47
-                if (IntPtr.Size == 8)
-#else
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-#endif
                 {
                     WebP_x64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
-#if NET47
-                else if (IntPtr.Size == 4)
-#else
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-#endif
                 {
                     WebP_x86.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
-#if !NET47
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
                     WebP_ARM64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
-#endif
                 else
                 {
                     throw new PlatformNotSupportedException();

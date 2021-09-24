@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net47;net50</TargetFrameworks>
+    <TargetFrameworks>net50</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -45,13 +45,10 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net50' ">
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net47' ">
-    <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
-  <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(TargetFramework)'=='net47'">
+  <Target Name="PreBuild" AfterTargets="PreBuildEvent">
     <Exec Command="del &quot;D:\Program Files\Paint.NET\FileTypes\$(TargetName).pdb&quot;" />
   </Target>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)'=='net47'">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="copy &quot;$(TargetPath)&quot; &quot;D:\Program Files\paint.net\FileTypes&quot; /y" />
     <Exec Command="copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;D:\Program Files\paint.net\FileTypes&quot; /y" Condition="'$(ConfigurationName)' == 'Debug'" />
   </Target>
