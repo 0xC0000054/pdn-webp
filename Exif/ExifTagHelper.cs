@@ -11,8 +11,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Linq;
 
 namespace WebPFileType.Exif
 {
@@ -65,113 +63,6 @@ namespace WebPFileType.Exif
         internal static bool CanWriteImageSectionTag(ushort tagId)
         {
             return supportedTiffImageTagsForWriting.Contains(tagId);
-        }
-
-        internal static MetadataSection GuessTagSection(PropertyItem propertyItem)
-        {
-            if (GusssTagSectionHelper.tiffAndExifTags.TryGetValue(propertyItem.Id, out MetadataKey[] values))
-            {
-                if (values.Length == 1)
-                {
-                    return values[0].Section;
-                }
-
-                IEnumerable<MetadataSection> sections = values.Select(v => v.Section);
-
-                // Place items in the EXIF section, if possible.
-                if (sections.Contains(MetadataSection.Exif))
-                {
-                    return MetadataSection.Exif;
-                }
-                else
-                {
-                    return MetadataSection.Image;
-                }
-            }
-            else if (IsGpsTag(propertyItem))
-            {
-                return MetadataSection.Gps;
-            }
-            else if (IsInteroperabilityTag(propertyItem))
-            {
-                return MetadataSection.Interop;
-            }
-            else
-            {
-                return MetadataSection.Exif;
-            }
-        }
-
-        private static bool IsGpsTag(PropertyItem propertyItem)
-        {
-            if (propertyItem.Id == 1)
-            {
-                // The tag number 1 is used by both the GPS IFD (GPSLatitudeRef) and the Interoperability IFD (InteroperabilityIndex).
-                // The EXIF specification states that GPSLatitudeRef should be a 2 character ASCII field.
-
-                return propertyItem.Type == (short)TagDataType.Ascii && propertyItem.Value.Length == 2;
-            }
-            else if (propertyItem.Id == 2)
-            {
-                // The tag number 2 is used by both the GPS IFD (GPSLatitude) and the Interoperability IFD (InteroperabilityVersion).
-                // The EXIF specification states that GPSLatitude should be 3 rational numbers.
-
-                return propertyItem.Type == (short)TagDataType.Rational && propertyItem.Value.Length == 24;
-            }
-            else
-            {
-                return propertyItem.Id >= 3 && propertyItem.Id <= 31;
-            }
-        }
-
-        private static bool IsInteroperabilityTag(PropertyItem propertyItem)
-        {
-            if (propertyItem.Id == 1)
-            {
-                // The tag number 1 is used by both the GPS IFD (GPSLatitudeRef) and the Interoperability IFD (InteroperabilityIndex).
-                // The EXIF specification states that InteroperabilityIndex should be a four character ASCII field.
-
-                return propertyItem.Type == (short)TagDataType.Ascii && propertyItem.Value.Length == 4;
-            }
-            else if (propertyItem.Id == 2)
-            {
-                // The tag number 2 is used by both the GPS IFD (GPSLatitude) and the Interoperability IFD (InteroperabilityVersion).
-                // The DCF specification states that InteroperabilityVersion should be a four byte field.
-                switch ((TagDataType)propertyItem.Type)
-                {
-                    case TagDataType.Byte:
-                    case TagDataType.Undefined:
-                        return propertyItem.Value.Length == 4;
-                    default:
-                        return false;
-                }
-            }
-            else
-            {
-                switch (propertyItem.Id)
-                {
-                    case 4096: // Interoperability IFD - RelatedImageFileFormat
-                    case 4097: // Interoperability IFD - RelatedImageWidth
-                    case 4098: // Interoperability IFD - RelatedImageHeight
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
-
-        private static class GusssTagSectionHelper
-        {
-            internal static readonly Dictionary<int, MetadataKey[]> tiffAndExifTags = CreateTiffAndExifTagDictionary();
-
-            private static Dictionary<int, MetadataKey[]> CreateTiffAndExifTagDictionary()
-            {
-                return MetadataKeyTable.Rows
-                    .Where(i => i.Section == MetadataSection.Image || i.Section == MetadataSection.Exif)
-                    .GroupBy(g => g.TagId)
-                    .Select(s => new KeyValuePair<int, MetadataKey[]>(s.Key, s.ToArray()))
-                    .ToDictionary(k => k.Key, k => k.Value);
-            }
         }
     }
 }
