@@ -219,13 +219,6 @@ namespace WebPFileType
             return info;
         }
 
-        protected override bool IsReflexive(PropertyBasedSaveConfigToken token)
-        {
-            int quality = token.GetProperty<Int32Property>(PropertyNames.Quality).Value;
-
-            return quality == 100;
-        }
-
         protected override void OnSaveT(Document input, Stream output, PropertyBasedSaveConfigToken token, Surface scratchSurface, ProgressEventHandler progressCallback)
         {
             int quality = token.GetProperty<Int32Property>(PropertyNames.Quality).Value;

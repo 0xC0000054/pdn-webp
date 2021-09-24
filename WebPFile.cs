@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
+using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -155,10 +156,8 @@ namespace WebPFileType
                 preset = preset
             };
 
-            using (RenderArgs ra = new RenderArgs(scratchSurface))
-            {
-                input.Render(ra, true);
-            }
+            scratchSurface.Clear();
+            input.CreateRenderer().Render(scratchSurface);
 
             WebPNative.MetadataParams metadata = CreateWebPMetadata(input);
 
