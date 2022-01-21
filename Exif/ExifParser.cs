@@ -601,7 +601,7 @@ namespace WebPFileType.Exif
 
                             if (i < lastItemIndex)
                             {
-                                builder.Append(",");
+                                builder.Append(',');
                             }
                         }
 
