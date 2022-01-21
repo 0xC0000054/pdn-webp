@@ -133,9 +133,6 @@ namespace WebPFileType
                                         doc.DpuX = xRes;
                                         doc.DpuY = yRes;
                                         break;
-                                    default:
-                                        // Unknown ResolutionUnit value.
-                                        break;
                                 }
                             }
                         }
