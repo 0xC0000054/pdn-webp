@@ -28,6 +28,9 @@ csharp_style_expression_bodied_accessors = false:none
 # Code block settings
 csharp_prefer_braces = true:warning
 
+# IDE0066: Convert switch statement to expression
+csharp_style_prefer_switch_expression = false
+
 [*.{cpp,h}]
 indent_style = space
 indent_size = 4
