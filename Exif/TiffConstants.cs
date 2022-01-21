@@ -73,5 +73,11 @@ namespace WebPFileType.Exif
             /// </summary>
             internal const ushort LeftBottom = 8;
         }
+
+        internal static class ResolutionUnit
+        {
+            internal const ushort Inch = 2;
+            internal const ushort Centimeter = 3;
+        }
     }
 }

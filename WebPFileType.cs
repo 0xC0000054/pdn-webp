@@ -121,14 +121,14 @@ namespace WebPFileType
                         {
                             if (xRes > 0.0 && yRes > 0.0)
                             {
-                                switch ((MeasurementUnit)resUnit)
+                                switch (resUnit)
                                 {
-                                    case MeasurementUnit.Centimeter:
+                                    case TiffConstants.ResolutionUnit.Centimeter:
                                         doc.DpuUnit = MeasurementUnit.Centimeter;
                                         doc.DpuX = xRes;
                                         doc.DpuY = yRes;
                                         break;
-                                    case MeasurementUnit.Inch:
+                                    case TiffConstants.ResolutionUnit.Inch:
                                         doc.DpuUnit = MeasurementUnit.Inch;
                                         doc.DpuX = xRes;
                                         doc.DpuY = yRes;
