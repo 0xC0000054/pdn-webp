@@ -82,9 +82,7 @@ namespace WebPFileType
                 throw new ArgumentNullException(nameof(webpBytes));
             }
 
-            WebPNative.ImageInfo imageInfo;
-
-            WebPNative.WebPGetImageInfo(webpBytes, out imageInfo);
+            WebPNative.WebPGetImageInfo(webpBytes, out WebPNative.ImageInfo imageInfo);
 
             if (imageInfo.hasAnimation)
             {
