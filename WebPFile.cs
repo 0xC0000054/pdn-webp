@@ -14,8 +14,6 @@ using PaintDotNet;
 using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using WebPFileType.Exif;
 using WebPFileType.Properties;
@@ -77,7 +75,7 @@ namespace WebPFileType
         /// -or-
         /// A native API parameter is invalid.
         /// </exception>
-        internal static unsafe Bitmap Load(byte[] webpBytes)
+        internal static unsafe Surface Load(byte[] webpBytes)
         {
             if (webpBytes == null)
             {
@@ -93,23 +91,14 @@ namespace WebPFileType
                 throw new WebPException(Resources.AnimatedWebPNotSupported);
             }
 
-            Bitmap image = null;
-            Bitmap temp = null;
+            Surface image = null;
+            Surface temp = null;
 
             try
             {
-                temp = new Bitmap(imageInfo.width, imageInfo.height, PixelFormat.Format32bppArgb);
+                temp = new Surface(imageInfo.width, imageInfo.height);
 
-                BitmapData bitmapData = temp.LockBits(new Rectangle(0, 0, imageInfo.width, imageInfo.height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-                try
-                {
-                    WebPNative.WebPLoad(webpBytes, bitmapData);
-                }
-                finally
-                {
-                    temp.UnlockBits(bitmapData);
-                }
+                WebPNative.WebPLoad(webpBytes, temp);
 
                 image = temp;
                 temp = null;

@@ -10,16 +10,14 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-using System.Drawing;
+using PaintDotNet;
 
 namespace WebPFileType.Exif
 {
     internal static class MetadataHelpers
     {
-        internal static RotateFlipType GetOrientationTransform(MetadataEntry entry)
+        internal static void ApplyOrientationTransform(MetadataEntry entry, ref Surface surface)
         {
-            RotateFlipType transform = RotateFlipType.RotateNoneFlipNone;
-
             if (TryDecodeShort(entry, out ushort exifValue))
             {
                 if (exifValue >= TiffConstants.Orientation.TopLeft && exifValue <= TiffConstants.Orientation.LeftBottom)
@@ -28,41 +26,40 @@ namespace WebPFileType.Exif
                     {
                         case TiffConstants.Orientation.TopLeft:
                             // Do nothing
-                            transform = RotateFlipType.RotateNoneFlipNone;
                             break;
                         case TiffConstants.Orientation.TopRight:
                             // Flip horizontally.
-                            transform = RotateFlipType.RotateNoneFlipX;
+                            ImageTransform.FlipHorizontal(surface);
                             break;
                         case TiffConstants.Orientation.BottomRight:
                             // Rotate 180 degrees.
-                            transform = RotateFlipType.Rotate180FlipNone;
+                            ImageTransform.Rotate180(surface);
                             break;
                         case TiffConstants.Orientation.BottomLeft:
                             // Flip vertically.
-                            transform = RotateFlipType.RotateNoneFlipY;
+                            ImageTransform.FlipVertical(surface);
                             break;
                         case TiffConstants.Orientation.LeftTop:
                             // Rotate 90 degrees clockwise and flip horizontally.
-                            transform = RotateFlipType.Rotate90FlipX;
+                            ImageTransform.Rotate90CW(ref surface);
+                            ImageTransform.FlipHorizontal(surface);
                             break;
                         case TiffConstants.Orientation.RightTop:
                             // Rotate 90 degrees clockwise.
-                            transform = RotateFlipType.Rotate90FlipNone;
+                            ImageTransform.Rotate90CW(ref surface);
                             break;
                         case TiffConstants.Orientation.RightBottom:
                             // Rotate 270 degrees clockwise and flip horizontally.
-                            transform = RotateFlipType.Rotate270FlipX;
+                            ImageTransform.Rotate270CW(ref surface);
+                            ImageTransform.FlipHorizontal(surface);
                             break;
                         case TiffConstants.Orientation.LeftBottom:
                             // Rotate 270 degrees clockwise.
-                            transform = RotateFlipType.Rotate270FlipNone;
+                            ImageTransform.Rotate270CW(ref surface);
                             break;
                     }
                 }
             }
-
-            return transform;
         }
 
         internal static byte[] EncodeLong(uint value)

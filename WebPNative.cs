@@ -272,7 +272,7 @@ namespace WebPFileType
         /// -or-
         /// A native API parameter is invalid.
         /// </exception>
-        internal static unsafe void WebPLoad(byte[] webpBytes, System.Drawing.Imaging.BitmapData output)
+        internal static unsafe void WebPLoad(byte[] webpBytes, Surface output)
         {
             VP8StatusCode status;
 
@@ -283,15 +283,15 @@ namespace WebPFileType
 
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
                 {
-                    status = WebP_x64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
+                    status = WebP_x64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
                 }
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
                 {
-                    status = WebP_x86.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
+                    status = WebP_x86.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
                 }
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
-                    status = WebP_ARM64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0, new UIntPtr(outputSize), stride);
+                    status = WebP_ARM64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
                 }
                 else
                 {

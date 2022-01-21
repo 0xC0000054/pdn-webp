@@ -12,7 +12,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using PaintDotNet;
@@ -61,84 +60,28 @@ namespace WebPFileType
             return strings.GetString(name);
         }
 
-        private static Document GetOrientedDocument(byte[] bytes, out ExifValueCollection exifMetadata)
+        private static Surface GetOrientedSurface(byte[] bytes, out ExifValueCollection exifMetadata)
         {
             exifMetadata = null;
 
-            Document doc = null;
+            Surface surface = WebPFile.Load(bytes);
 
-            // Load the image into a Bitmap so the EXIF orientation transform can be applied.
-
-            using (Bitmap image = WebPFile.Load(bytes))
+            byte[] exifBytes = WebPFile.GetExifBytes(bytes);
+            if (exifBytes != null)
             {
-                byte[] exifBytes = WebPFile.GetExifBytes(bytes);
-                if (exifBytes != null)
+                exifMetadata = ExifParser.Parse(exifBytes);
+
+                if (exifMetadata != null)
                 {
-                    exifMetadata = ExifParser.Parse(exifBytes);
-
-                    if (exifMetadata != null)
+                    MetadataEntry orientationProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.Orientation);
+                    if (orientationProperty != null)
                     {
-                        MetadataEntry orientationProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.Orientation);
-                        if (orientationProperty != null)
-                        {
-                            RotateFlipType transform = MetadataHelpers.GetOrientationTransform(orientationProperty);
-                            if (transform != RotateFlipType.RotateNoneFlipNone)
-                            {
-                                image.RotateFlip(transform);
-                            }
-                        }
-
-                        MetadataEntry xResProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.XResolution);
-                        MetadataEntry yResProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.YResolution);
-                        MetadataEntry resUnitProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.ResolutionUnit);
-                        if (xResProperty != null && yResProperty != null && resUnitProperty != null)
-                        {
-                            if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
-                                MetadataHelpers.TryDecodeRational(yResProperty, out double yRes) &&
-                                MetadataHelpers.TryDecodeShort(resUnitProperty, out ushort resUnit))
-                            {
-                                if (xRes > 0.0 && yRes > 0.0)
-                                {
-                                    double dpiX, dpiY;
-
-                                    switch ((MeasurementUnit)resUnit)
-                                    {
-                                        case MeasurementUnit.Centimeter:
-                                            dpiX = Document.DotsPerCmToDotsPerInch(xRes);
-                                            dpiY = Document.DotsPerCmToDotsPerInch(yRes);
-                                            break;
-                                        case MeasurementUnit.Inch:
-                                            dpiX = xRes;
-                                            dpiY = yRes;
-                                            break;
-                                        default:
-                                            // Unknown ResolutionUnit value.
-                                            dpiX = 0.0;
-                                            dpiY = 0.0;
-                                            break;
-                                    }
-
-                                    if (dpiX > 0.0 && dpiY > 0.0)
-                                    {
-                                        try
-                                        {
-                                            image.SetResolution((float)dpiX, (float)dpiY);
-                                        }
-                                        catch
-                                        {
-                                            // Ignore any errors when setting the resolution.
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        MetadataHelpers.ApplyOrientationTransform(orientationProperty, ref surface);
                     }
                 }
-
-                doc = Document.FromGdipImage(image);
             }
 
-            return doc;
+            return surface;
         }
 
         protected override Document OnLoad(Stream input)
@@ -147,32 +90,81 @@ namespace WebPFileType
 
             input.ProperRead(bytes, 0, (int)input.Length);
 
-            Document doc = GetOrientedDocument(bytes, out ExifValueCollection exifMetadata);
+            Surface surface = GetOrientedSurface(bytes, out ExifValueCollection exifMetadata);
+            bool disposeSurface = true;
 
-            byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
-            if (colorProfileBytes != null)
-            {
-                doc.Metadata.AddExifPropertyItem(PaintDotNet.Imaging.ExifSection.Image,
-                                                 unchecked((ushort)ExifTagID.IccProfileData),
-                                                 new PaintDotNet.Imaging.ExifValue(PaintDotNet.Imaging.ExifValueType.Undefined,
-                                                                                   colorProfileBytes.CloneT()));
-            }
+            Document doc = null;
 
-            if (exifMetadata != null)
+            try
             {
-                foreach (MetadataEntry entry in exifMetadata.Distinct())
+                doc = new Document(surface.Width, surface.Height);
+
+                byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
+                if (colorProfileBytes != null)
                 {
-                    doc.Metadata.AddExifPropertyItem(entry.CreateExifPropertyItem());
+                    doc.Metadata.AddExifPropertyItem(PaintDotNet.Imaging.ExifSection.Image,
+                                                     unchecked((ushort)ExifTagID.IccProfileData),
+                                                     new PaintDotNet.Imaging.ExifValue(PaintDotNet.Imaging.ExifValueType.Undefined,
+                                                                                       colorProfileBytes.CloneT()));
                 }
-            }
 
-            byte[] xmpBytes = WebPFile.GetXmpBytes(bytes);
-            if (xmpBytes != null)
-            {
-                PaintDotNet.Imaging.XmpPacket xmpPacket = PaintDotNet.Imaging.XmpPacket.TryParse(xmpBytes);
-                if (xmpPacket != null)
+                if (exifMetadata != null && exifMetadata.Count > 0)
                 {
-                    doc.Metadata.SetXmpPacket(xmpPacket);
+                    MetadataEntry xResProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.XResolution);
+                    MetadataEntry yResProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.YResolution);
+                    MetadataEntry resUnitProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.ResolutionUnit);
+                    if (xResProperty != null && yResProperty != null && resUnitProperty != null)
+                    {
+                        if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
+                            MetadataHelpers.TryDecodeRational(yResProperty, out double yRes) &&
+                            MetadataHelpers.TryDecodeShort(resUnitProperty, out ushort resUnit))
+                        {
+                            if (xRes > 0.0 && yRes > 0.0)
+                            {
+                                switch ((MeasurementUnit)resUnit)
+                                {
+                                    case MeasurementUnit.Centimeter:
+                                        doc.DpuUnit = MeasurementUnit.Centimeter;
+                                        doc.DpuX = xRes;
+                                        doc.DpuY = yRes;
+                                        break;
+                                    case MeasurementUnit.Inch:
+                                        doc.DpuUnit = MeasurementUnit.Inch;
+                                        doc.DpuX = xRes;
+                                        doc.DpuY = yRes;
+                                        break;
+                                    default:
+                                        // Unknown ResolutionUnit value.
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                    foreach (MetadataEntry entry in exifMetadata.Distinct())
+                    {
+                        doc.Metadata.AddExifPropertyItem(entry.CreateExifPropertyItem());
+                    }
+                }
+
+                byte[] xmpBytes = WebPFile.GetXmpBytes(bytes);
+                if (xmpBytes != null)
+                {
+                    PaintDotNet.Imaging.XmpPacket xmpPacket = PaintDotNet.Imaging.XmpPacket.TryParse(xmpBytes);
+                    if (xmpPacket != null)
+                    {
+                        doc.Metadata.SetXmpPacket(xmpPacket);
+                    }
+                }
+
+                doc.Layers.Add(Layer.CreateBackgroundLayer(surface, takeOwnership: true));
+                disposeSurface = false;
+            }
+            finally
+            {
+                if (disposeSurface)
+                {
+                    surface?.Dispose();
                 }
             }
 

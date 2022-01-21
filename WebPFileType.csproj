@@ -42,9 +42,6 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <NoWarn>436</NoWarn>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net60' ">
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-  </ItemGroup>
   <Target Name="PreBuild" AfterTargets="PreBuildEvent">
     <Exec Command="del &quot;D:\Program Files\Paint.NET\FileTypes\$(TargetName).pdb&quot;" />
   </Target>
