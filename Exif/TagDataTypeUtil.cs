@@ -15,31 +15,6 @@ namespace WebPFileType.Exif
     internal static class TagDataTypeUtil
     {
         /// <summary>
-        /// Determines whether the <see cref="TagDataType"/> is known to GDI+.
-        /// </summary>
-        /// <param name="type">The tag type.</param>
-        /// <returns>
-        /// <see langword="true"/> if the tag type is known to GDI+; otherwise, <see langword="false"/>.
-        /// </returns>
-        public static bool IsKnownToGDIPlus(TagDataType type)
-        {
-            switch (type)
-            {
-                case TagDataType.Byte:
-                case TagDataType.Ascii:
-                case TagDataType.Short:
-                case TagDataType.Long:
-                case TagDataType.Rational:
-                case TagDataType.Undefined:
-                case TagDataType.SLong:
-                case TagDataType.SRational:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        /// <summary>
         /// Gets the size in bytes of a <see cref="TagDataType"/> value.
         /// </summary>
         /// <param name="type">The tag type.</param>
