@@ -304,7 +304,15 @@ namespace WebPFileType.Exif
                 },
                 {
                     MetadataSection.Exif,
-                    new Dictionary<ushort, MetadataEntry>()
+                    new Dictionary<ushort, MetadataEntry>
+                    {
+                        {
+                            MetadataKeys.Exif.ColorSpace.TagId,
+                            new MetadataEntry(MetadataKeys.Exif.ColorSpace,
+                                              TagDataType.Short,
+                                              MetadataHelpers.EncodeShort((ushort)exifColorSpace))
+                        }
+                    }
                 }
             };
 
@@ -344,15 +352,6 @@ namespace WebPFileType.Exif
                 // These tags should not be included in compressed images.
                 entries.Remove(MetadataKeys.Image.ImageWidth);
                 entries.Remove(MetadataKeys.Image.ImageLength);
-            }
-
-            // Add the EXIF color space tag.
-            if (!entries.ContainsKey(MetadataKeys.Exif.ColorSpace))
-            {
-                metadataEntries[MetadataSection.Exif].Add(MetadataKeys.Exif.ColorSpace.TagId,
-                                                          new MetadataEntry(MetadataKeys.Exif.ColorSpace,
-                                                                            TagDataType.Short,
-                                                                            MetadataHelpers.EncodeShort((ushort)exifColorSpace)));
             }
 
             foreach (KeyValuePair<MetadataKey, MetadataEntry> kvp in entries)

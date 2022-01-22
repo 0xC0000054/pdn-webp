@@ -201,6 +201,16 @@ namespace WebPFileType
                 {
                     ExifColorSpace exifColorSpace = ExifColorSpace.Srgb;
 
+                    if (propertyItems.TryGetValue(MetadataKeys.Exif.ColorSpace, out MetadataEntry value))
+                    {
+                        propertyItems.Remove(MetadataKeys.Exif.ColorSpace);
+
+                        if (MetadataHelpers.TryDecodeShort(value, out ushort colorSpace))
+                        {
+                            exifColorSpace = (ExifColorSpace)colorSpace;
+                        }
+                    }
+
                     if (iccProfileBytes != null)
                     {
                         exifColorSpace = ExifColorSpace.Uncalibrated;
