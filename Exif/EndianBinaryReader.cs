@@ -235,7 +235,7 @@ namespace WebPFileType.Exif
 
             if (count == 0)
             {
-                return EmptyArray<byte>.Value;
+                return Array.Empty<byte>();
             }
 
             byte[] bytes = new byte[count];

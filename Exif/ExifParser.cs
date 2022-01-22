@@ -381,7 +381,7 @@ namespace WebPFileType.Exif
 
                 if (count == 0)
                 {
-                    return EmptyArray<byte>.Value;
+                    return Array.Empty<byte>();
                 }
 
                 // Paint.NET always stores data in little-endian byte order.
