@@ -63,7 +63,7 @@ namespace WebPFileType.Exif
             return exifBytes;
         }
 
-        private void WriteDirectory(BinaryWriter writer, Dictionary<ushort, MetadataEntry> tags,  List<IFDEntry> entries, long ifdOffset)
+        private static void WriteDirectory(BinaryWriter writer, Dictionary<ushort, MetadataEntry> tags,  List<IFDEntry> entries, long ifdOffset)
         {
             writer.BaseStream.Position = ifdOffset;
 
@@ -162,7 +162,7 @@ namespace WebPFileType.Exif
             }
         }
 
-        private IFDInfo CreateIFDInfo(
+        private static IFDInfo CreateIFDInfo(
             IFDEntryInfo imageIFDInfo,
             IFDEntryInfo exifIFDInfo,
             IFDEntryInfo interopIFDInfo,
