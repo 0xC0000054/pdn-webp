@@ -31,7 +31,7 @@ namespace WebPFileType
         }
 
         private static readonly int NativeMetadataParamsSize = Marshal.SizeOf(typeof(NativeMetadataParams));
-        private static readonly MetadataCustomMarshaler instance = new MetadataCustomMarshaler();
+        private static readonly MetadataCustomMarshaler instance = new();
 
 #pragma warning disable IDE0060 // Remove unused parameter
         public static ICustomMarshaler GetInstance(string cookie)

@@ -36,8 +36,8 @@ namespace WebPFileType.Exif
 
             byte[] exifBytes = new byte[checked((int)ifdInfo.EXIFDataLength)];
 
-            using (MemoryStream stream = new MemoryStream(exifBytes))
-            using (BinaryWriter writer = new BinaryWriter(stream))
+            using (MemoryStream stream = new(exifBytes))
+            using (BinaryWriter writer = new(stream))
             {
                 IFDEntryInfo imageInfo = ifdEntries[MetadataSection.Image];
                 IFDEntryInfo exifInfo = ifdEntries[MetadataSection.Exif];
@@ -168,7 +168,7 @@ namespace WebPFileType.Exif
             IFDEntryInfo interopIFDInfo,
             IFDEntryInfo gpsIFDInfo)
         {
-            Dictionary<MetadataSection, IFDEntryInfo> entries = new Dictionary<MetadataSection, IFDEntryInfo>
+            Dictionary<MetadataSection, IFDEntryInfo> entries = new()
             {
                 { MetadataSection.Image, imageIFDInfo },
                 { MetadataSection.Exif, exifIFDInfo }
@@ -193,7 +193,7 @@ namespace WebPFileType.Exif
 
         private static IFDEntryInfo CreateIFDList(Dictionary<ushort, MetadataEntry> tags, long startOffset)
         {
-            List<IFDEntry> ifdEntries = new List<IFDEntry>(tags.Count);
+            List<IFDEntry> ifdEntries = new(tags.Count);
 
             // Leave room for the tag count, tags and next IFD offset.
             long ifdDataOffset = startOffset + sizeof(ushort) + ((long)tags.Count * IFDEntry.SizeOf) + sizeof(uint);
@@ -288,7 +288,7 @@ namespace WebPFileType.Exif
             IDictionary<MetadataKey, MetadataEntry> entries,
             ExifColorSpace exifColorSpace)
         {
-            Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> metadataEntries = new Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>>
+            Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> metadataEntries = new()
             {
                 {
                     MetadataSection.Image,

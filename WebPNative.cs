@@ -342,7 +342,7 @@ namespace WebPFileType
                 throw new ArgumentNullException(nameof(input));
             }
 
-            StreamIOHandler handler = new StreamIOHandler(output);
+            StreamIOHandler handler = new(output);
             WebPWriteImage writeImageCallback = handler.WriteImageCallback;
 
             WebPEncodingError retVal = WebPEncodingError.Ok;

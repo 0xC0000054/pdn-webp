@@ -137,7 +137,7 @@ namespace WebPFileType
                 throw new FormatException(Resources.InvalidImageDimensions);
             }
 
-            WebPNative.EncodeParams encParams = new WebPNative.EncodeParams
+            WebPNative.EncodeParams encParams = new()
             {
                 quality = quality,
                 preset = preset
@@ -289,7 +289,7 @@ namespace WebPFileType
                                                                               (int)property.Path.Section));
                     }
 
-                    MetadataKey metadataKey = new MetadataKey(section, property.Path.TagID);
+                    MetadataKey metadataKey = new(section, property.Path.TagID);
 
                     if (!items.ContainsKey(metadataKey))
                     {

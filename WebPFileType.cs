@@ -170,7 +170,7 @@ namespace WebPFileType
 
         public override PropertyCollection OnCreateSavePropertyCollection()
         {
-            List<Property> props = new List<Property>
+            List<Property> props = new()
             {
                 StaticListChoiceProperty.CreateForEnum(PropertyNames.Preset, WebPPreset.Photo, false),
                 new Int32Property(PropertyNames.Quality, 95, 0, 100, false),
