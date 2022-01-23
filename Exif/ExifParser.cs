@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -274,7 +275,7 @@ namespace WebPFileType.Exif
 
                 while (ptr < ptrEnd)
                 {
-                    *ptr = EndianUtil.Swap(*ptr);
+                    *ptr = BinaryPrimitives.ReverseEndianness(*ptr);
                     ptr++;
                 }
             }
@@ -291,7 +292,7 @@ namespace WebPFileType.Exif
 
                 while (ptr < ptrEnd)
                 {
-                    *ptr = EndianUtil.Swap(*ptr);
+                    *ptr = BinaryPrimitives.ReverseEndianness(*ptr);
                     ptr++;
                 }
             }
@@ -311,7 +312,7 @@ namespace WebPFileType.Exif
 
                 while (ptr < ptrEnd)
                 {
-                    *ptr = EndianUtil.Swap(*ptr);
+                    *ptr = BinaryPrimitives.ReverseEndianness(*ptr);
                     ptr++;
                 }
             }
@@ -328,7 +329,7 @@ namespace WebPFileType.Exif
 
                 while (ptr < ptrEnd)
                 {
-                    *ptr = EndianUtil.Swap(*ptr);
+                    *ptr = BinaryPrimitives.ReverseEndianness(*ptr);
                     ptr++;
                 }
             }
