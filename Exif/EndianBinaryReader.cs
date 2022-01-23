@@ -103,7 +103,7 @@ namespace WebPFileType.Exif
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
                 VerifyNotDisposed();
 
