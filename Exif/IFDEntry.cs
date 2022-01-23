@@ -44,12 +44,7 @@ namespace WebPFileType.Exif
 
         public override bool Equals(object obj)
         {
-            if (obj is IFDEntry entry)
-            {
-                return Equals(entry);
-            }
-
-            return false;
+            return obj is IFDEntry entry && Equals(entry);
         }
 
         public bool Equals(IFDEntry other)
