@@ -233,7 +233,7 @@ namespace WebPFileType.Exif
                         count = lengthInBytes / 8;
                         break;
                     default:
-                        throw new InvalidOperationException("Unexpected tag type.");
+                        throw new InvalidOperationException($"Unsupported { nameof(ExifValueType) }: { entry.Type }.");
                 }
 
                 if (ExifValueTypeUtil.ValueFitsInOffsetField(entry.Type, count))
