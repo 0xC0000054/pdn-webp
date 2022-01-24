@@ -10,9 +10,11 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+using PaintDotNet.Imaging;
+
 namespace WebPFileType.Exif
 {
-    internal static class TagDataTypeUtil
+    internal static class ExifValueTypeUtil
     {
         /// <summary>
         /// Gets the size in bytes of a <see cref="TagDataType"/> value.
@@ -21,26 +23,26 @@ namespace WebPFileType.Exif
         /// <returns>
         /// The size of the value in bytes.
         /// </returns>
-        public static int GetSizeInBytes(TagDataType type)
+        public static int GetSizeInBytes(ExifValueType type)
         {
             switch (type)
             {
-                case TagDataType.Byte:
-                case TagDataType.Ascii:
-                case TagDataType.Undefined:
-                case TagDataType.SByte:
+                case ExifValueType.Byte:
+                case ExifValueType.Ascii:
+                case ExifValueType.Undefined:
+                case (ExifValueType)6: // SByte
                     return 1;
-                case TagDataType.Short:
-                case TagDataType.SShort:
+                case ExifValueType.Short:
+                case ExifValueType.SShort:
                     return 2;
-                case TagDataType.Long:
-                case TagDataType.SLong:
-                case TagDataType.Float:
-                case TagDataType.IFD:
+                case ExifValueType.Long:
+                case ExifValueType.SLong:
+                case ExifValueType.Float:
+                case (ExifValueType)13: // IFD
                     return 4;
-                case TagDataType.Rational:
-                case TagDataType.SRational:
-                case TagDataType.Double:
+                case ExifValueType.Rational:
+                case ExifValueType.SRational:
+                case ExifValueType.Double:
                     return 8;
                 default:
                     return 0;
@@ -55,26 +57,26 @@ namespace WebPFileType.Exif
         /// <returns>
         /// <see langword="true"/> if the values fit in the offset field; otherwise, <see langword="false"/>.
         /// </returns>
-        public static bool ValueFitsInOffsetField(TagDataType type, uint count)
+        public static bool ValueFitsInOffsetField(ExifValueType type, uint count)
         {
             switch (type)
             {
-                case TagDataType.Byte:
-                case TagDataType.Ascii:
-                case TagDataType.Undefined:
-                case TagDataType.SByte:
+                case ExifValueType.Byte:
+                case ExifValueType.Ascii:
+                case ExifValueType.Undefined:
+                case (ExifValueType)6: // SByte
                     return count <= 4;
-                case TagDataType.Short:
-                case TagDataType.SShort:
+                case ExifValueType.Short:
+                case ExifValueType.SShort:
                     return count <= 2;
-                case TagDataType.Long:
-                case TagDataType.SLong:
-                case TagDataType.Float:
-                case TagDataType.IFD:
+                case ExifValueType.Long:
+                case ExifValueType.SLong:
+                case ExifValueType.Float:
+                case (ExifValueType)13: // IFD
                     return count <= 1;
-                case TagDataType.Rational:
-                case TagDataType.SRational:
-                case TagDataType.Double:
+                case ExifValueType.Rational:
+                case ExifValueType.SRational:
+                case ExifValueType.Double:
                 default:
                     return false;
             }

@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PaintDotNet;
+using PaintDotNet.Imaging;
 using PaintDotNet.IndirectUI;
 using PaintDotNet.IO;
 using PaintDotNet.PropertySystem;
@@ -73,7 +74,7 @@ namespace WebPFileType
 
                 if (exifMetadata != null)
                 {
-                    MetadataEntry orientationProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.Orientation);
+                    ExifPropertyItem orientationProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.Orientation.Path);
                     if (orientationProperty != null)
                     {
                         MetadataHelpers.ApplyOrientationTransform(orientationProperty, ref surface);
@@ -102,22 +103,23 @@ namespace WebPFileType
                 byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
                 if (colorProfileBytes != null)
                 {
-                    doc.Metadata.AddExifPropertyItem(PaintDotNet.Imaging.ExifSection.Image,
+                    doc.Metadata.AddExifPropertyItem(ExifSection.Image,
                                                      unchecked((ushort)ExifTagID.IccProfileData),
-                                                     new PaintDotNet.Imaging.ExifValue(PaintDotNet.Imaging.ExifValueType.Undefined,
-                                                                                       colorProfileBytes.CloneT()));
+                                                     new ExifValue(ExifValueType.Undefined,
+                                                                   colorProfileBytes));
                 }
 
                 if (exifMetadata != null && exifMetadata.Count > 0)
                 {
-                    MetadataEntry xResProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.XResolution);
-                    MetadataEntry yResProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.YResolution);
-                    MetadataEntry resUnitProperty = exifMetadata.GetAndRemoveValue(MetadataKeys.Image.ResolutionUnit);
+                    ExifPropertyItem xResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.XResolution.Path);
+                    ExifPropertyItem yResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.YResolution.Path);
+                    ExifPropertyItem resUnitProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.ResolutionUnit.Path);
+
                     if (xResProperty != null && yResProperty != null && resUnitProperty != null)
                     {
-                        if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
-                            MetadataHelpers.TryDecodeRational(yResProperty, out double yRes) &&
-                            MetadataHelpers.TryDecodeShort(resUnitProperty, out ushort resUnit))
+                        if (MetadataHelpers.TryDecodeRational(xResProperty?.Value, out double xRes) &&
+                            MetadataHelpers.TryDecodeRational(yResProperty?.Value, out double yRes) &&
+                            MetadataHelpers.TryDecodeShort(resUnitProperty?.Value, out ushort resUnit))
                         {
                             if (xRes > 0.0 && yRes > 0.0)
                             {
@@ -138,16 +140,16 @@ namespace WebPFileType
                         }
                     }
 
-                    foreach (MetadataEntry entry in exifMetadata.Distinct())
+                    foreach (ExifPropertyItem entry in exifMetadata.Distinct())
                     {
-                        doc.Metadata.AddExifPropertyItem(entry.CreateExifPropertyItem());
+                        doc.Metadata.AddExifPropertyItem(entry);
                     }
                 }
 
                 byte[] xmpBytes = WebPFile.GetXmpBytes(bytes);
                 if (xmpBytes != null)
                 {
-                    PaintDotNet.Imaging.XmpPacket xmpPacket = PaintDotNet.Imaging.XmpPacket.TryParse(xmpBytes);
+                    XmpPacket xmpPacket = XmpPacket.TryParse(xmpBytes);
                     if (xmpPacket != null)
                     {
                         doc.Metadata.SetXmpPacket(xmpPacket);

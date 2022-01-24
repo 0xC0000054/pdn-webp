@@ -10,6 +10,7 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+using PaintDotNet.Imaging;
 using System;
 
 namespace WebPFileType.Exif
@@ -21,12 +22,12 @@ namespace WebPFileType.Exif
         public IFDEntry(EndianBinaryReader reader)
         {
             Tag = reader.ReadUInt16();
-            Type = (TagDataType)reader.ReadUInt16();
+            Type = (ExifValueType)reader.ReadInt16();
             Count = reader.ReadUInt32();
             Offset = reader.ReadUInt32();
         }
 
-        public IFDEntry(ushort tag, TagDataType type, uint count, uint offset)
+        public IFDEntry(ushort tag, ExifValueType type, uint count, uint offset)
         {
             Tag = tag;
             Type = type;
@@ -36,7 +37,7 @@ namespace WebPFileType.Exif
 
         public ushort Tag { get; }
 
-        public TagDataType Type { get; }
+        public ExifValueType Type { get; }
 
         public uint Count { get; }
 

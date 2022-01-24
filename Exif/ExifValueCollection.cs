@@ -10,7 +10,7 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-using PaintDotNet;
+using PaintDotNet.Imaging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,30 +20,30 @@ namespace WebPFileType.Exif
 {
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(ExifValueCollectionDebugView))]
-    internal sealed class ExifValueCollection : IEnumerable<MetadataEntry>
+    internal sealed class ExifValueCollection : IEnumerable<ExifPropertyItem>
     {
-        private readonly List<MetadataEntry> exifMetadata;
+        private readonly List<ExifPropertyItem> exifMetadata;
 
-        public ExifValueCollection(List<MetadataEntry> items)
+        public ExifValueCollection(List<ExifPropertyItem> items)
         {
             exifMetadata = items ?? throw new ArgumentNullException(nameof(items));
         }
 
         public int Count => exifMetadata.Count;
 
-        public MetadataEntry GetAndRemoveValue(MetadataKey key)
+        public ExifPropertyItem GetAndRemoveValue(ExifPropertyPath key)
         {
-            MetadataEntry value = exifMetadata.Find(p => p.Section == key.Section && p.TagId == key.TagId);
+            ExifPropertyItem value = exifMetadata.Find(p => p.Path == key);
 
             if (value != null)
             {
-                exifMetadata.RemoveAll(p => p.Section == key.Section && p.TagId == key.TagId);
+                exifMetadata.RemoveAll(p => p.Path == key);
             }
 
             return value;
         }
 
-        public IEnumerator<MetadataEntry> GetEnumerator()
+        public IEnumerator<ExifPropertyItem> GetEnumerator()
         {
             return exifMetadata.GetEnumerator();
         }
@@ -63,7 +63,7 @@ namespace WebPFileType.Exif
             }
 
             [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-            public MetadataEntry[] Items
+            public ExifPropertyItem[] Items
             {
                 get
                 {

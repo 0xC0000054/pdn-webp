@@ -11,14 +11,16 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
+using PaintDotNet.Imaging;
+using System.Collections.Generic;
 
 namespace WebPFileType.Exif
 {
     internal static class MetadataHelpers
     {
-        internal static void ApplyOrientationTransform(MetadataEntry entry, ref Surface surface)
+        internal static void ApplyOrientationTransform(ExifPropertyItem entry, ref Surface surface)
         {
-            if (TryDecodeShort(entry, out ushort exifValue))
+            if (TryDecodeShort(entry?.Value, out ushort exifValue))
             {
                 if (exifValue >= TiffConstants.Orientation.TopLeft && exifValue <= TiffConstants.Orientation.LeftBottom)
                 {
@@ -82,18 +84,21 @@ namespace WebPFileType.Exif
             };
         }
 
-        internal static bool TryDecodeRational(MetadataEntry entry, out double value)
+        internal static bool TryDecodeRational(ExifValue entry, out double value)
         {
             uint numerator;
             uint denominator;
 
-            if (entry.Type != TagDataType.Rational || entry.LengthInBytes != 8)
+            if (entry is null
+                || entry.Type != ExifValueType.Rational
+                || entry.Data is null
+                || entry.Data.Count != 8)
             {
                 value = 0.0;
                 return false;
             }
 
-            byte[] data = entry.GetDataReadOnly();
+            IReadOnlyList<byte> data = entry.Data;
 
             numerator = (uint)(data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24));
             denominator = (uint)(data[4] | (data[5] << 8) | (data[6] << 16) | (data[7] << 24));
@@ -109,15 +114,18 @@ namespace WebPFileType.Exif
             return true;
         }
 
-        internal static bool TryDecodeShort(MetadataEntry entry, out ushort value)
+        internal static bool TryDecodeShort(ExifValue entry, out ushort value)
         {
-            if (entry.Type != TagDataType.Short || entry.LengthInBytes != 2)
+            if (entry is null
+                || entry.Type != ExifValueType.Short
+                || entry.Data is null
+                || entry.Data.Count != 2)
             {
                 value = 0;
                 return false;
             }
 
-            byte[] data = entry.GetDataReadOnly();
+            IReadOnlyList<byte> data = entry.Data;
 
             value = (ushort)(data[0] | (data[1] << 8));
 

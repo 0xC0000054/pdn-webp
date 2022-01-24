@@ -11,6 +11,8 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
+using PaintDotNet.Collections;
+using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
@@ -195,15 +197,15 @@ namespace WebPFileType
 
             if (iccProfileBytes == null || exifBytes == null)
             {
-                Dictionary<MetadataKey, MetadataEntry> propertyItems = GetMetadataFromDocument(doc);
+                Dictionary<ExifPropertyPath, ExifValue> propertyItems = GetMetadataFromDocument(doc);
 
                 if (propertyItems != null)
                 {
                     ExifColorSpace exifColorSpace = ExifColorSpace.Srgb;
 
-                    if (propertyItems.TryGetValue(MetadataKeys.Exif.ColorSpace, out MetadataEntry value))
+                    if (propertyItems.TryGetValue(ExifPropertyKeys.Photo.ColorSpace.Path, out ExifValue value))
                     {
-                        propertyItems.Remove(MetadataKeys.Exif.ColorSpace);
+                        propertyItems.Remove(ExifPropertyKeys.Photo.ColorSpace.Path);
 
                         if (MetadataHelpers.TryDecodeShort(value, out ushort colorSpace))
                         {
@@ -211,19 +213,21 @@ namespace WebPFileType
                         }
                     }
 
+                    const ExifColorSpace Uncalibrated = (ExifColorSpace)ushort.MaxValue;
+
                     if (iccProfileBytes != null)
                     {
-                        exifColorSpace = ExifColorSpace.Uncalibrated;
+                        exifColorSpace = Uncalibrated;
                     }
                     else
                     {
-                        MetadataKey iccProfileKey = MetadataKeys.Image.InterColorProfile;
+                        ExifPropertyPath iccProfileKey = ExifPropertyKeys.Image.InterColorProfile.Path;
 
-                        if (propertyItems.TryGetValue(iccProfileKey, out MetadataEntry iccProfileItem))
+                        if (propertyItems.TryGetValue(iccProfileKey, out ExifValue iccProfileItem))
                         {
-                            iccProfileBytes = iccProfileItem.GetData();
+                            iccProfileBytes = iccProfileItem.Data.ToArrayEx();
                             propertyItems.Remove(iccProfileKey);
-                            exifColorSpace = ExifColorSpace.Uncalibrated;
+                            exifColorSpace = Uncalibrated;
                         }
                     }
 
@@ -236,7 +240,7 @@ namespace WebPFileType
 
             if (xmpBytes == null)
             {
-                PaintDotNet.Imaging.XmpPacket xmpPacket = doc.Metadata.TryGetXmpPacket();
+                XmpPacket xmpPacket = doc.Metadata.TryGetXmpPacket();
 
                 if (xmpPacket != null)
                 {
@@ -254,49 +258,20 @@ namespace WebPFileType
             return null;
         }
 
-        private static Dictionary<MetadataKey, MetadataEntry> GetMetadataFromDocument(Document doc)
+        private static Dictionary<ExifPropertyPath, ExifValue> GetMetadataFromDocument(Document doc)
         {
-            Dictionary<MetadataKey, MetadataEntry> items = null;
+            Dictionary<ExifPropertyPath, ExifValue> items = null;
 
             Metadata metadata = doc.Metadata;
-            PaintDotNet.Imaging.ExifPropertyItem[] exifProperties = metadata.GetExifPropertyItems();
+            ExifPropertyItem[] exifProperties = metadata.GetExifPropertyItems();
 
             if (exifProperties.Length > 0)
             {
-                items = new Dictionary<MetadataKey, MetadataEntry>(exifProperties.Length);
+                items = new Dictionary<ExifPropertyPath, ExifValue>(exifProperties.Length);
 
-                foreach (PaintDotNet.Imaging.ExifPropertyItem property in exifProperties)
+                foreach (ExifPropertyItem property in exifProperties)
                 {
-                    MetadataSection section;
-                    switch (property.Path.Section)
-                    {
-                        case PaintDotNet.Imaging.ExifSection.Image:
-                            section = MetadataSection.Image;
-                            break;
-                        case PaintDotNet.Imaging.ExifSection.Photo:
-                            section = MetadataSection.Exif;
-                            break;
-                        case PaintDotNet.Imaging.ExifSection.Interop:
-                            section = MetadataSection.Interop;
-                            break;
-                        case PaintDotNet.Imaging.ExifSection.GpsInfo:
-                            section = MetadataSection.Gps;
-                            break;
-                        default:
-                            throw new InvalidOperationException(string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                                                                              "Unexpected {0} type: {1}",
-                                                                              nameof(PaintDotNet.Imaging.ExifSection),
-                                                                              (int)property.Path.Section));
-                    }
-
-                    MetadataKey metadataKey = new(section, property.Path.TagID);
-
-                    if (!items.ContainsKey(metadataKey))
-                    {
-                        byte[] clonedData = PaintDotNet.Collections.EnumerableExtensions.ToArrayEx(property.Value.Data);
-
-                        items.Add(metadataKey, new MetadataEntry(metadataKey, (TagDataType)property.Value.Type, clonedData));
-                    }
+                    items.TryAdd(property.Path, property.Value);
                 }
             }
 

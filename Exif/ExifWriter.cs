@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
+using PaintDotNet.Imaging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,11 +21,11 @@ namespace WebPFileType.Exif
 {
     internal sealed class ExifWriter
     {
-        private readonly Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> metadata;
+        private readonly Dictionary<ExifSection, Dictionary<ushort, ExifValue>> metadata;
 
         private const int FirstIFDOffset = 8;
 
-        public ExifWriter(Document doc, IDictionary<MetadataKey, MetadataEntry> entries, ExifColorSpace exifColorSpace)
+        public ExifWriter(Document doc, IDictionary<ExifPropertyPath, ExifValue> entries, ExifColorSpace exifColorSpace)
         {
             metadata = CreateTagDictionary(doc, entries, exifColorSpace);
         }
@@ -32,38 +33,38 @@ namespace WebPFileType.Exif
         public byte[] CreateExifBlob()
         {
             IFDInfo ifdInfo = BuildIFDEntries();
-            Dictionary<MetadataSection, IFDEntryInfo> ifdEntries = ifdInfo.IFDEntries;
+            Dictionary<ExifSection, IFDEntryInfo> ifdEntries = ifdInfo.IFDEntries;
 
             byte[] exifBytes = new byte[checked((int)ifdInfo.EXIFDataLength)];
 
             using (MemoryStream stream = new(exifBytes))
             using (BinaryWriter writer = new(stream))
             {
-                IFDEntryInfo imageInfo = ifdEntries[MetadataSection.Image];
-                IFDEntryInfo exifInfo = ifdEntries[MetadataSection.Exif];
+                IFDEntryInfo imageInfo = ifdEntries[ExifSection.Image];
+                IFDEntryInfo exifInfo = ifdEntries[ExifSection.Photo];
 
                 writer.Write(TiffConstants.LittleEndianByteOrderMarker);
                 writer.Write(TiffConstants.Signature);
                 writer.Write((uint)imageInfo.StartOffset);
 
-                WriteDirectory(writer, metadata[MetadataSection.Image], imageInfo.IFDEntries, imageInfo.StartOffset);
-                WriteDirectory(writer, metadata[MetadataSection.Exif], exifInfo.IFDEntries, exifInfo.StartOffset);
+                WriteDirectory(writer, metadata[ExifSection.Image], imageInfo.IFDEntries, imageInfo.StartOffset);
+                WriteDirectory(writer, metadata[ExifSection.Photo], exifInfo.IFDEntries, exifInfo.StartOffset);
 
-                if (ifdEntries.TryGetValue(MetadataSection.Interop, out IFDEntryInfo interopInfo))
+                if (ifdEntries.TryGetValue(ExifSection.Interop, out IFDEntryInfo interopInfo))
                 {
-                    WriteDirectory(writer, metadata[MetadataSection.Interop], interopInfo.IFDEntries, interopInfo.StartOffset);
+                    WriteDirectory(writer, metadata[ExifSection.Interop], interopInfo.IFDEntries, interopInfo.StartOffset);
                 }
 
-                if (ifdEntries.TryGetValue(MetadataSection.Gps, out IFDEntryInfo gpsInfo))
+                if (ifdEntries.TryGetValue(ExifSection.GpsInfo, out IFDEntryInfo gpsInfo))
                 {
-                    WriteDirectory(writer, metadata[MetadataSection.Gps], gpsInfo.IFDEntries, gpsInfo.StartOffset);
+                    WriteDirectory(writer, metadata[ExifSection.GpsInfo], gpsInfo.IFDEntries, gpsInfo.StartOffset);
                 }
             }
 
             return exifBytes;
         }
 
-        private static void WriteDirectory(BinaryWriter writer, Dictionary<ushort, MetadataEntry> tags,  List<IFDEntry> entries, long ifdOffset)
+        private static void WriteDirectory(BinaryWriter writer, Dictionary<ushort, ExifValue> tags,  List<IFDEntry> entries, long ifdOffset)
         {
             writer.BaseStream.Position = ifdOffset;
 
@@ -75,13 +76,13 @@ namespace WebPFileType.Exif
             {
                 entry.Write(writer);
 
-                if (!TagDataTypeUtil.ValueFitsInOffsetField(entry.Type, entry.Count))
+                if (!ExifValueTypeUtil.ValueFitsInOffsetField(entry.Type, entry.Count))
                 {
                     long oldPosition = writer.BaseStream.Position;
 
                     writer.BaseStream.Position = entry.Offset;
 
-                    writer.Write(tags[entry.Tag].GetDataReadOnly());
+                    writer.Write(tags[entry.Tag].Data.AsArrayOrToArray());
 
                     writer.BaseStream.Position = oldPosition;
                 }
@@ -94,32 +95,29 @@ namespace WebPFileType.Exif
 
         private IFDInfo BuildIFDEntries()
         {
-            Dictionary<ushort, MetadataEntry> imageMetadata = metadata[MetadataSection.Image];
-            Dictionary<ushort, MetadataEntry> exifMetadata = metadata[MetadataSection.Exif];
+            Dictionary<ushort, ExifValue> imageMetadata = metadata[ExifSection.Image];
+            Dictionary<ushort, ExifValue> exifMetadata = metadata[ExifSection.Photo];
 
             // Add placeholders for the sub-IFD tags.
             imageMetadata.Add(
-                MetadataKeys.Image.ExifTag.TagId,
-                new MetadataEntry(MetadataKeys.Image.ExifTag,
-                                  TagDataType.Long,
-                                  new byte[sizeof(uint)]));
+                ExifPropertyKeys.Image.ExifTag.Path.TagID,
+                new ExifValue(ExifValueType.Long,
+                              new byte[sizeof(uint)]));
 
-            if (metadata.ContainsKey(MetadataSection.Gps))
+            if (metadata.ContainsKey(ExifSection.GpsInfo))
             {
                 imageMetadata.Add(
-                MetadataKeys.Image.GPSTag.TagId,
-                new MetadataEntry(MetadataKeys.Image.GPSTag,
-                                  TagDataType.Long,
-                                  new byte[sizeof(uint)]));
+                ExifPropertyKeys.Image.GPSTag.Path.TagID,
+                new ExifValue(ExifValueType.Long,
+                              new byte[sizeof(uint)]));
             }
 
-            if (metadata.ContainsKey(MetadataSection.Interop))
+            if (metadata.ContainsKey(ExifSection.Interop))
             {
                 exifMetadata.Add(
-                    MetadataKeys.Exif.InteroperabilityTag.TagId,
-                    new MetadataEntry(MetadataKeys.Exif.InteroperabilityTag,
-                                      TagDataType.Long,
-                                      new byte[sizeof(uint)]));
+                    ExifPropertyKeys.Photo.InteroperabilityTag.Path.TagID,
+                    new ExifValue(ExifValueType.Long,
+                                  new byte[sizeof(uint)]));
             }
 
             return CalculateSectionOffsets();
@@ -127,26 +125,32 @@ namespace WebPFileType.Exif
 
         private IFDInfo CalculateSectionOffsets()
         {
-            IFDEntryInfo imageIFDInfo = CreateIFDList(metadata[MetadataSection.Image], FirstIFDOffset);
-            IFDEntryInfo exifIFDInfo = CreateIFDList(metadata[MetadataSection.Exif], imageIFDInfo.NextAvailableOffset);
+            IFDEntryInfo imageIFDInfo = CreateIFDList(metadata[ExifSection.Image], FirstIFDOffset);
+            IFDEntryInfo exifIFDInfo = CreateIFDList(metadata[ExifSection.Photo], imageIFDInfo.NextAvailableOffset);
             IFDEntryInfo interopIFDInfo = null;
             IFDEntryInfo gpsIFDInfo = null;
 
-            UpdateSubIFDOffset(ref imageIFDInfo, MetadataKeys.Image.ExifTag.TagId, (uint)exifIFDInfo.StartOffset);
+            UpdateSubIFDOffset(ref imageIFDInfo,
+                               ExifPropertyKeys.Image.ExifTag.Path.TagID,
+                               (uint)exifIFDInfo.StartOffset);
 
-            if (metadata.TryGetValue(MetadataSection.Interop, out Dictionary<ushort, MetadataEntry> interopSection))
+            if (metadata.TryGetValue(ExifSection.Interop, out Dictionary<ushort, ExifValue> interopSection))
             {
                 interopIFDInfo = CreateIFDList(interopSection, exifIFDInfo.NextAvailableOffset);
 
-                UpdateSubIFDOffset(ref exifIFDInfo, MetadataKeys.Exif.InteroperabilityTag.TagId, (uint)interopIFDInfo.StartOffset);
+                UpdateSubIFDOffset(ref exifIFDInfo,
+                                   ExifPropertyKeys.Photo.InteroperabilityTag.Path.TagID,
+                                   (uint)interopIFDInfo.StartOffset);
             }
 
-            if (metadata.TryGetValue(MetadataSection.Gps, out Dictionary<ushort, MetadataEntry> gpsSection))
+            if (metadata.TryGetValue(ExifSection.GpsInfo, out Dictionary<ushort, ExifValue> gpsSection))
             {
                 long startOffset = interopIFDInfo?.NextAvailableOffset ?? exifIFDInfo.NextAvailableOffset;
                 gpsIFDInfo = CreateIFDList(gpsSection, startOffset);
 
-                UpdateSubIFDOffset(ref imageIFDInfo, MetadataKeys.Image.GPSTag.TagId, (uint)gpsIFDInfo.StartOffset);
+                UpdateSubIFDOffset(ref imageIFDInfo,
+                                   ExifPropertyKeys.Image.GPSTag.Path.TagID,
+                                   (uint)gpsIFDInfo.StartOffset);
             }
 
             return CreateIFDInfo(imageIFDInfo, exifIFDInfo, interopIFDInfo, gpsIFDInfo);
@@ -158,7 +162,7 @@ namespace WebPFileType.Exif
 
             if (index != -1)
             {
-                ifdInfo.IFDEntries[index] = new IFDEntry(tagId, TagDataType.Long, 1, newOffset);
+                ifdInfo.IFDEntries[index] = new IFDEntry(tagId, ExifValueType.Long, 1, newOffset);
             }
         }
 
@@ -168,68 +172,71 @@ namespace WebPFileType.Exif
             IFDEntryInfo interopIFDInfo,
             IFDEntryInfo gpsIFDInfo)
         {
-            Dictionary<MetadataSection, IFDEntryInfo> entries = new()
+            Dictionary<ExifSection, IFDEntryInfo> entries = new()
             {
-                { MetadataSection.Image, imageIFDInfo },
-                { MetadataSection.Exif, exifIFDInfo }
+                { ExifSection.Image, imageIFDInfo },
+                { ExifSection.Photo, exifIFDInfo }
             };
 
             long dataLength = exifIFDInfo.NextAvailableOffset;
 
             if (interopIFDInfo != null)
             {
-                entries.Add(MetadataSection.Interop, interopIFDInfo);
+                entries.Add(ExifSection.Interop, interopIFDInfo);
                 dataLength = interopIFDInfo.NextAvailableOffset;
             }
 
             if (gpsIFDInfo != null)
             {
-                entries.Add(MetadataSection.Gps, gpsIFDInfo);
+                entries.Add(ExifSection.GpsInfo, gpsIFDInfo);
                 dataLength = gpsIFDInfo.NextAvailableOffset;
             }
 
             return new IFDInfo(entries, dataLength);
         }
 
-        private static IFDEntryInfo CreateIFDList(Dictionary<ushort, MetadataEntry> tags, long startOffset)
+        private static IFDEntryInfo CreateIFDList(Dictionary<ushort, ExifValue> tags, long startOffset)
         {
             List<IFDEntry> ifdEntries = new(tags.Count);
 
             // Leave room for the tag count, tags and next IFD offset.
             long ifdDataOffset = startOffset + sizeof(ushort) + ((long)tags.Count * IFDEntry.SizeOf) + sizeof(uint);
 
-            foreach (KeyValuePair<ushort, MetadataEntry> item in tags.OrderBy(i => i.Key))
+            foreach (KeyValuePair<ushort, ExifValue> item in tags.OrderBy(i => i.Key))
             {
-                MetadataEntry entry = item.Value;
+                ushort tagID = item.Key;
+                ExifValue entry = item.Value;
+
+                uint lengthInBytes = (uint)entry.Data.Count;
 
                 uint count;
                 switch (entry.Type)
                 {
-                    case TagDataType.Byte:
-                    case TagDataType.Ascii:
-                    case TagDataType.SByte:
-                    case TagDataType.Undefined:
-                        count = (uint)entry.LengthInBytes;
+                    case ExifValueType.Byte:
+                    case ExifValueType.Ascii:
+                    case (ExifValueType)6: // SByte
+                    case ExifValueType.Undefined:
+                        count = lengthInBytes;
                         break;
-                    case TagDataType.Short:
-                    case TagDataType.SShort:
-                        count = (uint)entry.LengthInBytes / 2;
+                    case ExifValueType.Short:
+                    case ExifValueType.SShort:
+                        count = lengthInBytes / 2;
                         break;
-                    case TagDataType.Long:
-                    case TagDataType.SLong:
-                    case TagDataType.Float:
-                        count = (uint)entry.LengthInBytes / 4;
+                    case ExifValueType.Long:
+                    case ExifValueType.SLong:
+                    case ExifValueType.Float:
+                        count = lengthInBytes / 4;
                         break;
-                    case TagDataType.Rational:
-                    case TagDataType.SRational:
-                    case TagDataType.Double:
-                        count = (uint)entry.LengthInBytes / 8;
+                    case ExifValueType.Rational:
+                    case ExifValueType.SRational:
+                    case ExifValueType.Double:
+                        count = lengthInBytes / 8;
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected tag type.");
                 }
 
-                if (TagDataTypeUtil.ValueFitsInOffsetField(entry.Type, count))
+                if (ExifValueTypeUtil.ValueFitsInOffsetField(entry.Type, count))
                 {
                     uint packedOffset = 0;
 
@@ -237,10 +244,10 @@ namespace WebPFileType.Exif
                     // See https://github.com/0xC0000054/pdn-webp/issues/6.
                     if (count > 0)
                     {
-                        byte[] data = entry.GetDataReadOnly();
+                        IReadOnlyList<byte> data = entry.Data;
 
                         // The data is always in little-endian byte order.
-                        switch (data.Length)
+                        switch (data.Count)
                         {
                             case 1:
                                 packedOffset |= data[0];
@@ -261,16 +268,16 @@ namespace WebPFileType.Exif
                                 packedOffset |= (uint)data[3] << 24;
                                 break;
                             default:
-                                throw new InvalidOperationException("data.Length must be in the range of [1-4].");
+                                throw new InvalidOperationException("data.Count must be in the range of [1-4].");
                         }
                     }
 
-                    ifdEntries.Add(new IFDEntry(entry.TagId, entry.Type, count, packedOffset));
+                    ifdEntries.Add(new IFDEntry(tagID, entry.Type, count, packedOffset));
                 }
                 else
                 {
-                    ifdEntries.Add(new IFDEntry(entry.TagId, entry.Type, count, (uint)ifdDataOffset));
-                    ifdDataOffset += entry.LengthInBytes;
+                    ifdEntries.Add(new IFDEntry(tagID, entry.Type, count, (uint)ifdDataOffset));
+                    ifdDataOffset += lengthInBytes;
 
                     // The IFD offsets must begin on a WORD boundary.
                     if ((ifdDataOffset & 1) == 1)
@@ -283,34 +290,32 @@ namespace WebPFileType.Exif
             return new IFDEntryInfo(ifdEntries, startOffset, ifdDataOffset);
         }
 
-        private static Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> CreateTagDictionary(
+        private static Dictionary<ExifSection, Dictionary<ushort, ExifValue>> CreateTagDictionary(
             Document doc,
-            IDictionary<MetadataKey, MetadataEntry> entries,
+            IDictionary<ExifPropertyPath, ExifValue> entries,
             ExifColorSpace exifColorSpace)
         {
-            Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> metadataEntries = new()
+            Dictionary<ExifSection, Dictionary<ushort, ExifValue>> metadataEntries = new()
             {
                 {
-                    MetadataSection.Image,
-                    new Dictionary<ushort, MetadataEntry>
+                    ExifSection.Image,
+                    new Dictionary<ushort, ExifValue>
                     {
                         {
-                            MetadataKeys.Image.Orientation.TagId,
-                            new MetadataEntry(MetadataKeys.Image.Orientation,
-                                              TagDataType.Short,
-                                              MetadataHelpers.EncodeShort(TiffConstants.Orientation.TopLeft))
+                            ExifPropertyKeys.Image.Orientation.Path.TagID,
+                            new ExifValue(ExifValueType.Short,
+                                          MetadataHelpers.EncodeShort(TiffConstants.Orientation.TopLeft))
                         }
                     }
                 },
                 {
-                    MetadataSection.Exif,
-                    new Dictionary<ushort, MetadataEntry>
+                    ExifSection.Photo,
+                    new Dictionary<ushort, ExifValue>
                     {
                         {
-                            MetadataKeys.Exif.ColorSpace.TagId,
-                            new MetadataEntry(MetadataKeys.Exif.ColorSpace,
-                                              TagDataType.Short,
-                                              MetadataHelpers.EncodeShort((ushort)exifColorSpace))
+                            ExifPropertyKeys.Photo.ColorSpace.Path.TagID,
+                            new ExifValue(ExifValueType.Short,
+                                          MetadataHelpers.EncodeShort((ushort)exifColorSpace))
                         }
                     }
                 }
@@ -319,64 +324,58 @@ namespace WebPFileType.Exif
             // Add the image size tags.
             if (IsUncompressedImage(entries))
             {
-                Dictionary<ushort, MetadataEntry> imageSection = metadataEntries[MetadataSection.Image];
-                imageSection.Add(MetadataKeys.Image.ImageWidth.TagId,
-                                new MetadataEntry(MetadataKeys.Image.ImageWidth,
-                                                  TagDataType.Long,
-                                                  MetadataHelpers.EncodeLong((uint)doc.Width)));
-                imageSection.Add(MetadataKeys.Image.ImageLength.TagId,
-                                new MetadataEntry(MetadataKeys.Image.ImageLength,
-                                                  TagDataType.Long,
-                                                  MetadataHelpers.EncodeLong((uint)doc.Height)));
+                Dictionary<ushort, ExifValue> imageSection = metadataEntries[ExifSection.Image];
+                imageSection.Add(ExifPropertyKeys.Image.ImageWidth.Path.TagID,
+                                new ExifValue(ExifValueType.Long,
+                                              MetadataHelpers.EncodeLong((uint)doc.Width)));
+                imageSection.Add(ExifPropertyKeys.Image.ImageLength.Path.TagID,
+                                new ExifValue(ExifValueType.Long,
+                                              MetadataHelpers.EncodeLong((uint)doc.Height)));
 
-                entries.Remove(MetadataKeys.Image.ImageWidth);
-                entries.Remove(MetadataKeys.Image.ImageLength);
+                entries.Remove(ExifPropertyKeys.Image.ImageWidth.Path);
+                entries.Remove(ExifPropertyKeys.Image.ImageLength.Path);
                 // These tags should not be included in uncompressed images.
-                entries.Remove(MetadataKeys.Exif.PixelXDimension);
-                entries.Remove(MetadataKeys.Exif.PixelYDimension);
+                entries.Remove(ExifPropertyKeys.Photo.PixelXDimension.Path);
+                entries.Remove(ExifPropertyKeys.Photo.PixelYDimension.Path);
             }
             else
             {
-                Dictionary<ushort, MetadataEntry> exifSection = metadataEntries[MetadataSection.Exif];
-                exifSection.Add(MetadataKeys.Exif.PixelXDimension.TagId,
-                                new MetadataEntry(MetadataKeys.Exif.PixelXDimension,
-                                                  TagDataType.Long,
-                                                  MetadataHelpers.EncodeLong((uint)doc.Width)));
-                exifSection.Add(MetadataKeys.Exif.PixelYDimension.TagId,
-                                new MetadataEntry(MetadataKeys.Exif.PixelYDimension,
-                                                  TagDataType.Long,
-                                                  MetadataHelpers.EncodeLong((uint)doc.Height)));
+                Dictionary<ushort, ExifValue> exifSection = metadataEntries[ExifSection.Photo];
+                exifSection.Add(ExifPropertyKeys.Photo.PixelXDimension.Path.TagID,
+                                new ExifValue(ExifValueType.Long,
+                                              MetadataHelpers.EncodeLong((uint)doc.Width)));
+                exifSection.Add(ExifPropertyKeys.Photo.PixelYDimension.Path.TagID,
+                                new ExifValue(ExifValueType.Long,
+                                              MetadataHelpers.EncodeLong((uint)doc.Height)));
 
-                entries.Remove(MetadataKeys.Exif.PixelXDimension);
-                entries.Remove(MetadataKeys.Exif.PixelYDimension);
+                entries.Remove(ExifPropertyKeys.Photo.PixelXDimension.Path);
+                entries.Remove(ExifPropertyKeys.Photo.PixelYDimension.Path);
                 // These tags should not be included in compressed images.
-                entries.Remove(MetadataKeys.Image.ImageWidth);
-                entries.Remove(MetadataKeys.Image.ImageLength);
+                entries.Remove(ExifPropertyKeys.Image.ImageWidth.Path);
+                entries.Remove(ExifPropertyKeys.Image.ImageLength.Path);
             }
 
-            foreach (KeyValuePair<MetadataKey, MetadataEntry> kvp in entries)
+            foreach (KeyValuePair<ExifPropertyPath, ExifValue> kvp in entries)
             {
-                MetadataEntry entry = kvp.Value;
+                ExifPropertyPath key = kvp.Key;
+                ExifValue value = kvp.Value;
 
-                MetadataSection section = entry.Section;
+                ExifSection section = key.Section;
 
-                if (section == MetadataSection.Image && !ExifTagHelper.CanWriteImageSectionTag(entry.TagId))
+                if (section == ExifSection.Image && !ExifTagHelper.CanWriteImageSectionTag(key.TagID))
                 {
                     continue;
                 }
 
-                if (metadataEntries.TryGetValue(section, out Dictionary<ushort, MetadataEntry> values))
+                if (metadataEntries.TryGetValue(section, out Dictionary<ushort, ExifValue> values))
                 {
-                    if (!values.ContainsKey(entry.TagId))
-                    {
-                        values.Add(entry.TagId, entry);
-                    }
+                    values.TryAdd(key.TagID, value);
                 }
                 else
                 {
-                    metadataEntries.Add(section, new Dictionary<ushort, MetadataEntry>
+                    metadataEntries.Add(section, new Dictionary<ushort, ExifValue>
                     {
-                        { entry.TagId, entry }
+                        { key.TagID, value }
                     });
                 }
             }
@@ -386,34 +385,32 @@ namespace WebPFileType.Exif
             return metadataEntries;
         }
 
-        private static bool IsUncompressedImage(IDictionary<MetadataKey, MetadataEntry> entries)
+        private static bool IsUncompressedImage(IDictionary<ExifPropertyPath, ExifValue> entries)
         {
-            return entries.ContainsKey(MetadataKeys.Image.ImageWidth);
+            return entries.ContainsKey(ExifPropertyKeys.Image.ImageWidth.Path);
         }
 
-        private static void AddVersionEntries(ref Dictionary<MetadataSection, Dictionary<ushort, MetadataEntry>> metadataEntries)
+        private static void AddVersionEntries(ref Dictionary<ExifSection, Dictionary<ushort, ExifValue>> metadataEntries)
         {
-            if (metadataEntries.TryGetValue(MetadataSection.Exif, out Dictionary<ushort, MetadataEntry> exifItems))
+            if (metadataEntries.TryGetValue(ExifSection.Photo, out Dictionary<ushort, ExifValue> exifItems))
             {
-                if (!exifItems.ContainsKey(MetadataKeys.Exif.ExifVersion.TagId))
+                if (!exifItems.ContainsKey(ExifPropertyKeys.Photo.ExifVersion.Path.TagID))
                 {
                     exifItems.Add(
-                        MetadataKeys.Exif.ExifVersion.TagId,
-                        new MetadataEntry(MetadataKeys.Exif.ExifVersion,
-                                          TagDataType.Undefined,
-                                          new byte[] { (byte)'0', (byte)'2', (byte)'3', (byte)'0' }));
+                        ExifPropertyKeys.Photo.ExifVersion.Path.TagID,
+                        new ExifValue(ExifValueType.Undefined,
+                                      new byte[] { (byte)'0', (byte)'2', (byte)'3', (byte)'0' }));
                 }
             }
 
-            if (metadataEntries.TryGetValue(MetadataSection.Gps, out Dictionary<ushort, MetadataEntry> gpsItems))
+            if (metadataEntries.TryGetValue(ExifSection.GpsInfo, out Dictionary<ushort, ExifValue> gpsItems))
             {
-                if (!gpsItems.ContainsKey(MetadataKeys.Gps.GPSVersionID.TagId))
+                if (!gpsItems.ContainsKey(ExifPropertyKeys.GpsInfo.GPSVersionID.Path.TagID))
                 {
                     gpsItems.Add(
-                        MetadataKeys.Gps.GPSVersionID.TagId,
-                        new MetadataEntry(MetadataKeys.Gps.GPSVersionID,
-                                          TagDataType.Byte,
-                                          new byte[] { 2, 3, 0, 0 }));
+                        ExifPropertyKeys.GpsInfo.GPSVersionID.Path.TagID,
+                        new ExifValue(ExifValueType.Byte,
+                                      new byte[] { 2, 3, 0, 0 }));
                 }
             }
         }
@@ -441,7 +438,7 @@ namespace WebPFileType.Exif
 
         private sealed class IFDInfo
         {
-            public IFDInfo(Dictionary<MetadataSection, IFDEntryInfo> entries, long exifDataLength)
+            public IFDInfo(Dictionary<ExifSection, IFDEntryInfo> entries, long exifDataLength)
             {
                 if (entries is null)
                 {
@@ -452,7 +449,7 @@ namespace WebPFileType.Exif
                 EXIFDataLength = exifDataLength;
             }
 
-            public Dictionary<MetadataSection, IFDEntryInfo> IFDEntries { get; }
+            public Dictionary<ExifSection, IFDEntryInfo> IFDEntries { get; }
 
             public long EXIFDataLength { get; }
         }
