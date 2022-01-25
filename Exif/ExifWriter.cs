@@ -332,8 +332,6 @@ namespace WebPFileType.Exif
                                 new ExifValue(ExifValueType.Long,
                                               MetadataHelpers.EncodeLong((uint)doc.Height)));
 
-                entries.Remove(ExifPropertyKeys.Image.ImageWidth.Path);
-                entries.Remove(ExifPropertyKeys.Image.ImageLength.Path);
                 // These tags should not be included in uncompressed images.
                 entries.Remove(ExifPropertyKeys.Photo.PixelXDimension.Path);
                 entries.Remove(ExifPropertyKeys.Photo.PixelYDimension.Path);
@@ -348,8 +346,6 @@ namespace WebPFileType.Exif
                                 new ExifValue(ExifValueType.Long,
                                               MetadataHelpers.EncodeLong((uint)doc.Height)));
 
-                entries.Remove(ExifPropertyKeys.Photo.PixelXDimension.Path);
-                entries.Remove(ExifPropertyKeys.Photo.PixelYDimension.Path);
                 // These tags should not be included in compressed images.
                 entries.Remove(ExifPropertyKeys.Image.ImageWidth.Path);
                 entries.Remove(ExifPropertyKeys.Image.ImageLength.Path);
