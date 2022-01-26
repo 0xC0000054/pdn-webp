@@ -315,7 +315,9 @@ namespace WebPFileType.Exif
                         {
                             ExifPropertyKeys.Photo.ColorSpace.Path.TagID,
                             new ExifValue(ExifValueType.Short,
-                                          MetadataHelpers.EncodeShort((ushort)exifColorSpace))
+                                          MetadataHelpers.EncodeShort(exifColorSpace == ExifColorSpace.AdobeRgb ?
+                                                                      ushort.MaxValue /* ExifColorSpace.Uncalibrated */ :
+                                                                      (ushort)exifColorSpace))
                         }
                     }
                 }
@@ -349,6 +351,40 @@ namespace WebPFileType.Exif
                 // These tags should not be included in compressed images.
                 entries.Remove(ExifPropertyKeys.Image.ImageWidth.Path);
                 entries.Remove(ExifPropertyKeys.Image.ImageLength.Path);
+            }
+
+            // Add the Interoperability IFD tags for sRGB or Adobe RGB images.
+            if (exifColorSpace == ExifColorSpace.Srgb || exifColorSpace == ExifColorSpace.AdobeRgb)
+            {
+                byte[] interoperabilityIndexData;
+
+                switch (exifColorSpace)
+                {
+                    case ExifColorSpace.Srgb:
+                        interoperabilityIndexData = new byte[] { (byte)'R', (byte)'9', (byte)'8', 0 };
+                        break;
+                    case ExifColorSpace.AdobeRgb:
+                        interoperabilityIndexData = new byte[] { (byte)'R', (byte)'0', (byte)'3', 0 };
+                        break;
+                    default:
+                        throw new InvalidOperationException("Unsupported ExifColorSpace value.");
+                }
+
+                Dictionary<ushort, ExifValue> interopSection = new()
+                {
+                    {
+                        ExifPropertyKeys.Interop.InteroperabilityIndex.Path.TagID,
+                        new ExifValue(ExifValueType.Ascii, interoperabilityIndexData)
+                    },
+                    {
+                        ExifPropertyKeys.Interop.InteroperabilityVersion.Path.TagID,
+                        new ExifValue(ExifValueType.Undefined,
+                                      new byte[] { (byte)'0', (byte)'1', (byte)'0', (byte)'0' })
+
+                    }
+                };
+
+                metadataEntries.Add(ExifSection.Interop, interopSection);
             }
 
             foreach (KeyValuePair<ExifPropertyPath, ExifValue> kvp in entries)
@@ -407,6 +443,17 @@ namespace WebPFileType.Exif
                         ExifPropertyKeys.GpsInfo.GPSVersionID.Path.TagID,
                         new ExifValue(ExifValueType.Byte,
                                       new byte[] { 2, 3, 0, 0 }));
+                }
+            }
+
+            if (metadataEntries.TryGetValue(ExifSection.Interop, out Dictionary<ushort, ExifValue> interopItems))
+            {
+                if (!interopItems.ContainsKey(ExifPropertyKeys.Interop.InteroperabilityVersion.Path.TagID))
+                {
+                    interopItems.Add(
+                        ExifPropertyKeys.Interop.InteroperabilityVersion.Path.TagID,
+                        new ExifValue(ExifValueType.Undefined,
+                                      new byte[] { (byte)'0', (byte)'1', (byte)'0', (byte)'0' }));
                 }
             }
         }

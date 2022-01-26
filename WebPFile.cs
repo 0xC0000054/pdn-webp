@@ -231,6 +231,11 @@ namespace WebPFileType
                         }
                     }
 
+                    // Remove the InteroperabilityIndex color space information, the writer will
+                    // add these values if necessary.
+                    propertyItems.Remove(ExifPropertyKeys.Interop.InteroperabilityIndex.Path);
+                    propertyItems.Remove(ExifPropertyKeys.Interop.InteroperabilityVersion.Path);
+
                     if (exifBytes == null)
                     {
                         exifBytes = new ExifWriter(doc, propertyItems, exifColorSpace).CreateExifBlob();
