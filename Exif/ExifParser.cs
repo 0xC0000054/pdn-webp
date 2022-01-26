@@ -106,9 +106,9 @@ namespace WebPFileType.Exif
             }
         }
 
-        private static List<ExifPropertyItem> ConvertIFDEntriesToMetadataEntries(EndianBinaryReader reader, List<ParserIFDEntry> entries)
+        private static Dictionary<ExifPropertyPath, ExifValue> ConvertIFDEntriesToMetadataEntries(EndianBinaryReader reader, List<ParserIFDEntry> entries)
         {
-            List<ExifPropertyItem> items = new(entries.Count);
+            Dictionary<ExifPropertyPath, ExifValue> items = new(entries.Count);
             bool swapNumberByteOrder = reader.Endianess == Endianess.Big;
 
             for (int i = 0; i < entries.Count; i++)
@@ -175,7 +175,7 @@ namespace WebPFileType.Exif
                     }
                 }
 
-                items.Add(new ExifPropertyItem(entry.Section, entry.Tag, new ExifValue(entry.Type, propertyData)));
+                items.TryAdd(new ExifPropertyPath(entry.Section, entry.Tag), new ExifValue(entry.Type, propertyData));
             }
 
             return items;

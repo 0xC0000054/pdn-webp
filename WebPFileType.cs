@@ -13,7 +13,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using PaintDotNet;
 using PaintDotNet.Imaging;
 using PaintDotNet.IndirectUI;
@@ -74,7 +73,7 @@ namespace WebPFileType
 
                 if (exifMetadata != null)
                 {
-                    ExifPropertyItem orientationProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.Orientation.Path);
+                    ExifValue orientationProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.Orientation.Path);
                     if (orientationProperty != null)
                     {
                         MetadataHelpers.ApplyOrientationTransform(orientationProperty, ref surface);
@@ -111,15 +110,15 @@ namespace WebPFileType
 
                 if (exifMetadata != null && exifMetadata.Count > 0)
                 {
-                    ExifPropertyItem xResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.XResolution.Path);
-                    ExifPropertyItem yResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.YResolution.Path);
-                    ExifPropertyItem resUnitProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.ResolutionUnit.Path);
+                    ExifValue xResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.XResolution.Path);
+                    ExifValue yResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.YResolution.Path);
+                    ExifValue resUnitProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.ResolutionUnit.Path);
 
                     if (xResProperty != null && yResProperty != null && resUnitProperty != null)
                     {
-                        if (MetadataHelpers.TryDecodeRational(xResProperty?.Value, out double xRes) &&
-                            MetadataHelpers.TryDecodeRational(yResProperty?.Value, out double yRes) &&
-                            MetadataHelpers.TryDecodeShort(resUnitProperty?.Value, out ushort resUnit))
+                        if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
+                            MetadataHelpers.TryDecodeRational(yResProperty, out double yRes) &&
+                            MetadataHelpers.TryDecodeShort(resUnitProperty, out ushort resUnit))
                         {
                             if (xRes > 0.0 && yRes > 0.0)
                             {
@@ -140,9 +139,11 @@ namespace WebPFileType
                         }
                     }
 
-                    foreach (ExifPropertyItem entry in exifMetadata.Distinct())
+                    foreach (KeyValuePair<ExifPropertyPath, ExifValue> item in exifMetadata)
                     {
-                        doc.Metadata.AddExifPropertyItem(entry);
+                        ExifPropertyPath path = item.Key;
+
+                        doc.Metadata.AddExifPropertyItem(path.Section, path.TagID, item.Value);
                     }
                 }
 

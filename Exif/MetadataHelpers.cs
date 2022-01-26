@@ -18,9 +18,9 @@ namespace WebPFileType.Exif
 {
     internal static class MetadataHelpers
     {
-        internal static void ApplyOrientationTransform(ExifPropertyItem entry, ref Surface surface)
+        internal static void ApplyOrientationTransform(ExifValue entry, ref Surface surface)
         {
-            if (TryDecodeShort(entry?.Value, out ushort exifValue))
+            if (TryDecodeShort(entry, out ushort exifValue))
             {
                 if (exifValue >= TiffConstants.Orientation.TopLeft && exifValue <= TiffConstants.Orientation.LeftBottom)
                 {

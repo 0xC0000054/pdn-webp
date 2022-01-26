@@ -15,35 +15,38 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace WebPFileType.Exif
 {
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(ExifValueCollectionDebugView))]
-    internal sealed class ExifValueCollection : IEnumerable<ExifPropertyItem>
+    internal sealed class ExifValueCollection : IEnumerable<KeyValuePair<ExifPropertyPath, ExifValue>>
     {
-        private readonly List<ExifPropertyItem> exifMetadata;
+        private readonly Dictionary<ExifPropertyPath, ExifValue> exifMetadata;
 
-        public ExifValueCollection(List<ExifPropertyItem> items)
+        public ExifValueCollection(Dictionary<ExifPropertyPath, ExifValue> items)
         {
             exifMetadata = items ?? throw new ArgumentNullException(nameof(items));
         }
 
         public int Count => exifMetadata.Count;
 
-        public ExifPropertyItem GetAndRemoveValue(ExifPropertyPath key)
+        public ExifValue GetAndRemoveValue(ExifPropertyPath key)
         {
-            ExifPropertyItem value = exifMetadata.Find(p => p.Path == key);
-
-            if (value != null)
+            if (exifMetadata.TryGetValue(key, out ExifValue value))
             {
-                exifMetadata.RemoveAll(p => p.Path == key);
+                exifMetadata.Remove(key);
+            }
+            else
+            {
+                value = null;
             }
 
             return value;
         }
 
-        public IEnumerator<ExifPropertyItem> GetEnumerator()
+        public IEnumerator<KeyValuePair<ExifPropertyPath, ExifValue>> GetEnumerator()
         {
             return exifMetadata.GetEnumerator();
         }
@@ -63,7 +66,7 @@ namespace WebPFileType.Exif
             }
 
             [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-            public ExifPropertyItem[] Items
+            public KeyValuePair<ExifPropertyPath, ExifValue>[] Items
             {
                 get
                 {
