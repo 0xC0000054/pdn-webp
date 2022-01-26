@@ -231,10 +231,13 @@ namespace WebPFileType
                         }
                     }
 
-                    // Remove the InteroperabilityIndex color space information, the writer will
-                    // add these values if necessary.
-                    propertyItems.Remove(ExifPropertyKeys.Interop.InteroperabilityIndex.Path);
-                    propertyItems.Remove(ExifPropertyKeys.Interop.InteroperabilityVersion.Path);
+                    if (iccProfileBytes != null)
+                    {
+                        // Remove the InteroperabilityIndex and related tags, these tags should
+                        // not be written if the image has an ICC color profile.
+                        propertyItems.Remove(ExifPropertyKeys.Interop.InteroperabilityIndex.Path);
+                        propertyItems.Remove(ExifPropertyKeys.Interop.InteroperabilityVersion.Path);
+                    }
 
                     if (exifBytes == null)
                     {
