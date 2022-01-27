@@ -356,6 +356,10 @@ namespace WebPFileType.Exif
             // Add the Interoperability IFD tags for sRGB or Adobe RGB images.
             if (exifColorSpace == ExifColorSpace.Srgb || exifColorSpace == ExifColorSpace.AdobeRgb)
             {
+                // Remove the existing tags, if present.
+                entries.Remove(ExifPropertyKeys.Interop.InteroperabilityIndex.Path);
+                entries.Remove(ExifPropertyKeys.Interop.InteroperabilityVersion.Path);
+
                 byte[] interoperabilityIndexData;
 
                 switch (exifColorSpace)
