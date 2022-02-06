@@ -90,14 +90,14 @@ namespace WebPFileType.Exif
 
         internal static unsafe void Rotate180(Surface surface)
         {
-            int lastColumn = surface.Width - 1;
-            int lastRow = surface.Height - 1;
+            int width = surface.Width;
+            int height = surface.Height;
 
-            for (int y = 0; y < surface.Height; y++)
+            for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < surface.Width; x++)
+                for (int x = 0; x < width; x++)
                 {
-                    surface[x, y] = surface[lastColumn - x, lastRow - y];
+                    surface[x, y] = surface[width - x - 1, height - y - 1];
                 }
             }
         }
