@@ -93,11 +93,41 @@ namespace WebPFileType.Exif
             int width = surface.Width;
             int height = surface.Height;
 
-            for (int y = 0; y < height; y++)
+            int halfHeight = height / 2;
+            int lastColumn = width - 1;
+
+            for (int y = 0; y < halfHeight; y++)
             {
+                ColorBgra* topPtr = surface.GetRowPointerUnchecked(y);
+                ColorBgra* bottomPtr = surface.GetPointPointerUnchecked(lastColumn, height - y - 1);
+
                 for (int x = 0; x < width; x++)
                 {
-                    surface[x, y] = surface[width - x - 1, height - y - 1];
+                    ColorBgra temp = *bottomPtr;
+                    *bottomPtr = *topPtr;
+                    *topPtr = temp;
+
+                    topPtr++;
+                    bottomPtr--;
+                }
+            }
+
+            // The middle row must be handled separately if the height is odd.
+            if ((height & 1) == 1)
+            {
+                int halfWidth = width / 2;
+
+                ColorBgra* leftPtr = surface.GetRowPointerUnchecked(halfHeight);
+                ColorBgra* rightPtr = surface.GetPointPointerUnchecked(lastColumn, halfHeight);
+
+                for (int x = 0; x < halfWidth; x++)
+                {
+                    ColorBgra temp = *rightPtr;
+                    *rightPtr = *leftPtr;
+                    *leftPtr = temp;
+
+                    leftPtr++;
+                    rightPtr--;
                 }
             }
         }
