@@ -316,7 +316,7 @@ namespace WebPFileType.Exif
                             ExifPropertyKeys.Photo.ColorSpace.Path.TagID,
                             new ExifValue(ExifValueType.Short,
                                           MetadataHelpers.EncodeShort(exifColorSpace == ExifColorSpace.AdobeRgb ?
-                                                                      ushort.MaxValue /* ExifColorSpace.Uncalibrated */ :
+                                                                      (ushort)ExifColorSpace.Uncalibrated :
                                                                       (ushort)exifColorSpace))
                         }
                     }

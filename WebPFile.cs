@@ -20,6 +20,8 @@ using System.IO;
 using WebPFileType.Exif;
 using WebPFileType.Properties;
 
+using ExifColorSpace = WebPFileType.Exif.ExifColorSpace;
+
 namespace WebPFileType
 {
     internal static class WebPFile
@@ -213,11 +215,9 @@ namespace WebPFileType
                         }
                     }
 
-                    const ExifColorSpace Uncalibrated = (ExifColorSpace)ushort.MaxValue;
-
                     if (iccProfileBytes != null)
                     {
-                        exifColorSpace = Uncalibrated;
+                        exifColorSpace = ExifColorSpace.Uncalibrated;
                     }
                     else
                     {
@@ -227,7 +227,7 @@ namespace WebPFileType
                         {
                             iccProfileBytes = iccProfileItem.Data.ToArrayEx();
                             propertyItems.Remove(iccProfileKey);
-                            exifColorSpace = Uncalibrated;
+                            exifColorSpace = ExifColorSpace.Uncalibrated;
                         }
                     }
 
