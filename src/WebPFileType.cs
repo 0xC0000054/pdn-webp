@@ -89,82 +89,100 @@ namespace WebPFileType
             byte[] bytes = new byte[input.Length];
 
             input.ProperRead(bytes, 0, (int)input.Length);
-
-            Surface surface = GetOrientedSurface(bytes, out ExifValueCollection exifMetadata);
-            bool disposeSurface = true;
-
             Document doc = null;
 
-            try
+            if (FormatDetection.HasWebPFileSignature(bytes))
             {
-                doc = new Document(surface.Width, surface.Height);
+                Surface surface = GetOrientedSurface(bytes, out ExifValueCollection exifMetadata);
+                bool disposeSurface = true;
 
-                byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
-                if (colorProfileBytes != null)
+                try
                 {
-                    doc.Metadata.AddExifPropertyItem(ExifSection.Image,
-                                                     unchecked((ushort)ExifTagID.IccProfileData),
-                                                     new ExifValue(ExifValueType.Undefined,
-                                                                   colorProfileBytes));
-                }
+                    doc = new Document(surface.Width, surface.Height);
 
-                if (exifMetadata != null && exifMetadata.Count > 0)
-                {
-                    ExifValue xResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.XResolution.Path);
-                    ExifValue yResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.YResolution.Path);
-                    ExifValue resUnitProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.ResolutionUnit.Path);
-
-                    if (xResProperty != null && yResProperty != null && resUnitProperty != null)
+                    byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
+                    if (colorProfileBytes != null)
                     {
-                        if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
-                            MetadataHelpers.TryDecodeRational(yResProperty, out double yRes) &&
-                            MetadataHelpers.TryDecodeShort(resUnitProperty, out ushort resUnit))
+                        doc.Metadata.AddExifPropertyItem(ExifSection.Image,
+                                                         unchecked((ushort)ExifTagID.IccProfileData),
+                                                         new ExifValue(ExifValueType.Undefined,
+                                                                       colorProfileBytes));
+                    }
+
+                    if (exifMetadata != null && exifMetadata.Count > 0)
+                    {
+                        ExifValue xResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.XResolution.Path);
+                        ExifValue yResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.YResolution.Path);
+                        ExifValue resUnitProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.ResolutionUnit.Path);
+
+                        if (xResProperty != null && yResProperty != null && resUnitProperty != null)
                         {
-                            if (xRes > 0.0 && yRes > 0.0)
+                            if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
+                                MetadataHelpers.TryDecodeRational(yResProperty, out double yRes) &&
+                                MetadataHelpers.TryDecodeShort(resUnitProperty, out ushort resUnit))
                             {
-                                switch (resUnit)
+                                if (xRes > 0.0 && yRes > 0.0)
                                 {
-                                    case TiffConstants.ResolutionUnit.Centimeter:
-                                        doc.DpuUnit = MeasurementUnit.Centimeter;
-                                        doc.DpuX = xRes;
-                                        doc.DpuY = yRes;
-                                        break;
-                                    case TiffConstants.ResolutionUnit.Inch:
-                                        doc.DpuUnit = MeasurementUnit.Inch;
-                                        doc.DpuX = xRes;
-                                        doc.DpuY = yRes;
-                                        break;
+                                    switch (resUnit)
+                                    {
+                                        case TiffConstants.ResolutionUnit.Centimeter:
+                                            doc.DpuUnit = MeasurementUnit.Centimeter;
+                                            doc.DpuX = xRes;
+                                            doc.DpuY = yRes;
+                                            break;
+                                        case TiffConstants.ResolutionUnit.Inch:
+                                            doc.DpuUnit = MeasurementUnit.Inch;
+                                            doc.DpuX = xRes;
+                                            doc.DpuY = yRes;
+                                            break;
+                                    }
                                 }
                             }
                         }
+
+                        foreach (KeyValuePair<ExifPropertyPath, ExifValue> item in exifMetadata)
+                        {
+                            ExifPropertyPath path = item.Key;
+
+                            doc.Metadata.AddExifPropertyItem(path.Section, path.TagID, item.Value);
+                        }
                     }
 
-                    foreach (KeyValuePair<ExifPropertyPath, ExifValue> item in exifMetadata)
+                    byte[] xmpBytes = WebPFile.GetXmpBytes(bytes);
+                    if (xmpBytes != null)
                     {
-                        ExifPropertyPath path = item.Key;
-
-                        doc.Metadata.AddExifPropertyItem(path.Section, path.TagID, item.Value);
+                        XmpPacket xmpPacket = XmpPacket.TryParse(xmpBytes);
+                        if (xmpPacket != null)
+                        {
+                            doc.Metadata.SetXmpPacket(xmpPacket);
+                        }
                     }
-                }
 
-                byte[] xmpBytes = WebPFile.GetXmpBytes(bytes);
-                if (xmpBytes != null)
+                    doc.Layers.Add(Layer.CreateBackgroundLayer(surface, takeOwnership: true));
+                    disposeSurface = false;
+                }
+                finally
                 {
-                    XmpPacket xmpPacket = XmpPacket.TryParse(xmpBytes);
-                    if (xmpPacket != null)
+                    if (disposeSurface)
                     {
-                        doc.Metadata.SetXmpPacket(xmpPacket);
+                        surface?.Dispose();
                     }
                 }
-
-                doc.Layers.Add(Layer.CreateBackgroundLayer(surface, takeOwnership: true));
-                disposeSurface = false;
             }
-            finally
+            else
             {
-                if (disposeSurface)
+                // The file may be a JPEG or PNG that has the wrong file extension.
+                if (FormatDetection.HasCommonImageFormatSignature(bytes))
                 {
-                    surface?.Dispose();
+                    using (MemoryStream stream = new(bytes))
+                    using (System.Drawing.Image image = System.Drawing.Image.FromStream(stream))
+                    {
+                        doc = Document.FromGdipImage(image);
+                    }
+                }
+                else
+                {
+                    throw new FormatException(Properties.Resources.InvalidWebPImage);
                 }
             }
 
