@@ -31,6 +31,9 @@ csharp_prefer_braces = true:warning
 # IDE0066: Convert switch statement to expression
 csharp_style_prefer_switch_expression = false
 
+# IDE0057: Use range operator
+csharp_style_prefer_range_operator = false
+
 [*.{cpp,h}]
 indent_style = space
 indent_size = 4
