@@ -73,7 +73,8 @@ namespace WebPFileType
 
                 if (exifMetadata != null)
                 {
-                    if (exifMetadata.Remove(ExifPropertyKeys.Image.Orientation.Path, out ExifValue orientationProperty))
+                    ExifValue orientationProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.Orientation.Path);
+                    if (orientationProperty != null)
                     {
                         MetadataHelpers.ApplyOrientationTransform(orientationProperty, ref surface);
                     }
@@ -110,9 +111,11 @@ namespace WebPFileType
 
                     if (exifMetadata != null && exifMetadata.Count > 0)
                     {
-                        if (exifMetadata.Remove(ExifPropertyKeys.Image.XResolution.Path, out ExifValue xResProperty)
-                            && exifMetadata.Remove(ExifPropertyKeys.Image.YResolution.Path, out ExifValue yResProperty)
-                            && exifMetadata.Remove(ExifPropertyKeys.Image.ResolutionUnit.Path, out ExifValue resUnitProperty))
+                        ExifValue xResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.XResolution.Path);
+                        ExifValue yResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.YResolution.Path);
+                        ExifValue resUnitProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.ResolutionUnit.Path);
+
+                        if (xResProperty != null && yResProperty != null && resUnitProperty != null)
                         {
                             if (MetadataHelpers.TryDecodeRational(xResProperty, out double xRes) &&
                                 MetadataHelpers.TryDecodeRational(yResProperty, out double yRes) &&
