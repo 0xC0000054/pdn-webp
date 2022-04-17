@@ -34,16 +34,7 @@ namespace WebPFileType.Exif
 
         public ExifValue GetAndRemoveValue(ExifPropertyPath key)
         {
-            if (exifMetadata.TryGetValue(key, out ExifValue value))
-            {
-                exifMetadata.Remove(key);
-            }
-            else
-            {
-                value = null;
-            }
-
-            return value;
+            return exifMetadata.Remove(key, out ExifValue value) ? value : null;
         }
 
         public IEnumerator<KeyValuePair<ExifPropertyPath, ExifValue>> GetEnumerator()
