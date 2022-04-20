@@ -11,9 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
-using PaintDotNet.AppModel;
 using System;
-using System.Collections.Generic;
 
 #nullable enable
 
