@@ -19,6 +19,8 @@ namespace WebPFileType
 {
     internal static class FormatDetection
     {
+        private static ReadOnlySpan<byte> BmpFileSignature => new byte[] { 0x42, 0x4D };
+
         private static ReadOnlySpan<byte> Gif87aFileSignature => new byte[] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 };
 
         private static ReadOnlySpan<byte> Gif89aFileSignature => new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 };
@@ -108,6 +110,10 @@ namespace WebPFileType
             else if (FileSignatureMatches(file, PngFileSignature))
             {
                 name = "PNG";
+            }
+            else if (FileSignatureMatches(file, BmpFileSignature))
+            {
+                name = "BMP";
             }
             else if (IsGifFileSignature(file))
             {
