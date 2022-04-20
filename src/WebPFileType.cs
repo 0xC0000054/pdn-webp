@@ -36,6 +36,7 @@ namespace WebPFileType
         }
 
         private readonly IWebPStringResourceManager strings;
+        private readonly IServiceProvider serviceProvider;
 
         public WebPFileType(IFileTypeHost host)
             : base("WebP",
@@ -48,10 +49,12 @@ namespace WebPFileType
             if (host != null)
             {
                 strings = new PdnLocalizedStringResourceManager(host.Services.GetService<PaintDotNet.WebP.IWebPFileTypeStrings>());
+                serviceProvider = host.Services;
             }
             else
             {
                 strings = new BuiltinStringResourceManager();
+                serviceProvider = null;
             }
         }
 
@@ -172,12 +175,15 @@ namespace WebPFileType
             else
             {
                 // The file may be a JPEG or PNG that has the wrong file extension.
-                if (FormatDetection.HasCommonImageFormatSignature(bytes))
+                IFileTypeInfo fileTypeInfo = FormatDetection.TryGetFileTypeInfo(bytes, serviceProvider);
+
+                if (fileTypeInfo != null)
                 {
+                    FileType fileType = fileTypeInfo.GetInstance();
+
                     using (MemoryStream stream = new(bytes))
-                    using (System.Drawing.Image image = System.Drawing.Image.FromStream(stream))
                     {
-                        doc = Document.FromGdipImage(image);
+                        doc = fileType.Load(stream);
                     }
                 }
                 else

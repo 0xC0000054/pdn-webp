@@ -10,7 +10,10 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+using PaintDotNet;
+using PaintDotNet.AppModel;
 using System;
+using System.Collections.Generic;
 
 #nullable enable
 
@@ -59,20 +62,66 @@ namespace WebPFileType
         }
 
         /// <summary>
-        /// Determines whether the specified file has the file signature of a common image format.
+        /// Attempts to get an <see cref="IFileTypeInfo"/> from the file signature.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns>
-        ///   <see langword="true"/> if the file has the signature of a common image format; otherwise, <see langword="false"/>.
+        ///   An <see cref="IFileTypeInfo"/> instance if the file has the signature of a recognized image format;
+        ///   otherwise, <see langword="null"/>.
         /// </returns>
         /// <remarks>
         /// Some applications may save other common image formats (e.g. JPEG or PNG) with a .webp file extension.
         /// </remarks>
-        internal static bool HasCommonImageFormatSignature(ReadOnlySpan<byte> file)
-            => FileSignatureMatches(file, JpegFileSignature)
-            || FileSignatureMatches(file, PngFileSignature)
-            || IsGifFileSignature(file)
-            || IsTiffFileSignature(file);
+        internal static IFileTypeInfo? TryGetFileTypeInfo(ReadOnlySpan<byte> file, IServiceProvider? serviceProvider)
+        {
+            string name = TryGetFileTypeName(file);
+
+            IFileTypeInfo? fileTypeInfo = null;
+
+            if (string.IsNullOrEmpty(name))
+            {
+                IFileTypesService? fileTypesService = serviceProvider?.GetService<IFileTypesService>();
+
+                if (fileTypesService != null)
+                {
+                    foreach (IFileTypeInfo item in fileTypesService.FileTypes)
+                    {
+                        if (item.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+                            && item.Options.SupportsLoading)
+                        {
+                            fileTypeInfo = item;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return fileTypeInfo;
+        }
+
+        private static string TryGetFileTypeName(ReadOnlySpan<byte> file)
+        {
+            string name = string.Empty;
+
+            if (FileSignatureMatches(file, JpegFileSignature))
+            {
+                name = "JPEG";
+            }
+            else if (FileSignatureMatches(file, PngFileSignature))
+            {
+                name = "PNG";
+            }
+            else if (IsGifFileSignature(file))
+            {
+                name = "GIF";
+            }
+            else if (IsTiffFileSignature(file))
+            {
+                name = "TIFF";
+            }
+
+            return name;
+        }
 
         private static bool FileSignatureMatches(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
             => data.Length >= signature.Length && data.Slice(0, signature.Length).SequenceEqual(signature);
