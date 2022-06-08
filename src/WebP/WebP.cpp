@@ -199,7 +199,7 @@ int __stdcall WebPSave(
     config.method = 6; // 6 is the highest quality encoding
     config.thread_level = 1;
 
-    if (encodeOptions->quality == 100)
+    if (encodeOptions->lossless)
     {
         config.lossless = 1;
         pic->use_argb = 1;

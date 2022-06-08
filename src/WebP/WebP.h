@@ -41,6 +41,7 @@ typedef struct EncodeParams
 {
     float quality;
     int preset;
+    bool lossless;
 }EncParams;
 
 enum MetadataType

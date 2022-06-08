@@ -123,6 +123,9 @@ namespace WebPFileType
         /// <param name="output">The output Stream.</param>
         /// <param name="quality">The WebP save quality.</param>
         /// <param name="preset">The WebP encoding preset.</param>
+        /// <param name="lossless">
+        /// <see langword="true"/> if lossless encoding should be used; otherwise, <see langword="false"/>.
+        /// </param>
         /// <param name="scratchSurface">The scratch surface.</param>
         /// <param name="progressCallback">The progress callback.</param>
         /// <exception cref="FormatException">The image exceeds 16383 pixels in width and/or height.</exception>
@@ -133,6 +136,7 @@ namespace WebPFileType
             Stream output,
             int quality,
             WebPPreset preset,
+            bool lossless,
             Surface scratchSurface,
             ProgressEventHandler progressCallback)
         {
@@ -144,7 +148,8 @@ namespace WebPFileType
             WebPNative.EncodeParams encParams = new()
             {
                 quality = quality,
-                preset = preset
+                preset = preset,
+                lossless = lossless
             };
 
             scratchSurface.Clear();

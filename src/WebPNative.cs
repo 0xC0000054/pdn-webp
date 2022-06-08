@@ -71,6 +71,8 @@ namespace WebPFileType
             public float quality;
             [MarshalAs(UnmanagedType.I4)]
             public WebPPreset preset;
+            [MarshalAs(UnmanagedType.U1)]
+            public bool lossless;
         }
 
         [StructLayout(LayoutKind.Sequential)]

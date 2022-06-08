@@ -193,4 +193,7 @@
   <data name="UnsupportedWebPFeature" xml:space="preserve">
     <value>The image uses a WebP feature that is not supported.</value>
   </data>
+  <data name="Lossless_Description" xml:space="preserve">
+    <value>Lossless</value>
+  </data>
 </root>
