@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,3,12,0
- PRODUCTVERSION 1,3,12,0
+ FILEVERSION 1,3,13,0
+ PRODUCTVERSION 1,3,13,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,10 +69,10 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "null54"
             VALUE "FileDescription", "WebP IO library"
-            VALUE "FileVersion", "1.3.12.0"
+            VALUE "FileVersion", "1.3.13.0"
             VALUE "LegalCopyright", "Copyright (C) 2011-2022 Nicholas Hayes"
             VALUE "ProductName", "WebPIO"
-            VALUE "ProductVersion", "1.3.12.0"
+            VALUE "ProductVersion", "1.3.13.0"
         END
     END
     BLOCK "VarFileInfo"
