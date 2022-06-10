@@ -226,8 +226,9 @@ namespace WebPFileType
 
             info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, GetString("Quality_DisplayName"));
 
-            info.SetPropertyControlValue(PropertyNames.Lossless, ControlInfoPropertyNames.DisplayName, string.Empty);
-            info.SetPropertyControlValue(PropertyNames.Lossless, ControlInfoPropertyNames.Description, GetString("Lossless_Description"));
+            PropertyControlInfo losslessPCI = info.FindControlForPropertyName(PropertyNames.Lossless);
+            losslessPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
+            losslessPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = GetString("Lossless_Description");
 
             PropertyControlInfo forumLinkPCI = info.FindControlForPropertyName(PropertyNames.ForumLink);
             forumLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = GetString("ForumLink_DisplayName");
