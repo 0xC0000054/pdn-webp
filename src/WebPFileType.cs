@@ -92,7 +92,7 @@ namespace WebPFileType
         {
             byte[] bytes = new byte[input.Length];
 
-            input.ProperRead(bytes, 0, (int)input.Length);
+            input.ReadExactly(bytes, 0, (int)input.Length);
             Document doc = null;
 
             if (FormatDetection.HasWebPFileSignature(bytes))
