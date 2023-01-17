@@ -10,7 +10,7 @@ The plugin will override the bundled version if it has higher version number.
 ## Installing the plugin
 
 1. Close Paint.NET.
-2. Place WebPFiletype.dll, WebP_ARM64.dll, WebP_x86.dll and WebP_x64.dll in the Paint.NET FileTypes folder which is usually located in one the following locations depending on the Paint.NET version you have installed.
+2. Place WebPFiletype.dll, WebP_ARM64.dll and WebP_x64.dll in the Paint.NET FileTypes folder which is usually located in one the following locations depending on the Paint.NET version you have installed.
 
   Paint.NET Version |  FileTypes Folder Location
   --------|----------
