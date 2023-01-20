@@ -78,7 +78,7 @@ namespace WebPFileType
 
             IFileTypeInfo? fileTypeInfo = null;
 
-            if (string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(name))
             {
                 IFileTypesService? fileTypesService = serviceProvider?.GetService<IFileTypesService>();
 
