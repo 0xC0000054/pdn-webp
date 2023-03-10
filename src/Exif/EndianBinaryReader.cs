@@ -11,7 +11,9 @@
 ////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Buffers.Binary;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace WebPFileType.Exif
 {
@@ -315,15 +317,21 @@ namespace WebPFileType.Exif
 
             EnsureBuffer(sizeof(ushort));
 
-            ushort val;
+            ushort value = Unsafe.ReadUnaligned<ushort>(ref buffer[readOffset]);
 
             switch (endianess)
             {
                 case Endianess.Big:
-                    val = (ushort)((buffer[readOffset] << 8) | buffer[readOffset + 1]);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        value = BinaryPrimitives.ReverseEndianness(value);
+                    }
                     break;
                 case Endianess.Little:
-                    val = (ushort)(buffer[readOffset] | (buffer[readOffset + 1] << 8));
+                    if (!BitConverter.IsLittleEndian)
+                    {
+                        value = BinaryPrimitives.ReverseEndianness(value);
+                    }
                     break;
                 default:
                     throw new InvalidOperationException("Unsupported byte order: " + endianess.ToString());
@@ -331,7 +339,7 @@ namespace WebPFileType.Exif
 
             readOffset += sizeof(ushort);
 
-            return val;
+            return value;
         }
 
         /// <summary>
@@ -357,15 +365,21 @@ namespace WebPFileType.Exif
 
             EnsureBuffer(sizeof(uint));
 
-            uint val;
+            uint value = Unsafe.ReadUnaligned<uint>(ref buffer[readOffset]);
 
             switch (endianess)
             {
                 case Endianess.Big:
-                    val = (uint)((buffer[readOffset] << 24) | (buffer[readOffset + 1] << 16) | (buffer[readOffset + 2] << 8) | buffer[readOffset + 3]);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        value = BinaryPrimitives.ReverseEndianness(value);
+                    }
                     break;
                 case Endianess.Little:
-                    val = (uint)(buffer[readOffset] | (buffer[readOffset + 1] << 8) | (buffer[readOffset + 2] << 16) | (buffer[readOffset + 3] << 24));
+                    if (!BitConverter.IsLittleEndian)
+                    {
+                        value = BinaryPrimitives.ReverseEndianness(value);
+                    }
                     break;
                 default:
                     throw new InvalidOperationException("Unsupported byte order: " + endianess.ToString());
@@ -373,7 +387,7 @@ namespace WebPFileType.Exif
 
             readOffset += sizeof(uint);
 
-            return val;
+            return value;
         }
 
         /// <summary>
@@ -412,18 +426,21 @@ namespace WebPFileType.Exif
 
             EnsureBuffer(sizeof(ulong));
 
-            uint hi;
-            uint lo;
+            ulong value = Unsafe.ReadUnaligned<ulong>(ref buffer[readOffset]);
 
             switch (endianess)
             {
                 case Endianess.Big:
-                    hi = (uint)((buffer[readOffset] << 24) | (buffer[readOffset + 1] << 16) | (buffer[readOffset + 2] << 8) | buffer[readOffset + 3]);
-                    lo = (uint)((buffer[readOffset + 4] << 24) | (buffer[readOffset + 5] << 16) | (buffer[readOffset + 6] << 8) | buffer[readOffset + 7]);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        value = BinaryPrimitives.ReverseEndianness(value);
+                    }
                     break;
                 case Endianess.Little:
-                    lo = (uint)(buffer[readOffset] | (buffer[readOffset + 1] << 8) | (buffer[readOffset + 2] << 16) | (buffer[readOffset + 3] << 24));
-                    hi = (uint)(buffer[readOffset + 4] | (buffer[readOffset + 5] << 8) | (buffer[readOffset + 6] << 16) | (buffer[readOffset + 7] << 24));
+                    if (!BitConverter.IsLittleEndian)
+                    {
+                        value = BinaryPrimitives.ReverseEndianness(value);
+                    }
                     break;
                 default:
                     throw new InvalidOperationException("Unsupported byte order: " + endianess.ToString());
@@ -431,7 +448,7 @@ namespace WebPFileType.Exif
 
             readOffset += sizeof(ulong);
 
-            return (((ulong)hi) << 32) | lo;
+            return value;
         }
 
         /// <summary>
