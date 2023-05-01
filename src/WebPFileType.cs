@@ -207,7 +207,12 @@ namespace WebPFileType
                 new UriProperty(PropertyNames.GitHubLink, new Uri("https://github.com/0xC0000054/pdn-webp"))
             };
 
-            return new PropertyCollection(props);
+            List<PropertyCollectionRule> rules = new()
+            {
+                new ReadOnlyBoundToBooleanRule(PropertyNames.Quality, PropertyNames.Lossless, false)
+            };
+
+            return new PropertyCollection(props, rules);
         }
 
         public override ControlInfo OnCreateSaveConfigUI(PropertyCollection props)

@@ -147,7 +147,9 @@ namespace WebPFileType
 
             WebPNative.EncodeParams encParams = new()
             {
-                quality = quality,
+                // When using lossless compression the quality value controls the compression speed, a
+                // value of 100 will produce the smallest files.
+                quality = lossless ? 100 : quality,
                 preset = preset,
                 lossless = lossless
             };
