@@ -10,12 +10,14 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace WebPFileType.Exif
 {
     internal static class TiffConstants
     {
-        internal const ushort BigEndianByteOrderMarker = 0x4d4d;
-        internal const ushort LittleEndianByteOrderMarker = 0x4949;
+        internal static ReadOnlySpan<byte> BigEndianByteOrderMarker => "MM"u8;
+        internal static ReadOnlySpan<byte> LittleEndianByteOrderMarker => "II"u8;
         internal const ushort Signature = 42;
 
         internal static class Tags

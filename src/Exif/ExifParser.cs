@@ -16,6 +16,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace WebPFileType.Exif
@@ -76,27 +77,18 @@ namespace WebPFileType.Exif
             return exifValues;
         }
 
+        [SkipLocalsInit]
         private static Endianess? TryDetectTiffByteOrder(Stream stream)
         {
-            int byte1 = stream.ReadByte();
-            if (byte1 == -1)
-            {
-                return null;
-            }
+            Span<byte> byteOrderMarker = stackalloc byte[2];
 
-            int byte2 = stream.ReadByte();
-            if (byte2 == -1)
-            {
-                return null;
-            }
+            stream.ReadExactly(byteOrderMarker);
 
-            ushort byteOrderMarker = (ushort)(byte1 | (byte2 << 8));
-
-            if (byteOrderMarker == TiffConstants.BigEndianByteOrderMarker)
+            if (byteOrderMarker.SequenceEqual(TiffConstants.BigEndianByteOrderMarker))
             {
                 return Endianess.Big;
             }
-            else if (byteOrderMarker == TiffConstants.LittleEndianByteOrderMarker)
+            else if (byteOrderMarker.SequenceEqual(TiffConstants.LittleEndianByteOrderMarker))
             {
                 return Endianess.Little;
             }
