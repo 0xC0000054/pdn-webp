@@ -1,6 +1,7 @@
 api
 bmp
 builtin
+config
 endianess
 exif
 filetype
