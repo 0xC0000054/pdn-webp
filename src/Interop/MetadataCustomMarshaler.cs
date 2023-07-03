@@ -18,7 +18,6 @@ namespace WebPFileType.Interop
     internal sealed class MetadataCustomMarshaler : ICustomMarshaler
     {
         // This must be kept in sync with the MetadataParams structure in WebP.h.
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1049:TypesThatOwnNativeResourcesShouldBeDisposable")]
         [StructLayout(LayoutKind.Sequential)]
         private struct NativeMetadataParams
         {
@@ -33,9 +32,7 @@ namespace WebPFileType.Interop
         private static readonly int NativeMetadataParamsSize = Marshal.SizeOf(typeof(NativeMetadataParams));
         private static readonly MetadataCustomMarshaler instance = new();
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ICustomMarshaler GetInstance(string cookie)
-#pragma warning restore IDE0060 // Remove unused parameter
         {
             return instance;
         }

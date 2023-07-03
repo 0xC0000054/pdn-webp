@@ -27,10 +27,6 @@ namespace WebPFileType.Interop
 
         public Exception WriteException { get; private set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Design",
-            "CA1031:DoNotCatchGeneralExceptionTypes",
-            Justification = "The exception will be re-thrown after WebPSave returns the error code.")]
         public WebPEncodingError WriteImageCallback(IntPtr image, UIntPtr imageSize)
         {
             if (image == IntPtr.Zero)

@@ -331,10 +331,8 @@ namespace WebPFileType.Exif
 
         private readonly struct ParserIFDEntry
         {
-#pragma warning disable IDE0032 // Use auto property
             private readonly IFDEntry entry;
             private readonly bool offsetIsBigEndian;
-#pragma warning restore IDE0032 // Use auto property
 
             public ParserIFDEntry(EndianBinaryReader reader, ExifSection section)
             {
