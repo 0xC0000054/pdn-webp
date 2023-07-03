@@ -13,7 +13,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace WebPFileType
+namespace WebPFileType.Interop
 {
     internal sealed class MetadataCustomMarshaler : ICustomMarshaler
     {
@@ -88,7 +88,7 @@ namespace WebPFileType
                 return IntPtr.Zero;
             }
 
-            WebPNative.MetadataParams metadata = (WebPNative.MetadataParams)ManagedObj;
+            MetadataParams metadata = (MetadataParams)ManagedObj;
 
             IntPtr nativeStructure = Marshal.AllocHGlobal(NativeMetadataParamsSize);
 

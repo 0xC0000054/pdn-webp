@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using WebPFileType.Exif;
+using WebPFileType.Interop;
 using WebPFileType.Properties;
 
 using ExifColorSpace = WebPFileType.Exif.ExifColorSpace;
@@ -36,7 +37,7 @@ namespace WebPFileType
         /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
         internal static byte[] GetColorProfileBytes(byte[] webpBytes)
         {
-            return GetMetadataBytes(webpBytes, WebPNative.MetadataType.ColorProfile);
+            return GetMetadataBytes(webpBytes, MetadataType.ColorProfile);
         }
 
         /// <summary>
@@ -49,7 +50,7 @@ namespace WebPFileType
         /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
         internal static byte[] GetExifBytes(byte[] webpBytes)
         {
-            return GetMetadataBytes(webpBytes, WebPNative.MetadataType.EXIF);
+            return GetMetadataBytes(webpBytes, MetadataType.EXIF);
         }
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace WebPFileType
         /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
         internal static byte[] GetXmpBytes(byte[] webpBytes)
         {
-            return GetMetadataBytes(webpBytes, WebPNative.MetadataType.XMP);
+            return GetMetadataBytes(webpBytes, MetadataType.XMP);
         }
 
         /// <summary>
@@ -86,7 +87,7 @@ namespace WebPFileType
                 throw new ArgumentNullException(nameof(webpBytes));
             }
 
-            WebPNative.WebPGetImageInfo(webpBytes, out WebPNative.ImageInfo imageInfo);
+            WebPNative.WebPGetImageInfo(webpBytes, out ImageInfo imageInfo);
 
             if (imageInfo.hasAnimation)
             {
@@ -145,7 +146,7 @@ namespace WebPFileType
                 throw new FormatException(Resources.InvalidImageDimensions);
             }
 
-            WebPNative.EncodeParams encParams = new()
+            EncodeParams encParams = new()
             {
                 // When using lossless compression the quality value controls the compression speed, a
                 // value of 100 will produce the smallest files.
@@ -157,9 +158,9 @@ namespace WebPFileType
             scratchSurface.Clear();
             input.CreateRenderer().Render(scratchSurface);
 
-            WebPNative.MetadataParams metadata = CreateWebPMetadata(input);
+            MetadataParams metadata = CreateWebPMetadata(input);
 
-            WebPNative.WebPReportProgress encProgress = null;
+            WebPReportProgress encProgress = null;
 
             if (progressCallback != null)
             {
@@ -180,7 +181,7 @@ namespace WebPFileType
             WebPNative.WebPSave(scratchSurface, output, encParams, metadata, encProgress);
         }
 
-        private static WebPNative.MetadataParams CreateWebPMetadata(Document doc)
+        private static MetadataParams CreateWebPMetadata(Document doc)
         {
             byte[] iccProfileBytes = null;
             byte[] exifBytes = null;
@@ -267,7 +268,7 @@ namespace WebPFileType
 
             if (iccProfileBytes != null || exifBytes != null || xmpBytes != null)
             {
-                return new WebPNative.MetadataParams(iccProfileBytes, exifBytes, xmpBytes);
+                return new MetadataParams(iccProfileBytes, exifBytes, xmpBytes);
             }
 
             return null;
@@ -302,7 +303,7 @@ namespace WebPFileType
         /// A byte array containing the requested metadata, if present; otherwise, <see langword="null"/>
         /// </returns>
         /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
-        private static byte[] GetMetadataBytes(byte[] webpBytes, WebPNative.MetadataType type)
+        private static byte[] GetMetadataBytes(byte[] webpBytes, MetadataType type)
         {
             if (webpBytes == null)
             {
