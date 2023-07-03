@@ -113,39 +113,6 @@ namespace WebPFileType
         internal const int WebPMaxDimension = 16383;
 
         [System.Security.SuppressUnmanagedCodeSecurity]
-        private unsafe static class WebP_x86
-        {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetImageInfo")]
-            public static extern VP8StatusCode WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
-            public static extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
-            public static extern WebPEncodingError WebPSave(
-                WebPWriteImage writeImageCallback,
-                IntPtr scan0,
-                int width,
-                int height,
-                int stride,
-                EncodeParams parameters,
-                [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaler))]
-                MetadataParams metadata,
-                WebPReportProgress callback);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]
-            public static extern uint GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type);
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
-            [DllImport("WebP_x86.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
-            public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
-        }
-
-        [System.Security.SuppressUnmanagedCodeSecurity]
         private unsafe static class WebP_x64
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
@@ -232,10 +199,6 @@ namespace WebPFileType
                 {
                     status = WebP_x64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
                 }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-                {
-                    status = WebP_x86.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
-                }
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
                     status = WebP_ARM64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
@@ -286,10 +249,6 @@ namespace WebPFileType
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
                 {
                     status = WebP_x64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
-                }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-                {
-                    status = WebP_x86.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
                 }
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
@@ -353,10 +312,6 @@ namespace WebPFileType
             {
                 retVal = WebP_x64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
             }
-            else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-            {
-                retVal = WebP_x86.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
-            }
             else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
             {
                 retVal = WebP_ARM64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
@@ -418,10 +373,6 @@ namespace WebPFileType
                 {
                     metadataSize = WebP_x64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
                 }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-                {
-                    metadataSize = WebP_x86.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
-                }
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
                     metadataSize = WebP_ARM64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
@@ -442,10 +393,6 @@ namespace WebPFileType
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
                 {
                     WebP_x64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
-                }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
-                {
-                    WebP_x86.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
                 }
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
