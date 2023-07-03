@@ -17,9 +17,9 @@ namespace WebPFileType.Interop
 {
     internal sealed class MetadataCustomMarshaler : ICustomMarshaler
     {
-        // This must be kept in sync with the MetadataParams structure in WebP.h.
+        // This must be kept in sync with the EncoderMetadata structure in WebP.h.
         [StructLayout(LayoutKind.Sequential)]
-        private struct NativeMetadataParams
+        private struct Native
         {
             public IntPtr iccProfile;
             public UIntPtr iccProfileSize;
@@ -29,7 +29,7 @@ namespace WebPFileType.Interop
             public UIntPtr xmpSize;
         }
 
-        private static readonly int NativeMetadataParamsSize = Marshal.SizeOf(typeof(NativeMetadataParams));
+        private static readonly int NativeMetadataParamsSize = Marshal.SizeOf(typeof(Native));
         private static readonly MetadataCustomMarshaler instance = new();
 
         public static ICustomMarshaler GetInstance(string cookie)
@@ -51,7 +51,7 @@ namespace WebPFileType.Interop
             {
                 if (pNativeData != IntPtr.Zero)
                 {
-                    NativeMetadataParams* metadata = (NativeMetadataParams*)pNativeData;
+                    Native* metadata = (Native*)pNativeData;
 
                     if (metadata->iccProfile != IntPtr.Zero)
                     {
@@ -85,13 +85,13 @@ namespace WebPFileType.Interop
                 return IntPtr.Zero;
             }
 
-            MetadataParams metadata = (MetadataParams)ManagedObj;
+            EncoderMetadata metadata = (EncoderMetadata)ManagedObj;
 
             IntPtr nativeStructure = Marshal.AllocHGlobal(NativeMetadataParamsSize);
 
             unsafe
             {
-                NativeMetadataParams* nativeMetadata = (NativeMetadataParams*)nativeStructure;
+                Native* nativeMetadata = (Native*)nativeStructure;
 
                 if (metadata.iccProfile != null && metadata.iccProfile.Length > 0)
                 {

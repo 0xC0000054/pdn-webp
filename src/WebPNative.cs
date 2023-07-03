@@ -129,7 +129,7 @@ namespace WebPFileType
         /// </summary>
         /// <param name="writeImageCallback">The callback used to write the WebP image.</param>
         /// <param name="input">The input surface.</param>
-        /// <param name="parameters">The encode parameters.</param>
+        /// <param name="options">The encode parameters.</param>
         /// <param name="metadata">The image metadata.</param>
         /// <param name="callback">The progress callback.</param>
         /// <exception cref="ArgumentNullException"><paramref name="writeImageCallback"/> is null.
@@ -140,8 +140,8 @@ namespace WebPFileType
         internal static void WebPSave(
             Surface input,
             Stream output,
-            EncodeParams parameters,
-            MetadataParams metadata,
+            EncoderOptions options,
+            EncoderMetadata metadata,
             WebPReportProgress callback)
         {
             if (input == null)
@@ -156,11 +156,11 @@ namespace WebPFileType
 
             if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
             {
-                retVal = WebP_x64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
+                retVal = WebP_x64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, options, metadata, callback);
             }
             else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
             {
-                retVal = WebP_ARM64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, parameters, metadata, callback);
+                retVal = WebP_ARM64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, options, metadata, callback);
             }
             else
             {

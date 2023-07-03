@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 namespace WebPFileType.Interop
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal sealed class EncodeParams
+    internal sealed class EncoderOptions
     {
         [MarshalAs(UnmanagedType.R4)]
         public float quality;

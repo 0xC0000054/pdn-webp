@@ -146,7 +146,7 @@ namespace WebPFileType
                 throw new FormatException(Resources.InvalidImageDimensions);
             }
 
-            EncodeParams encParams = new()
+            EncoderOptions options = new()
             {
                 // When using lossless compression the quality value controls the compression speed, a
                 // value of 100 will produce the smallest files.
@@ -158,7 +158,7 @@ namespace WebPFileType
             scratchSurface.Clear();
             input.CreateRenderer().Render(scratchSurface);
 
-            MetadataParams metadata = CreateWebPMetadata(input);
+            EncoderMetadata metadata = CreateWebPMetadata(input);
 
             WebPReportProgress encProgress = null;
 
@@ -178,10 +178,10 @@ namespace WebPFileType
                 };
             }
 
-            WebPNative.WebPSave(scratchSurface, output, encParams, metadata, encProgress);
+            WebPNative.WebPSave(scratchSurface, output, options, metadata, encProgress);
         }
 
-        private static MetadataParams CreateWebPMetadata(Document doc)
+        private static EncoderMetadata CreateWebPMetadata(Document doc)
         {
             byte[] iccProfileBytes = null;
             byte[] exifBytes = null;
@@ -268,7 +268,7 @@ namespace WebPFileType
 
             if (iccProfileBytes != null || exifBytes != null || xmpBytes != null)
             {
-                return new MetadataParams(iccProfileBytes, exifBytes, xmpBytes);
+                return new EncoderMetadata(iccProfileBytes, exifBytes, xmpBytes);
             }
 
             return null;

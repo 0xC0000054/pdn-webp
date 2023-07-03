@@ -31,9 +31,9 @@ namespace WebPFileType.Interop
             int width,
             int height,
             int stride,
-            EncodeParams parameters,
+            EncoderOptions options,
             [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaler))]
-                MetadataParams metadata,
+            EncoderMetadata metadata,
             WebPReportProgress callback);
 
         [DllImport("WebP_ARM64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]

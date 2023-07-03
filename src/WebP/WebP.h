@@ -37,12 +37,12 @@ typedef bool (__stdcall *ProgressFn)(int progress);
 // the WebPMemoryWriter's buffer instead requiring that new memory be allocated to store the entire image.
 typedef WebPEncodingError (__stdcall *WriteImageFn)(const uint8_t* image, const size_t imageSize);
 
-typedef struct EncodeParams
+typedef struct EncoderOptions
 {
     float quality;
     int preset;
     bool lossless;
-}EncParams;
+}EncoderOptions;
 
 enum MetadataType
 {
@@ -51,8 +51,8 @@ enum MetadataType
     XMP
 };
 
-// This must be kept in sync with the NativeMetadataParams structure in MetadataCustomMarshaler.cs.
-typedef struct MetadataParams
+// This must be kept in sync with the Native structure in MetadataCustomMarshaler.cs.
+typedef struct EncoderMetadata
 {
     uint8_t* iccProfile;
     size_t iccProfileSize;
@@ -60,7 +60,7 @@ typedef struct MetadataParams
     size_t exifSize;
     uint8_t* xmp;
     size_t xmpSize;
-}MetadataParams;
+}EncoderMetadata;
 
 typedef struct ImageInfo
 {
@@ -79,8 +79,8 @@ DLLEXPORT int __stdcall WebPSave(
     const int width,
     const int height,
     const int stride,
-    const EncodeParams* encodeOptions,
-    const MetadataParams* metadata,
+    const EncoderOptions* encodeOptions,
+    const EncoderMetadata* metadata,
     ProgressFn progressCallback);
 
 DLLEXPORT uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, MetadataType type);

@@ -83,7 +83,7 @@ static int ProgressReport(int percent, const WebPPicture* picture)
 static int EncodeImageMetadata(
     const uint8_t* image,
     const size_t imageSize,
-    const MetadataParams* metadata,
+    const EncoderMetadata* metadata,
     const WriteImageFn writeImageCallback)
 {
     if (image == nullptr || metadata == nullptr || writeImageCallback == nullptr)
@@ -173,8 +173,8 @@ int __stdcall WebPSave(
     const int width,
     const int height,
     const int stride,
-    const EncodeParams* encodeOptions,
-    const MetadataParams* metadata,
+    const EncoderOptions* encodeOptions,
+    const EncoderMetadata* metadata,
     ProgressFn callback)
 {
     if (writeImageCallback == nullptr || bitmap == nullptr || encodeOptions == nullptr)

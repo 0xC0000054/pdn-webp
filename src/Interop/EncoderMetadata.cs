@@ -15,13 +15,13 @@ using System.Runtime.InteropServices;
 namespace WebPFileType.Interop
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal sealed class MetadataParams
+    internal sealed class EncoderMetadata
     {
         public byte[] iccProfile;
         public byte[] exif;
         public byte[] xmp;
 
-        public MetadataParams(byte[] iccProfileBytes, byte[] exifBytes, byte[] xmpBytes)
+        public EncoderMetadata(byte[] iccProfileBytes, byte[] exifBytes, byte[] xmpBytes)
         {
             if (iccProfileBytes != null)
             {
