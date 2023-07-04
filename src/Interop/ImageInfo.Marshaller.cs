@@ -15,19 +15,22 @@ using System.Runtime.InteropServices.Marshalling;
 
 namespace WebPFileType.Interop
 {
-    [NativeMarshalling(typeof(Marshaller))]
-    [StructLayout(LayoutKind.Sequential)]
     internal readonly partial struct ImageInfo
     {
-        public readonly int width;
-        public readonly int height;
-        public readonly bool hasAnimation;
-
-        public ImageInfo(int width, int height, bool hasAnimation)
+        [CustomMarshaller(typeof(ImageInfo), MarshalMode.ManagedToUnmanagedOut, typeof(Marshaller))]
+        public static class Marshaller
         {
-            this.width = width;
-            this.height = height;
-            this.hasAnimation = hasAnimation;
+            // This must be kept in sync with the ImageInfo structure in WebP.h.
+            [StructLayout(LayoutKind.Sequential)]
+            public struct Native
+            {
+                public int width;
+                public int height;
+                public byte hasAnimation;
+            }
+
+            public static ImageInfo ConvertToManaged(Native unmanaged)
+                => new(unmanaged.width, unmanaged.height, unmanaged.hasAnimation != 0);
         }
     }
 }

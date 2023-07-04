@@ -10,33 +10,24 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace WebPFileType.Interop
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class EncoderMetadata
+    [NativeMarshalling(typeof(Marshaller))]
+    internal sealed partial class EncoderMetadata
     {
-        public byte[] iccProfile;
-        public byte[] exif;
-        public byte[] xmp;
+        public ReadOnlyMemory<byte> iccProfile;
+        public ReadOnlyMemory<byte> exif;
+        public ReadOnlyMemory<byte> xmp;
 
         public EncoderMetadata(byte[] iccProfileBytes, byte[] exifBytes, byte[] xmpBytes)
         {
-            if (iccProfileBytes != null)
-            {
-                iccProfile = (byte[])iccProfileBytes.Clone();
-            }
-
-            if (exifBytes != null)
-            {
-                exif = (byte[])exifBytes.Clone();
-            }
-
-            if (xmpBytes != null)
-            {
-                xmp = (byte[])xmpBytes.Clone();
-            }
+            iccProfile = iccProfileBytes;
+            exif = exifBytes;
+            xmp = xmpBytes;
         }
     }
 }

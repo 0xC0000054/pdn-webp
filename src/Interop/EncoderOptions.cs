@@ -10,18 +10,15 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace WebPFileType.Interop
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class EncoderOptions
+    [NativeMarshalling(typeof(Marshaller))]
+    internal sealed partial class EncoderOptions
     {
-        [MarshalAs(UnmanagedType.R4)]
         public float quality;
-        [MarshalAs(UnmanagedType.I4)]
         public WebPPreset preset;
-        [MarshalAs(UnmanagedType.U1)]
         public bool lossless;
     }
 }

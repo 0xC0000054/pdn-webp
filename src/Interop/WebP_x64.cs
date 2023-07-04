@@ -16,30 +16,34 @@ using System.Runtime.InteropServices;
 namespace WebPFileType.Interop
 {
     [System.Security.SuppressUnmanagedCodeSecurity]
-    internal static unsafe class WebP_x64
+    internal static unsafe partial class WebP_x64
     {
-        [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPGetImageInfo")]
-        public static extern VP8StatusCode WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
+        [LibraryImport("WebP_x64.dll", EntryPoint = "WebPGetImageInfo")]
+        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
+        public static partial VP8StatusCode WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
 
-        [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPLoad")]
-        public static extern VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
+        [LibraryImport("WebP_x64.dll", EntryPoint = "WebPLoad")]
+        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
+        public static partial VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
 
-        [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "WebPSave")]
-        public static extern WebPEncodingError WebPSave(
+        [LibraryImport("WebP_x64.dll", EntryPoint = "WebPSave")]
+        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
+        public static partial WebPEncodingError WebPSave(
             WebPWriteImage writeImageCallback,
             IntPtr scan0,
             int width,
             int height,
             int stride,
             EncoderOptions options,
-            [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MetadataCustomMarshaler))]
             EncoderMetadata metadata,
             WebPReportProgress callback);
 
-        [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "GetMetadataSize")]
-        public static extern uint GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type);
+        [LibraryImport("WebP_x64.dll", EntryPoint = "GetMetadataSize")]
+        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
+        public static partial uint GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type);
 
-        [DllImport("WebP_x64.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "ExtractMetadata")]
-        public static extern void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
+        [LibraryImport("WebP_x64.dll", EntryPoint = "ExtractMetadata")]
+        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
+        public static partial void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
     }
 }
