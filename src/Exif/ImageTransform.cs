@@ -27,9 +27,7 @@ namespace WebPFileType.Exif
                 {
                     int sampleColumn = lastColumn - x;
 
-                    ColorBgra temp = surface[x, y];
-                    surface[x, y] = surface[sampleColumn, y];
-                    surface[sampleColumn, y] = temp;
+                    (surface[sampleColumn, y], surface[x, y]) = (surface[x, y], surface[sampleColumn, y]);
                 }
             }
         }
@@ -45,9 +43,7 @@ namespace WebPFileType.Exif
                 {
                     int sampleRow = lastRow - y;
 
-                    ColorBgra temp = surface[x, y];
-                    surface[x, y] = surface[x, sampleRow];
-                    surface[x, sampleRow] = temp;
+                    (surface[x, sampleRow], surface[x, y]) = (surface[x, y], surface[x, sampleRow]);
                 }
             }
         }
@@ -103,10 +99,7 @@ namespace WebPFileType.Exif
 
                 for (int x = 0; x < width; x++)
                 {
-                    ColorBgra temp = *bottomPtr;
-                    *bottomPtr = *topPtr;
-                    *topPtr = temp;
-
+                    (*topPtr, *bottomPtr) = (*bottomPtr, *topPtr);
                     topPtr++;
                     bottomPtr--;
                 }
@@ -122,10 +115,7 @@ namespace WebPFileType.Exif
 
                 for (int x = 0; x < halfWidth; x++)
                 {
-                    ColorBgra temp = *rightPtr;
-                    *rightPtr = *leftPtr;
-                    *leftPtr = temp;
-
+                    (*leftPtr, *rightPtr) = (*rightPtr, *leftPtr);
                     leftPtr++;
                     rightPtr--;
                 }
