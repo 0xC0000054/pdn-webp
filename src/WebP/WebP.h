@@ -51,6 +51,10 @@ enum MetadataType
     XMP
 };
 
+// The set decoder metadata callback function.
+// Returns true if successful, false otherwise.
+typedef bool(__stdcall* SetDecoderMetadataFn)(const uint8_t* data, size_t size, MetadataType type);
+
 // This must be kept in sync with the Native structure in MetadataCustomMarshaler.cs.
 typedef struct EncoderMetadata
 {
@@ -71,6 +75,8 @@ typedef struct ImageInfo
 
 DLLEXPORT int __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info);
 
+DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSize, SetDecoderMetadataFn setMetadata);
+
 DLLEXPORT int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride);
 
 DLLEXPORT int __stdcall WebPSave(
@@ -83,12 +89,7 @@ DLLEXPORT int __stdcall WebPSave(
     const EncoderMetadata* metadata,
     ProgressFn progressCallback);
 
-DLLEXPORT uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, MetadataType type);
-
-DLLEXPORT void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetadataType type);
-
 #define errVersionMismatch -1
-
 #define errMuxEncodeMetadata -2
 
 #ifdef __cplusplus

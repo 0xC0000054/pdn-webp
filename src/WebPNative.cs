@@ -14,6 +14,7 @@ using PaintDotNet;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using WebPFileType.Interop;
 using WebPFileType.Properties;
@@ -71,6 +72,45 @@ namespace WebPFileType
                         throw new WebPException(Resources.InvalidWebPImage);
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the WebP image metadata.
+        /// </summary>
+        /// <param name="data">The input image data.</param>
+        /// <returns>The image metadata.</returns>
+        internal static unsafe DecoderMetadata WebPGetImageMetadata(byte[] data)
+        {
+            DecoderMetadata metadata = new();
+
+            IDecoderMetadataNative native = metadata;
+            WebPSetDecoderMetadata callback = native.SetDecoderMetadata;
+            bool result;
+
+            fixed (byte* ptr = data)
+            {
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                {
+                    result = WebP_x64.WebPGetImageMetadata(ptr, new UIntPtr((ulong)data.Length), callback);
+                }
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    result = WebP_ARM64.WebPGetImageMetadata(ptr, new UIntPtr((ulong)data.Length), callback);
+                }
+                else
+                {
+                    throw new PlatformNotSupportedException();
+                }
+            }
+
+            GC.KeepAlive(callback);
+
+            if (!result)
+            {
+                native.CallbackError.Throw();
+            }
+
+            return metadata;
         }
 
         /// <summary>
@@ -205,48 +245,6 @@ namespace WebPFileType
                         }
                     default:
                         throw new WebPException(Resources.EncoderGenericError);
-                }
-            }
-        }
-
-        internal static unsafe uint GetMetadataSize(byte[] data, MetadataType type)
-        {
-            uint metadataSize;
-
-            fixed (byte* ptr = data)
-            {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                {
-                    metadataSize = WebP_x64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
-                }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-                {
-                    metadataSize = WebP_ARM64.GetMetadataSize(ptr, new UIntPtr((ulong)data.Length), type);
-                }
-                else
-                {
-                    throw new PlatformNotSupportedException();
-                }
-            }
-
-            return metadataSize;
-        }
-
-        internal static unsafe void ExtractMetadata(byte[] data, MetadataType type, byte[] outData, uint outSize)
-        {
-            fixed (byte* ptr = data, outPtr = outData)
-            {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                {
-                    WebP_x64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
-                }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-                {
-                    WebP_ARM64.ExtractMetadata(ptr, new UIntPtr((ulong)data.Length), outPtr, outSize, type);
-                }
-                else
-                {
-                    throw new PlatformNotSupportedException();
                 }
             }
         }

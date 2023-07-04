@@ -28,42 +28,18 @@ namespace WebPFileType
     internal static class WebPFile
     {
         /// <summary>
-        /// Gets the color profile from the WebP image.
+        /// Gets the metadata from the WebP image.
         /// </summary>
         /// <param name="webpBytes">The WebP image data.</param>
         /// <returns>
-        /// A byte array containing the color profile, if present; otherwise, <see langword="null"/>
+        /// The image metadata.
         /// </returns>
         /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
-        internal static byte[] GetColorProfileBytes(byte[] webpBytes)
+        internal static DecoderMetadata GetMetadata(byte[] webpBytes)
         {
-            return GetMetadataBytes(webpBytes, MetadataType.ColorProfile);
-        }
+            ArgumentNullException.ThrowIfNull(webpBytes, nameof(webpBytes));
 
-        /// <summary>
-        /// Gets the EXIF data from the WebP image.
-        /// </summary>
-        /// <param name="webpBytes">The WebP image data.</param>
-        /// <returns>
-        /// A byte array containing the EXIF data, if present; otherwise, <see langword="null"/>
-        /// </returns>
-        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
-        internal static byte[] GetExifBytes(byte[] webpBytes)
-        {
-            return GetMetadataBytes(webpBytes, MetadataType.EXIF);
-        }
-
-        /// <summary>
-        /// Gets the XMP data from the WebP image.
-        /// </summary>
-        /// <param name="webpBytes">The WebP image data.</param>
-        /// <returns>
-        /// A byte array containing the XMP data, if present; otherwise, <see langword="null"/>
-        /// </returns>
-        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
-        internal static byte[] GetXmpBytes(byte[] webpBytes)
-        {
-            return GetMetadataBytes(webpBytes, MetadataType.XMP);
+            return WebPNative.WebPGetImageMetadata(webpBytes);
         }
 
         /// <summary>
@@ -108,10 +84,7 @@ namespace WebPFileType
             }
             finally
             {
-                if (temp != null)
-                {
-                    temp.Dispose();
-                }
+                temp?.Dispose();
             }
 
             return image;
@@ -292,34 +265,6 @@ namespace WebPFileType
             }
 
             return items;
-        }
-
-        /// <summary>
-        /// Gets the metadata from the WebP image.
-        /// </summary>
-        /// <param name="webpBytes">The WebP image data.</param>
-        /// <param name="type">The metadata type.</param>
-        /// <returns>
-        /// A byte array containing the requested metadata, if present; otherwise, <see langword="null"/>
-        /// </returns>
-        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
-        private static byte[] GetMetadataBytes(byte[] webpBytes, MetadataType type)
-        {
-            if (webpBytes == null)
-            {
-                throw new ArgumentNullException(nameof(webpBytes));
-            }
-
-            byte[] bytes = null;
-
-            uint size = WebPNative.GetMetadataSize(webpBytes, type);
-            if (size > 0)
-            {
-                bytes = new byte[size];
-                WebPNative.ExtractMetadata(webpBytes, type, bytes, size);
-            }
-
-            return bytes;
         }
     }
 }

@@ -29,6 +29,84 @@ int __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* 
     return status;
 }
 
+static bool SetDecoderMetadata(const WebPDemuxer* dmux, SetDecoderMetadataFn setMetadata, MetadataType type)
+{
+    const char* fourcc = nullptr;
+
+    switch (type)
+    {
+    case ColorProfile:
+        fourcc = "ICCP";
+        break;
+    case EXIF:
+        fourcc = "EXIF";
+        break;
+    case XMP:
+        fourcc = "XMP ";
+        break;
+    }
+
+    bool result = true;
+
+    if (fourcc)
+    {
+        WebPChunkIterator iter;
+
+        if (WebPDemuxGetChunk(dmux, fourcc, 1, &iter))
+        {
+            if (!setMetadata(iter.chunk.bytes, iter.chunk.size, type))
+            {
+                result = false;
+            }
+            WebPDemuxReleaseChunkIterator(&iter);
+        }
+    }
+
+    return result;
+}
+
+DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSize, SetDecoderMetadataFn setMetadata)
+{
+    if (setMetadata)
+    {
+        WebPData webpData{};
+        webpData.bytes = data;
+        webpData.size = dataSize;
+
+        ScopedWebPDemuxer demux(WebPDemux(&webpData));
+        if (demux != nullptr)
+        {
+            uint32_t flags = WebPDemuxGetI(demux.get(), WEBP_FF_FORMAT_FLAGS);
+
+            if ((flags & ICCP_FLAG) != 0)
+            {
+                if (!SetDecoderMetadata(demux.get(), setMetadata, ColorProfile))
+                {
+                    return false;
+                }
+            }
+
+            if ((flags & EXIF_FLAG) != 0)
+            {
+                if (!SetDecoderMetadata(demux.get(), setMetadata, EXIF))
+                {
+                    return false;
+                }
+            }
+
+            if ((flags & XMP_FLAG) != 0)
+            {
+                if (!SetDecoderMetadata(demux.get(), setMetadata, XMP))
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride)
 {
     WebPDecoderConfig config;
@@ -264,100 +342,4 @@ int __stdcall WebPSave(
     }
 
     return error;
-}
-
-uint32_t __stdcall GetMetadataSize(const uint8_t* data, size_t dataSize, MetadataType type)
-{
-    uint32_t outSize = 0;
-
-    WebPData webpData;
-    webpData.bytes = data;
-    webpData.size = dataSize;
-
-    ScopedWebPDemuxer demux(WebPDemux(&webpData));
-    if (demux != nullptr)
-    {
-        uint32_t flags = WebPDemuxGetI(demux.get(), WEBP_FF_FORMAT_FLAGS);
-
-        WebPChunkIterator iter;
-        memset(&iter, 0, sizeof(WebPChunkIterator));
-        int result = 0;
-
-        switch (type)
-        {
-        case ColorProfile:
-            if ((flags & ICCP_FLAG) != 0)
-            {
-                result = WebPDemuxGetChunk(demux.get(), "ICCP", 1, &iter);
-            }
-        break;
-        case EXIF:
-            if ((flags & EXIF_FLAG) != 0)
-            {
-                result = WebPDemuxGetChunk(demux.get(), "EXIF", 1, &iter);
-            }
-            break;
-        case XMP:
-            if ((flags & XMP_FLAG) != 0)
-            {
-                result = WebPDemuxGetChunk(demux.get(), "XMP ", 1, &iter);
-            }
-            break;
-        }
-
-        if (result != 0)
-        {
-            outSize = static_cast<uint32_t>(iter.chunk.size);
-        }
-
-        WebPDemuxReleaseChunkIterator(&iter);
-    }
-
-    return outSize;
-}
-
-void __stdcall ExtractMetadata(const uint8_t* data, size_t dataSize, uint8_t* outData, uint32_t outSize, MetadataType type)
-{
-    WebPData webpData;
-    webpData.bytes = data;
-    webpData.size = dataSize;
-
-    ScopedWebPDemuxer demux(WebPDemux(&webpData));
-    if (demux != nullptr)
-    {
-        uint32_t flags = WebPDemuxGetI(demux.get(), WEBP_FF_FORMAT_FLAGS);
-
-        WebPChunkIterator iter;
-        memset(&iter, 0, sizeof(WebPChunkIterator));
-        int result = 0;
-
-        switch (type)
-        {
-        case ColorProfile:
-            if ((flags & ICCP_FLAG) != 0)
-            {
-                result = WebPDemuxGetChunk(demux.get(), "ICCP", 1, &iter);
-            }
-        break;
-        case EXIF:
-            if ((flags & EXIF_FLAG) != 0)
-            {
-                result = WebPDemuxGetChunk(demux.get(), "EXIF", 1, &iter);
-            }
-            break;
-        case XMP:
-            if ((flags & XMP_FLAG) != 0)
-            {
-                result = WebPDemuxGetChunk(demux.get(), "XMP ", 1, &iter);
-            }
-            break;
-        }
-
-        if (result != 0)
-        {
-            memcpy_s(outData, outSize, iter.chunk.bytes, iter.chunk.size);
-        }
-
-        WebPDemuxReleaseChunkIterator(&iter);
-    }
 }

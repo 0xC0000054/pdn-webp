@@ -22,6 +22,11 @@ namespace WebPFileType.Interop
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
         public static partial VP8StatusCode WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
 
+        [LibraryImport("WebP_ARM64.dll", EntryPoint = "WebPGetImageMetadata")]
+        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static partial bool WebPGetImageMetadata(byte* data, UIntPtr dataSize, WebPSetDecoderMetadata callback);
+
         [LibraryImport("WebP_ARM64.dll", EntryPoint = "WebPLoad")]
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
         public static partial VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
@@ -37,13 +42,5 @@ namespace WebPFileType.Interop
             EncoderOptions options,
             EncoderMetadata metadata,
             WebPReportProgress callback);
-
-        [LibraryImport("WebP_ARM64.dll", EntryPoint = "GetMetadataSize")]
-        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
-        public static partial uint GetMetadataSize(byte* iData, UIntPtr iDataSize, MetadataType type);
-
-        [LibraryImport("WebP_ARM64.dll", EntryPoint = "ExtractMetadata")]
-        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
-        public static partial void ExtractMetadata(byte* iData, UIntPtr iDataSize, byte* metadataBytes, uint metadataSize, MetadataType type);
     }
 }

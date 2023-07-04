@@ -19,6 +19,7 @@ using PaintDotNet.IndirectUI;
 using PaintDotNet.IO;
 using PaintDotNet.PropertySystem;
 using WebPFileType.Exif;
+using WebPFileType.Interop;
 
 namespace WebPFileType
 {
@@ -64,24 +65,20 @@ namespace WebPFileType
             return strings.GetString(name);
         }
 
-        private static Surface GetOrientedSurface(byte[] bytes, out ExifValueCollection exifMetadata)
+        private static Surface GetOrientedSurface(byte[] bytes, out DecoderMetadata metadata)
         {
-            exifMetadata = null;
-
             Surface surface = WebPFile.Load(bytes);
 
-            byte[] exifBytes = WebPFile.GetExifBytes(bytes);
-            if (exifBytes != null)
-            {
-                exifMetadata = ExifParser.Parse(exifBytes);
+            metadata = WebPFile.GetMetadata(bytes);
 
-                if (exifMetadata != null)
+            ExifValueCollection exif = metadata.Exif;
+
+            if (exif != null)
+            {
+                ExifValue orientationProperty = exif.GetAndRemoveValue(ExifPropertyKeys.Image.Orientation.Path);
+                if (orientationProperty != null)
                 {
-                    ExifValue orientationProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.Orientation.Path);
-                    if (orientationProperty != null)
-                    {
-                        MetadataHelpers.ApplyOrientationTransform(orientationProperty, ref surface);
-                    }
+                    MetadataHelpers.ApplyOrientationTransform(orientationProperty, ref surface);
                 }
             }
 
@@ -97,14 +94,14 @@ namespace WebPFileType
 
             if (FormatDetection.HasWebPFileSignature(bytes))
             {
-                Surface surface = GetOrientedSurface(bytes, out ExifValueCollection exifMetadata);
+                Surface surface = GetOrientedSurface(bytes, out DecoderMetadata metadata);
                 bool disposeSurface = true;
 
                 try
                 {
                     doc = new Document(surface.Width, surface.Height);
 
-                    byte[] colorProfileBytes = WebPFile.GetColorProfileBytes(bytes);
+                    byte[] colorProfileBytes = metadata.GetColorProfileBytes();
                     if (colorProfileBytes != null)
                     {
                         doc.Metadata.AddExifPropertyItem(ExifSection.Image,
@@ -113,6 +110,7 @@ namespace WebPFileType
                                                                        colorProfileBytes));
                     }
 
+                    ExifValueCollection exifMetadata = metadata.Exif;
                     if (exifMetadata != null && exifMetadata.Count > 0)
                     {
                         ExifValue xResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.XResolution.Path);
@@ -152,7 +150,7 @@ namespace WebPFileType
                         }
                     }
 
-                    byte[] xmpBytes = WebPFile.GetXmpBytes(bytes);
+                    byte[] xmpBytes = metadata.GetXmpBytes();
                     if (xmpBytes != null)
                     {
                         XmpPacket xmpPacket = XmpPacket.TryParse(xmpBytes);
