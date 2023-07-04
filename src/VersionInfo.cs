@@ -27,15 +27,7 @@ namespace WebPFileType
         public static string PluginVersion => pluginVersion.Value;
 
         private static string GetLibWebPVersion()
-        {
-            int libwebpVersion = WebPNative.GetLibWebPVersion();
-
-            int major = (libwebpVersion >> 16) & 0xff;
-            int minor = (libwebpVersion >> 8) & 0xff;
-            int revision = libwebpVersion & 0xff;
-
-            return $"{major}.{minor}.{revision}";
-        }
+            => WebPNative.GetLibWebPVersion().ToString();
 
         private static string GetPluginVersion()
             => typeof(VersionInfo).Assembly.GetName().Version.ToString();

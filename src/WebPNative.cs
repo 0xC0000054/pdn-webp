@@ -25,29 +25,33 @@ namespace WebPFileType
         internal const int WebPMaxDimension = 16383;
 
         /// <summary>
-        /// Gets the libwebp version number.
+        /// Gets the libwebp version.
         /// </summary>
         /// <returns>
-        /// The libwebp version number.
+        /// The libwebp version.
         /// </returns>
-        internal static int GetLibWebPVersion()
+        internal static Version GetLibWebPVersion()
         {
-            int version;
+            int packedVersion;
 
             if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
             {
-                version = WebP_x64.GetLibWebPVersion();
+                packedVersion = WebP_x64.GetLibWebPVersion();
             }
             else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
             {
-                version = WebP_ARM64.GetLibWebPVersion();
+                packedVersion = WebP_ARM64.GetLibWebPVersion();
             }
             else
             {
                 throw new PlatformNotSupportedException();
             }
 
-            return version;
+            int major = (packedVersion >> 16) & 0xff;
+            int minor = (packedVersion >> 8) & 0xff;
+            int build = packedVersion & 0xff;
+
+            return new Version(major, minor, build);
         }
 
         /// <summary>
