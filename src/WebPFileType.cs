@@ -16,7 +16,6 @@ using System.IO;
 using PaintDotNet;
 using PaintDotNet.Imaging;
 using PaintDotNet.IndirectUI;
-using PaintDotNet.IO;
 using PaintDotNet.PropertySystem;
 using WebPFileType.Exif;
 using WebPFileType.Interop;
