@@ -73,6 +73,8 @@ typedef struct ImageInfo
     bool hasAnimation;
 }ImageInfo;
 
+DLLEXPORT int __stdcall GetLibWebPVersion();
+
 DLLEXPORT int __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info);
 
 DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSize, SetDecoderMetadataFn setMetadata);

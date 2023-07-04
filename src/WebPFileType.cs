@@ -33,7 +33,9 @@ namespace WebPFileType
             KeepMetadata, // Obsolete, but retained to keep the value from being reused for a different property.
             ForumLink,
             GitHubLink,
-            Lossless
+            Lossless,
+            PluginVersion,
+            LibWebPVersion
         }
 
         private readonly IWebPStringResourceManager strings;
@@ -201,7 +203,9 @@ namespace WebPFileType
                 new Int32Property(PropertyNames.Quality, 95, 0, 100, false),
                 new BooleanProperty(PropertyNames.Lossless, false),
                 new UriProperty(PropertyNames.ForumLink, new Uri("https://forums.getpaint.net/topic/21773-webp-filetype/")),
-                new UriProperty(PropertyNames.GitHubLink, new Uri("https://github.com/0xC0000054/pdn-webp"))
+                new UriProperty(PropertyNames.GitHubLink, new Uri("https://github.com/0xC0000054/pdn-webp")),
+                new StringProperty(PropertyNames.PluginVersion),
+                new StringProperty(PropertyNames.LibWebPVersion),
             };
 
             List<PropertyCollectionRule> rules = new()
@@ -239,6 +243,16 @@ namespace WebPFileType
             PropertyControlInfo githubLinkPCI = info.FindControlForPropertyName(PropertyNames.GitHubLink);
             githubLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
             githubLinkPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = "GitHub"; // GitHub is a brand name that should not be localized.
+
+            PropertyControlInfo pluginVersionPCI = info.FindControlForPropertyName(PropertyNames.PluginVersion);
+            pluginVersionPCI.ControlType.Value = PropertyControlType.Label;
+            pluginVersionPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
+            pluginVersionPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = "WebPFileType v" + VersionInfo.PluginVersion;
+
+            PropertyControlInfo libwebpVersionPCI = info.FindControlForPropertyName(PropertyNames.LibWebPVersion);
+            libwebpVersionPCI.ControlType.Value = PropertyControlType.Label;
+            libwebpVersionPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
+            libwebpVersionPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = "libwebp v" + VersionInfo.LibWebPVersion;
 
             return info;
         }

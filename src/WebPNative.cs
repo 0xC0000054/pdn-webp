@@ -14,7 +14,6 @@ using PaintDotNet;
 using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using WebPFileType.Interop;
 using WebPFileType.Properties;
@@ -24,6 +23,32 @@ namespace WebPFileType
     internal static class WebPNative
     {
         internal const int WebPMaxDimension = 16383;
+
+        /// <summary>
+        /// Gets the libwebp version number.
+        /// </summary>
+        /// <returns>
+        /// The libwebp version number.
+        /// </returns>
+        internal static int GetLibWebPVersion()
+        {
+            int version;
+
+            if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+            {
+                version = WebP_x64.GetLibWebPVersion();
+            }
+            else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+            {
+                version = WebP_ARM64.GetLibWebPVersion();
+            }
+            else
+            {
+                throw new PlatformNotSupportedException();
+            }
+
+            return version;
+        }
 
         /// <summary>
         /// Gets the WebP image information.

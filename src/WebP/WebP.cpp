@@ -14,6 +14,14 @@
 #include "WebP.h"
 #include "scoped.h"
 
+DLLEXPORT int __stdcall GetLibWebPVersion()
+{
+    // Each libwebp API set has its own method to get the version number.
+    // All of the version numbers should be identical for a specific libwebp release,
+    // so we use the decoder version number;
+    return WebPGetDecoderVersion();
+}
+
 int __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info)
 {
     WebPBitstreamFeatures features;

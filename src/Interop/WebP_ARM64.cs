@@ -18,6 +18,10 @@ namespace WebPFileType.Interop
     [System.Security.SuppressUnmanagedCodeSecurity]
     internal static unsafe partial class WebP_ARM64
     {
+        [LibraryImport("WebP_ARM64.dll", EntryPoint = "GetLibWebPVersion")]
+        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
+        public static partial int GetLibWebPVersion();
+
         [LibraryImport("WebP_ARM64.dll", EntryPoint = "WebPGetImageInfo")]
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
         public static partial VP8StatusCode WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
