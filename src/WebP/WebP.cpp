@@ -177,7 +177,7 @@ static int EncodeImageMetadata(
 
     int encodeError = VP8_ENC_OK;
 
-    WebPData imageData;
+    WebPData imageData{};
     imageData.bytes = image;
     imageData.size = imageSize;
 
@@ -185,7 +185,7 @@ static int EncodeImageMetadata(
 
     if (muxError == WEBP_MUX_OK)
     {
-        WebPData chunkData;
+        WebPData chunkData{};
 
         if (metadata->iccProfileSize > 0)
         {
