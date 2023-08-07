@@ -43,8 +43,8 @@ namespace WebPFileType.Interop
             int width,
             int height,
             int stride,
-            EncoderOptions options,
-            EncoderMetadata metadata,
+            in EncoderOptions options,
+            in EncoderMetadata metadata,
             WebPReportProgress callback);
     }
 }
