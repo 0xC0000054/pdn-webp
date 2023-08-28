@@ -68,6 +68,8 @@ namespace WebPFileType.Exif
             }
             catch (EndOfStreamException)
             {
+                // The EXIF data is corrupt, ignore it.
+                exifValues = null;
             }
             finally
             {
