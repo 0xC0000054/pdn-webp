@@ -106,7 +106,7 @@ namespace WebPFileType
                     if (colorProfileBytes != null)
                     {
                         doc.Metadata.AddExifPropertyItem(ExifSection.Image,
-                                                         unchecked((ushort)ExifTagID.IccProfileData),
+                                                         ExifPropertyKeys.Image.InterColorProfile.Path.TagID,
                                                          new ExifValue(ExifValueType.Undefined,
                                                                        colorProfileBytes));
                     }

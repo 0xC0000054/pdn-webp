@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
+using PaintDotNet.Collections;
 using System.Collections.Generic;
 
 namespace WebPFileType.Exif
@@ -32,7 +33,7 @@ namespace WebPFileType.Exif
             }
             else
             {
-                return PaintDotNet.Collections.EnumerableExtensions.ToArrayEx(items);
+                return items.ToArrayEx();
             }
         }
     }
