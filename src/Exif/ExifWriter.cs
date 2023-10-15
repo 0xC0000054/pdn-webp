@@ -21,9 +21,53 @@ namespace WebPFileType.Exif
 {
     internal sealed class ExifWriter
     {
-        private readonly Dictionary<ExifSection, Dictionary<ushort, ExifValue>> metadata;
-
         private const int FirstIFDOffset = 8;
+
+        private static readonly HashSet<ushort> supportedImageSectionTagsForWriting = new()
+        {
+            // The tags related to storing offsets are included for reference,
+            // but are not written to the EXIF blob.
+
+            // Tags relating to image data structure
+            256, // ImageWidth
+            257, // ImageLength
+            258, // BitsPerSample
+            259, // Compression
+            262, // PhotometricInterpretation
+            274, // Orientation
+            277, // SamplesPerPixel
+            284, // PlanarConfiguration
+            530, // YCbCrSubSampling
+            531, // YCbCrPositioning
+            282, // XResolution
+            283, // YResolution
+            296, // ResolutionUnit
+
+            // Tags relating to recording offset
+            //273, // StripOffsets
+            //278, // RowsPerStrip
+            //279, // StripByteCounts
+            //513, // JPEGInterchangeFormat
+            //514, // JPEGInterchangeFormatLength
+
+            // Tags relating to image data characteristics
+            301, // TransferFunction
+            318, // WhitePoint
+            319, // PrimaryChromaticities
+            529, // YCbCrCoefficients
+            532, // ReferenceBlackWhite
+
+            // Other tags
+            306, // DateTime
+            270, // ImageDescription
+            271, // Make
+            272, // Model
+            305, // Software
+            315, // Artist
+            33432 // Copyright
+        };
+
+        private readonly Dictionary<ExifSection, Dictionary<ushort, ExifValue>> metadata;
 
         public ExifWriter(Document doc, IDictionary<ExifPropertyPath, ExifValue> entries, ExifColorSpace exifColorSpace)
         {
@@ -398,7 +442,7 @@ namespace WebPFileType.Exif
 
                 ExifSection section = key.Section;
 
-                if (section == ExifSection.Image && !ExifTagHelper.CanWriteImageSectionTag(key.TagID))
+                if (section == ExifSection.Image && !supportedImageSectionTagsForWriting.Contains(key.TagID))
                 {
                     continue;
                 }
