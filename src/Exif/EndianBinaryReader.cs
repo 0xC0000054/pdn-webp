@@ -10,7 +10,9 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+using PaintDotNet;
 using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -20,7 +22,7 @@ namespace WebPFileType.Exif
     // Adapted from 'Problem and Solution: The Terrible Inefficiency of FileStream and BinaryReader'
     // https://jacksondunstan.com/articles/3568
 
-    internal sealed class EndianBinaryReader : IDisposable
+    internal sealed class EndianBinaryReader : Disposable
     {
 #pragma warning disable IDE0032 // Use auto property
         private Stream stream;
@@ -32,8 +34,6 @@ namespace WebPFileType.Exif
         private readonly Endianess endianess;
         private readonly bool leaveOpen;
 #pragma warning restore IDE0032 // Use auto property
-
-        private const int MaxBufferSize = 4096;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EndianBinaryReader"/> class.
@@ -57,8 +57,8 @@ namespace WebPFileType.Exif
         public EndianBinaryReader(Stream stream, Endianess byteOrder, bool leaveOpen)
         {
             this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
-            bufferSize = (int)Math.Min(stream.Length, MaxBufferSize);
-            buffer = new byte[bufferSize];
+            bufferSize = (int)Math.Min(stream.Length, 4096);
+            buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             endianess = byteOrder;
             this.leaveOpen = leaveOpen;
 
@@ -129,18 +129,6 @@ namespace WebPFileType.Exif
                         stream.Seek(value, SeekOrigin.Begin);
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            if (stream != null && !leaveOpen)
-            {
-                stream.Dispose();
-                stream = null;
             }
         }
 
@@ -481,6 +469,21 @@ namespace WebPFileType.Exif
             return value;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (!leaveOpen)
+                {
+                    stream.Dispose();
+                }
+
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+
+            base.Dispose(disposing);
+        }
+
         /// <summary>
         /// Ensures that the buffer contains at least the number of bytes requested.
         /// </summary>
@@ -534,7 +537,7 @@ namespace WebPFileType.Exif
         /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         private void VerifyNotDisposed()
         {
-            if (stream == null)
+            if (IsDisposed)
             {
                 throw new ObjectDisposedException(nameof(EndianBinaryReader));
             }
