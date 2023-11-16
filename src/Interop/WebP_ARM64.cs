@@ -22,29 +22,22 @@ namespace WebPFileType.Interop
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
         public static partial int GetLibWebPVersion();
 
-        [LibraryImport("WebP_ARM64.dll", EntryPoint = "WebPGetImageInfo")]
-        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
-        public static partial WebPStatus WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
-
-        [LibraryImport("WebP_ARM64.dll", EntryPoint = "WebPGetImageMetadata")]
-        [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
-        [return: MarshalAs(UnmanagedType.U1)]
-        public static partial bool WebPGetImageMetadata(byte* data, UIntPtr dataSize, WebPSetDecoderMetadata callback);
-
         [LibraryImport("WebP_ARM64.dll", EntryPoint = "WebPLoad")]
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
-        public static partial WebPStatus WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
+        public static partial WebPStatus WebPLoad(byte* data,
+                                                  UIntPtr dataSize,
+                                                  WebPCreateImage createImage,
+                                                  WebPSetDecoderMetadata setDecoderMetadata);
 
         [LibraryImport("WebP_ARM64.dll", EntryPoint = "WebPSave")]
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
-        public static partial WebPStatus WebPSave(
-            WebPWriteImage writeImageCallback,
-            IntPtr scan0,
-            int width,
-            int height,
-            int stride,
-            in EncoderOptions options,
-            in EncoderMetadata metadata,
-            WebPReportProgress callback);
+        public static partial WebPStatus WebPSave(WebPWriteImage writeImageCallback,
+                                                  IntPtr scan0,
+                                                  int width,
+                                                  int height,
+                                                  int stride,
+                                                  in EncoderOptions options,
+                                                  in EncoderMetadata metadata,
+                                                  WebPReportProgress callback);
     }
 }

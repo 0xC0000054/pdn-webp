@@ -28,21 +28,6 @@ namespace WebPFileType
     internal static class WebPFile
     {
         /// <summary>
-        /// Gets the metadata from the WebP image.
-        /// </summary>
-        /// <param name="webpBytes">The WebP image data.</param>
-        /// <returns>
-        /// The image metadata.
-        /// </returns>
-        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
-        internal static DecoderMetadata GetMetadata(byte[] webpBytes)
-        {
-            ArgumentNullException.ThrowIfNull(webpBytes, nameof(webpBytes));
-
-            return WebPNative.WebPGetImageMetadata(webpBytes);
-        }
-
-        /// <summary>
         /// The WebP load function.
         /// </summary>
         /// <param name="webpBytes">The input image data</param>
@@ -56,39 +41,7 @@ namespace WebPFileType
         /// -or-
         /// A native API parameter is invalid.
         /// </exception>
-        internal static unsafe Surface Load(byte[] webpBytes)
-        {
-            if (webpBytes == null)
-            {
-                throw new ArgumentNullException(nameof(webpBytes));
-            }
-
-            WebPNative.WebPGetImageInfo(webpBytes, out ImageInfo imageInfo);
-
-            if (imageInfo.hasAnimation)
-            {
-                throw new WebPException(Resources.AnimatedWebPNotSupported);
-            }
-
-            Surface image = null;
-            Surface temp = null;
-
-            try
-            {
-                temp = new Surface(imageInfo.width, imageInfo.height);
-
-                WebPNative.WebPLoad(webpBytes, temp);
-
-                image = temp;
-                temp = null;
-            }
-            finally
-            {
-                temp?.Dispose();
-            }
-
-            return image;
-        }
+        internal static unsafe (Surface, DecoderMetadata) Load(byte[] webpBytes) => WebPNative.WebPLoad(webpBytes);
 
         /// <summary>
         /// The WebP save function.

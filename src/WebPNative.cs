@@ -55,124 +55,47 @@ namespace WebPFileType
         }
 
         /// <summary>
-        /// Gets the WebP image information.
-        /// </summary>
-        /// <param name="data">The input image data.</param>
-        /// <param name="info">The output image information.</param>
-        /// <exception cref="OutOfMemoryException">Insufficient memory to load the WebP image.</exception>
-        /// <exception cref="WebPException">
-        /// The WebP image is invalid.
-        /// -or-
-        /// A native API parameter is invalid.
-        /// </exception>
-        internal static unsafe void WebPGetImageInfo(byte[] data, out ImageInfo info)
-        {
-            WebPStatus status;
-
-            fixed (byte* ptr = data)
-            {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                {
-                    status = WebP_x64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
-                }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-                {
-                    status = WebP_ARM64.WebPGetImageInfo(ptr, new UIntPtr((ulong)data.Length), out info);
-                }
-                else
-                {
-                    throw new PlatformNotSupportedException();
-                }
-            }
-
-            if (status != WebPStatus.Ok)
-            {
-                switch (status)
-                {
-                    case WebPStatus.OutOfMemory:
-                        throw new OutOfMemoryException();
-                    case WebPStatus.InvalidParameter:
-                        throw new WebPException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidParameterFormat, nameof(WebPGetImageInfo)));
-                    case WebPStatus.UnsupportedFeature:
-                        throw new WebPException(Resources.UnsupportedWebPFeature);
-                    case WebPStatus.InvalidImage:
-                    default:
-                        throw new WebPException(Resources.InvalidWebPImage);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the WebP image metadata.
-        /// </summary>
-        /// <param name="data">The input image data.</param>
-        /// <returns>The image metadata.</returns>
-        internal static unsafe DecoderMetadata WebPGetImageMetadata(byte[] data)
-        {
-            DecoderMetadata metadata = new();
-
-            IDecoderMetadataNative native = metadata;
-            WebPSetDecoderMetadata callback = native.SetDecoderMetadata;
-            bool result;
-
-            fixed (byte* ptr = data)
-            {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                {
-                    result = WebP_x64.WebPGetImageMetadata(ptr, new UIntPtr((ulong)data.Length), callback);
-                }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-                {
-                    result = WebP_ARM64.WebPGetImageMetadata(ptr, new UIntPtr((ulong)data.Length), callback);
-                }
-                else
-                {
-                    throw new PlatformNotSupportedException();
-                }
-            }
-
-            GC.KeepAlive(callback);
-
-            if (!result)
-            {
-                native.CallbackError.Throw();
-            }
-
-            return metadata;
-        }
-
-        /// <summary>
         /// The WebP load function.
         /// </summary>
         /// <param name="webpBytes">The input image data</param>
+        /// <exception cref="ArgumentNullException"><paramref name="webpBytes"/> is null.</exception>
         /// <exception cref="OutOfMemoryException">Insufficient memory to load the WebP image.</exception>
         /// <exception cref="WebPException">
         /// The WebP image is invalid.
         /// -or-
         /// A native API parameter is invalid.
         /// </exception>
-        internal static unsafe void WebPLoad(byte[] webpBytes, Surface output)
+        internal static unsafe (Surface, DecoderMetadata) WebPLoad(byte[] webpBytes)
         {
+            ArgumentNullException.ThrowIfNull(webpBytes, nameof(webpBytes));
+
             WebPStatus status;
+
+            DecoderCreateImage createImage = new();
+            DecoderMetadata metadata = new();
+
+            IDecoderMetadataNative nativeDecoderMetadata = metadata;
+            WebPCreateImage createImageCallback = createImage.CreateImage;
+            WebPSetDecoderMetadata setMetadataCallback = nativeDecoderMetadata.SetDecoderMetadata;
 
             fixed (byte* ptr = webpBytes)
             {
-                int stride = output.Stride;
-                ulong outputSize = (ulong)stride * (ulong)output.Height;
-
                 if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
                 {
-                    status = WebP_x64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
+                    status = WebP_x64.WebPLoad(ptr, new UIntPtr((uint)webpBytes.Length), createImageCallback, setMetadataCallback);
                 }
                 else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
-                    status = WebP_ARM64.WebPLoad(ptr, new UIntPtr((ulong)webpBytes.Length), (byte*)output.Scan0.VoidStar, new UIntPtr(outputSize), stride);
+                    status = WebP_ARM64.WebPLoad(ptr, new UIntPtr((uint)webpBytes.Length), createImageCallback, setMetadataCallback);
                 }
                 else
                 {
                     throw new PlatformNotSupportedException();
                 }
             }
+
+            GC.KeepAlive(createImageCallback);
+            GC.KeepAlive(setMetadataCallback);
 
             if (status != WebPStatus.Ok)
             {
@@ -184,10 +107,22 @@ namespace WebPFileType
                         throw new WebPException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidParameterFormat, nameof(WebPLoad)));
                     case WebPStatus.UnsupportedFeature:
                         throw new WebPException(Resources.UnsupportedWebPFeature);
+                    case WebPStatus.CreateImageCallbackFailed:
+                        createImage.CallbackErrorInfo.Throw();
+                        break;
+                    case WebPStatus.SetMetadataCallbackFailed:
+                        nativeDecoderMetadata.CallbackError.Throw();
+                        break;
+                    case WebPStatus.DecodeFailed:
+                        throw new WebPException(Resources.DecoderGenericError);
+                    case WebPStatus.AnimatedImagesNotSupported:
+                        throw new WebPException(Resources.AnimatedWebPNotSupported);
                     default:
                         throw new WebPException(Resources.InvalidWebPImage);
                 }
             }
+
+            return (createImage.GetSurface(), metadata);
         }
 
         /// <summary>

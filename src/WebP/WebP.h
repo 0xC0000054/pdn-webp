@@ -45,11 +45,19 @@ enum class WebPStatus : int32_t
     MetadataEncoding,
     ApiVersionMismatch,
     UnknownError,
+    CreateImageCallbackFailed,
+    SetMetadataCallbackFailed,
+    DecodeFailed,
+    AnimatedImagesNotSupported,
 };
 
 // The progress callback function.
 // Returns true if encoding should continue, or false to abort the encoding process.
 typedef bool (__stdcall *ProgressFn)(int progress);
+
+// The create image callback.
+// Returns a null pointer on error.
+typedef void* (__stdcall* CreateImageFn)(int width, int height, size_t& outImageDataSize, int& outStride);
 
 // The write image callback.
 // This saves memory when writing large images by allowing the caller to read the image in chunks from
@@ -70,7 +78,6 @@ enum class MetadataType : int32_t
     XMP
 };
 
-
 // The set decoder metadata callback function.
 // Returns true if successful, false otherwise.
 typedef bool(__stdcall* SetDecoderMetadataFn)(const uint8_t* data, size_t size, MetadataType type);
@@ -86,20 +93,13 @@ typedef struct EncoderMetadata
     size_t xmpSize;
 }EncoderMetadata;
 
-typedef struct ImageInfo
-{
-    int width;
-    int height;
-    bool hasAnimation;
-}ImageInfo;
-
 DLLEXPORT int __stdcall GetLibWebPVersion();
 
-DLLEXPORT WebPStatus __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info);
-
-DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSize, SetDecoderMetadataFn setMetadata);
-
-DLLEXPORT WebPStatus __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride);
+DLLEXPORT WebPStatus __stdcall WebPLoad(
+    const uint8_t* data,
+    size_t dataSize,
+    const CreateImageFn createImageCallback,
+    const SetDecoderMetadataFn setMetadataCallback);
 
 DLLEXPORT WebPStatus __stdcall WebPSave(
     const WriteImageFn writeImageCallback,

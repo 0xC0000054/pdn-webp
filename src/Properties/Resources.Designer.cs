@@ -79,6 +79,15 @@ namespace WebPFileType.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred when decoding the WebP file..
+        /// </summary>
+        internal static string DecoderGenericError {
+            get {
+                return ResourceManager.GetString("EncoderBadWrite", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to The WebP encoder returned an I/O error..
         /// </summary>
         internal static string EncoderBadWrite {

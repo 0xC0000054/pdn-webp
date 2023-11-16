@@ -29,5 +29,9 @@ namespace WebPFileType.Interop
         MetadataEncoding,
         ApiVersionMismatch,
         UnknownError,
+        CreateImageCallbackFailed,
+        SetMetadataCallbackFailed,
+        DecodeFailed,
+        AnimatedImagesNotSupported,
     }
 }

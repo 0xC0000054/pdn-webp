@@ -66,11 +66,9 @@ namespace WebPFileType
             return strings.GetString(name);
         }
 
-        private static Surface GetOrientedSurface(byte[] bytes, out DecoderMetadata metadata)
+        private static (Surface, DecoderMetadata) GetOrientedSurface(byte[] bytes)
         {
-            Surface surface = WebPFile.Load(bytes);
-
-            metadata = WebPFile.GetMetadata(bytes);
+            (Surface surface, DecoderMetadata metadata) = WebPFile.Load(bytes);
 
             ExifValueCollection exif = metadata.Exif;
 
@@ -83,7 +81,7 @@ namespace WebPFileType
                 }
             }
 
-            return surface;
+            return (surface, metadata);
         }
 
         protected override Document OnLoad(Stream input)
@@ -95,7 +93,7 @@ namespace WebPFileType
 
             if (FormatDetection.HasWebPFileSignature(bytes))
             {
-                Surface surface = GetOrientedSurface(bytes, out DecoderMetadata metadata);
+                (Surface surface, DecoderMetadata metadata) = GetOrientedSurface(bytes);
                 bool disposeSurface = true;
 
                 try

@@ -196,4 +196,7 @@
   <data name="Lossless_Description" xml:space="preserve">
     <value>Lossless</value>
   </data>
+  <data name="DecoderGenericError" xml:space="preserve">
+    <value>An error occurred when decoding the WebP file.</value>
+  </data>
 </root>

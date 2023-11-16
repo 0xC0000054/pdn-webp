@@ -22,45 +22,6 @@ DLLEXPORT int __stdcall GetLibWebPVersion()
     return WebPGetDecoderVersion();
 }
 
-static WebPStatus VP8StatusCodeToPluginStatus(VP8StatusCode vp8Status)
-{
-    switch (vp8Status)
-    {
-    case VP8_STATUS_OK:
-        return WebPStatus::Ok;
-        break;
-    case VP8_STATUS_OUT_OF_MEMORY:
-        return WebPStatus::OutOfMemory;
-        break;
-    case VP8_STATUS_INVALID_PARAM:
-        return WebPStatus::InvalidParameter;
-    case VP8_STATUS_UNSUPPORTED_FEATURE:
-        return WebPStatus::UnsupportedFeature;
-    case VP8_STATUS_USER_ABORT:
-        return WebPStatus::UserAbort;
-    case VP8_STATUS_BITSTREAM_ERROR:
-    case VP8_STATUS_SUSPENDED:
-    case VP8_STATUS_NOT_ENOUGH_DATA:
-    default:
-        return WebPStatus::InvalidImage;
-    }
-}
-
-WebPStatus __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info)
-{
-    WebPBitstreamFeatures features;
-
-    VP8StatusCode status = WebPGetFeatures(data, dataSize, &features);
-    if (status == VP8_STATUS_OK && info)
-    {
-        info->width = features.width;
-        info->height = features.height;
-        info->hasAnimation = features.has_animation != 0;
-    }
-
-    return VP8StatusCodeToPluginStatus(status);
-}
-
 static bool SetDecoderMetadata(const WebPDemuxer* dmux, SetDecoderMetadataFn setMetadata, MetadataType type)
 {
     const char* fourcc = nullptr;
@@ -97,49 +58,44 @@ static bool SetDecoderMetadata(const WebPDemuxer* dmux, SetDecoderMetadataFn set
     return result;
 }
 
-DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSize, SetDecoderMetadataFn setMetadata)
+static bool WebPGetImageMetadata(const WebPDemuxer* demux, SetDecoderMetadataFn setMetadata)
 {
-    if (setMetadata)
+    uint32_t flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
+
+    if ((flags & ICCP_FLAG) != 0)
     {
-        WebPData webpData{};
-        webpData.bytes = data;
-        webpData.size = dataSize;
-
-        ScopedWebPDemuxer demux(WebPDemux(&webpData));
-        if (demux != nullptr)
+        if (!SetDecoderMetadata(demux, setMetadata, MetadataType::ColorProfile))
         {
-            uint32_t flags = WebPDemuxGetI(demux.get(), WEBP_FF_FORMAT_FLAGS);
+            return false;
+        }
+    }
 
-            if ((flags & ICCP_FLAG) != 0)
-            {
-                if (!SetDecoderMetadata(demux.get(), setMetadata, MetadataType::ColorProfile))
-                {
-                    return false;
-                }
-            }
+    if ((flags & EXIF_FLAG) != 0)
+    {
+        if (!SetDecoderMetadata(demux, setMetadata, MetadataType::EXIF))
+        {
+            return false;
+        }
+    }
 
-            if ((flags & EXIF_FLAG) != 0)
-            {
-                if (!SetDecoderMetadata(demux.get(), setMetadata, MetadataType::EXIF))
-                {
-                    return false;
-                }
-            }
-
-            if ((flags & XMP_FLAG) != 0)
-            {
-                if (!SetDecoderMetadata(demux.get(), setMetadata, MetadataType::XMP))
-                {
-                    return false;
-                }
-            }
+    if ((flags & XMP_FLAG) != 0)
+    {
+        if (!SetDecoderMetadata(demux, setMetadata, MetadataType::XMP))
+        {
+            return false;
         }
     }
 
     return true;
 }
 
-WebPStatus __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride)
+static WebPStatus DecodeImage(
+    const WebPData& data,
+    int outWidth,
+    int outHeight,
+    void* outData,
+    size_t outDataSize,
+    int outStride)
 {
     WebPDecoderConfig config;
 
@@ -148,17 +104,128 @@ WebPStatus __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* out
         return WebPStatus::ApiVersionMismatch;
     }
 
+    WebPStatus status = WebPStatus::Ok;
+
     config.output.colorspace = MODE_BGRA;
     config.output.is_external_memory = 1;
-    config.output.u.RGBA.rgba = outData;
-    config.output.u.RGBA.size = outSize;
+    config.output.width = outWidth;
+    config.output.height = outHeight;
+    config.output.u.RGBA.rgba = static_cast<uint8_t*>(outData);
+    config.output.u.RGBA.size = outDataSize;
     config.output.u.RGBA.stride = outStride;
 
-    VP8StatusCode status = WebPDecode(data, dataSize, &config);
+    switch (WebPDecode(data.bytes, data.size, &config))
+    {
+    case VP8_STATUS_OK:
+        break;
+    case VP8_STATUS_OUT_OF_MEMORY:
+        status = WebPStatus::OutOfMemory;
+        break;
+    case VP8_STATUS_INVALID_PARAM:
+        status = WebPStatus::InvalidParameter;
+        break;
+    case VP8_STATUS_UNSUPPORTED_FEATURE:
+        status = WebPStatus::UnsupportedFeature;
+        break;
+    case VP8_STATUS_USER_ABORT:
+        status = WebPStatus::UserAbort;
+        break;
+    case VP8_STATUS_BITSTREAM_ERROR:
+    case VP8_STATUS_SUSPENDED:
+    case VP8_STATUS_NOT_ENOUGH_DATA:
+    default:
+        status = WebPStatus::InvalidImage;
+        break;
+    }
 
     WebPFreeDecBuffer(&config.output);
 
-    return VP8StatusCodeToPluginStatus(status);
+    return status;
+}
+
+WebPStatus __stdcall WebPLoad(
+    const uint8_t* data,
+    size_t dataSize,
+    const CreateImageFn createImageCallback,
+    const SetDecoderMetadataFn setMetadataCallback)
+{
+    if (!data || !createImageCallback || !setMetadataCallback)
+    {
+        return WebPStatus::InvalidParameter;
+    }
+
+    WebPData webpData{};
+    webpData.bytes = data;
+    webpData.size = dataSize;
+
+    ScopedWebPDemuxer demux(WebPDemux(&webpData));
+
+    if (!demux)
+    {
+        return WebPStatus::InvalidImage;
+    }
+
+    const uint32_t frameCount = WebPDemuxGetI(demux.get(), WEBP_FF_FRAME_COUNT);
+
+    if (frameCount > 1)
+    {
+        return WebPStatus::AnimatedImagesNotSupported;
+    }
+
+    const uint32_t canvasWidth = WebPDemuxGetI(demux.get(), WEBP_FF_CANVAS_WIDTH);
+    const uint32_t canvasHeight = WebPDemuxGetI(demux.get(), WEBP_FF_CANVAS_HEIGHT);
+
+    if (canvasWidth == 0 || canvasWidth > static_cast<uint32_t>(std::numeric_limits<int>::max()) ||
+        canvasHeight == 0 || canvasHeight > static_cast<uint32_t>(std::numeric_limits<int>::max()))
+    {
+        return WebPStatus::DecodeFailed;
+    }
+
+    WebPStatus status = WebPStatus::Ok;
+
+    WebPIterator iter{};
+    if (WebPDemuxGetFrame(demux.get(), 1, &iter))
+    {
+        size_t outDataSize = 0;
+        int outStride = 0;
+
+        void* outData = createImageCallback(
+            static_cast<int>(canvasWidth),
+            static_cast<int>(canvasHeight),
+            outDataSize,
+            outStride);
+
+        if (outData)
+        {
+            status = DecodeImage(
+                iter.fragment,
+                static_cast<int>(canvasWidth),
+                static_cast<int>(canvasHeight),
+                outData,
+                outDataSize,
+                outStride);
+        }
+        else
+        {
+            status = WebPStatus::CreateImageCallbackFailed;
+        }
+
+        WebPDemuxReleaseIterator(&iter);
+    }
+    else
+    {
+        status = WebPStatus::DecodeFailed;
+    }
+
+    if (status == WebPStatus::Ok)
+    {
+        if (!WebPGetImageMetadata(demux.get(), setMetadataCallback))
+        {
+            status = WebPStatus::SetMetadataCallbackFailed;
+        }
+    }
+
+    return status;
 }
 
 static bool HasTransparency(const void* data, int width, int height, int stride)
