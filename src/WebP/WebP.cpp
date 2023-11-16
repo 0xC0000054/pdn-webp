@@ -43,13 +43,13 @@ static bool SetDecoderMetadata(const WebPDemuxer* dmux, SetDecoderMetadataFn set
 
     switch (type)
     {
-    case ColorProfile:
+    case MetadataType::ColorProfile:
         fourcc = "ICCP";
         break;
-    case EXIF:
+    case MetadataType::EXIF:
         fourcc = "EXIF";
         break;
-    case XMP:
+    case MetadataType::XMP:
         fourcc = "XMP ";
         break;
     }
@@ -88,7 +88,7 @@ DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSi
 
             if ((flags & ICCP_FLAG) != 0)
             {
-                if (!SetDecoderMetadata(demux.get(), setMetadata, ColorProfile))
+                if (!SetDecoderMetadata(demux.get(), setMetadata, MetadataType::ColorProfile))
                 {
                     return false;
                 }
@@ -96,7 +96,7 @@ DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSi
 
             if ((flags & EXIF_FLAG) != 0)
             {
-                if (!SetDecoderMetadata(demux.get(), setMetadata, EXIF))
+                if (!SetDecoderMetadata(demux.get(), setMetadata, MetadataType::EXIF))
                 {
                     return false;
                 }
@@ -104,7 +104,7 @@ DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSi
 
             if ((flags & XMP_FLAG) != 0)
             {
-                if (!SetDecoderMetadata(demux.get(), setMetadata, XMP))
+                if (!SetDecoderMetadata(demux.get(), setMetadata, MetadataType::XMP))
                 {
                     return false;
                 }

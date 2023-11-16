@@ -44,7 +44,7 @@ typedef struct EncoderOptions
     bool lossless;
 }EncoderOptions;
 
-enum MetadataType
+enum class MetadataType : int32_t
 {
     ColorProfile = 0,
     EXIF,
