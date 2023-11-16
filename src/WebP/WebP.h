@@ -28,6 +28,25 @@ extern "C" {
 #define DLLEXPORT __declspec(dllimport)
 #endif
 
+enum class WebPStatus : int32_t
+{
+    Ok = 0,
+    OutOfMemory,
+    InvalidParameter,
+    UnsupportedFeature,
+    InvalidImage,
+    InvalidEncoderConfiguration,
+    BadDimension,           // picture has invalid width/height
+    PartitionZeroOverflow,  // partition is bigger than 512k
+    PartitionOverflow,      // partition is bigger than 16M
+    BadWrite,               // error while flushing bytes
+    FileTooBig,             // file is bigger than 4G
+    UserAbort,
+    MetadataEncoding,
+    ApiVersionMismatch,
+    UnknownError,
+};
+
 // The progress callback function.
 // Returns true if encoding should continue, or false to abort the encoding process.
 typedef bool (__stdcall *ProgressFn)(int progress);
@@ -35,7 +54,7 @@ typedef bool (__stdcall *ProgressFn)(int progress);
 // The write image callback.
 // This saves memory when writing large images by allowing the caller to read the image in chunks from
 // the WebPMemoryWriter's buffer instead requiring that new memory be allocated to store the entire image.
-typedef WebPEncodingError (__stdcall *WriteImageFn)(const uint8_t* image, const size_t imageSize);
+typedef WebPStatus (__stdcall *WriteImageFn)(const uint8_t* image, const size_t imageSize);
 
 typedef struct EncoderOptions
 {
@@ -50,6 +69,7 @@ enum class MetadataType : int32_t
     EXIF,
     XMP
 };
+
 
 // The set decoder metadata callback function.
 // Returns true if successful, false otherwise.
@@ -75,13 +95,13 @@ typedef struct ImageInfo
 
 DLLEXPORT int __stdcall GetLibWebPVersion();
 
-DLLEXPORT int __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info);
+DLLEXPORT WebPStatus __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info);
 
 DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSize, SetDecoderMetadataFn setMetadata);
 
-DLLEXPORT int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride);
+DLLEXPORT WebPStatus __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride);
 
-DLLEXPORT int __stdcall WebPSave(
+DLLEXPORT WebPStatus __stdcall WebPSave(
     const WriteImageFn writeImageCallback,
     const void* bitmap,
     const int width,

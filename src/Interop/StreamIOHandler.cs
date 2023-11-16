@@ -27,17 +27,17 @@ namespace WebPFileType.Interop
 
         public Exception WriteException { get; private set; }
 
-        public WebPEncodingError WriteImageCallback(IntPtr image, UIntPtr imageSize)
+        public WebPStatus WriteImageCallback(IntPtr image, UIntPtr imageSize)
         {
             if (image == IntPtr.Zero)
             {
-                return WebPEncodingError.NullParameter;
+                return WebPStatus.InvalidParameter;
             }
 
             if (imageSize == UIntPtr.Zero)
             {
                 // Ignore zero-length images.
-                return WebPEncodingError.Ok;
+                return WebPStatus.Ok;
             }
 
             // 81920 is the largest multiple of 4096 that is below the large object heap threshold.
@@ -70,15 +70,15 @@ namespace WebPFileType.Interop
             }
             catch (OperationCanceledException)
             {
-                return WebPEncodingError.UserAbort;
+                return WebPStatus.UserAbort;
             }
             catch (Exception ex)
             {
                 WriteException = ex;
-                return WebPEncodingError.BadWrite;
+                return WebPStatus.BadWrite;
             }
 
-            return WebPEncodingError.Ok;
+            return WebPStatus.Ok;
         }
     }
 }

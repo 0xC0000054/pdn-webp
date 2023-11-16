@@ -16,5 +16,5 @@ using System.Runtime.InteropServices;
 namespace WebPFileType.Interop
 {
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal delegate WebPEncodingError WebPWriteImage(IntPtr image, UIntPtr imageSize);
+    internal delegate WebPStatus WebPWriteImage(IntPtr image, UIntPtr imageSize);
 }

@@ -24,7 +24,7 @@ namespace WebPFileType.Interop
 
         [LibraryImport("WebP_x64.dll", EntryPoint = "WebPGetImageInfo")]
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
-        public static partial VP8StatusCode WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
+        public static partial WebPStatus WebPGetImageInfo(byte* data, UIntPtr dataSize, out ImageInfo info);
 
         [LibraryImport("WebP_x64.dll", EntryPoint = "WebPGetImageMetadata")]
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
@@ -33,11 +33,11 @@ namespace WebPFileType.Interop
 
         [LibraryImport("WebP_x64.dll", EntryPoint = "WebPLoad")]
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
-        public static partial VP8StatusCode WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
+        public static partial WebPStatus WebPLoad(byte* data, UIntPtr dataSize, byte* outData, UIntPtr outSize, int outStride);
 
         [LibraryImport("WebP_x64.dll", EntryPoint = "WebPSave")]
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
-        public static partial WebPEncodingError WebPSave(
+        public static partial WebPStatus WebPSave(
             WebPWriteImage writeImageCallback,
             IntPtr scan0,
             int width,

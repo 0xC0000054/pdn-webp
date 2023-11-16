@@ -22,7 +22,31 @@ DLLEXPORT int __stdcall GetLibWebPVersion()
     return WebPGetDecoderVersion();
 }
 
-int __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info)
+static WebPStatus VP8StatusCodeToPluginStatus(VP8StatusCode vp8Status)
+{
+    switch (vp8Status)
+    {
+    case VP8_STATUS_OK:
+        return WebPStatus::Ok;
+        break;
+    case VP8_STATUS_OUT_OF_MEMORY:
+        return WebPStatus::OutOfMemory;
+        break;
+    case VP8_STATUS_INVALID_PARAM:
+        return WebPStatus::InvalidParameter;
+    case VP8_STATUS_UNSUPPORTED_FEATURE:
+        return WebPStatus::UnsupportedFeature;
+    case VP8_STATUS_USER_ABORT:
+        return WebPStatus::UserAbort;
+    case VP8_STATUS_BITSTREAM_ERROR:
+    case VP8_STATUS_SUSPENDED:
+    case VP8_STATUS_NOT_ENOUGH_DATA:
+    default:
+        return WebPStatus::InvalidImage;
+    }
+}
+
+WebPStatus __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* info)
 {
     WebPBitstreamFeatures features;
 
@@ -34,7 +58,7 @@ int __stdcall WebPGetImageInfo(const uint8_t* data, size_t dataSize, ImageInfo* 
         info->hasAnimation = features.has_animation != 0;
     }
 
-    return status;
+    return VP8StatusCodeToPluginStatus(status);
 }
 
 static bool SetDecoderMetadata(const WebPDemuxer* dmux, SetDecoderMetadataFn setMetadata, MetadataType type)
@@ -115,13 +139,13 @@ DLLEXPORT bool __stdcall WebPGetImageMetadata(const uint8_t* data, size_t dataSi
     return true;
 }
 
-int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride)
+WebPStatus __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, size_t outSize, int outStride)
 {
     WebPDecoderConfig config;
 
     if (!WebPInitDecoderConfig(&config))
     {
-        return errVersionMismatch;
+        return WebPStatus::ApiVersionMismatch;
     }
 
     config.output.colorspace = MODE_BGRA;
@@ -134,7 +158,7 @@ int __stdcall WebPLoad(const uint8_t* data, size_t dataSize, uint8_t* outData, s
 
     WebPFreeDecBuffer(&config.output);
 
-    return status;
+    return VP8StatusCodeToPluginStatus(status);
 }
 
 static bool HasTransparency(const void* data, int width, int height, int stride)
@@ -166,7 +190,7 @@ static int ProgressReport(int percent, const WebPPicture* picture)
     return continueProcessing ? 1 : 0;
 }
 
-static int EncodeImageMetadata(
+static WebPStatus EncodeImageMetadata(
     const uint8_t* image,
     const size_t imageSize,
     const EncoderMetadata* metadata,
@@ -174,16 +198,16 @@ static int EncodeImageMetadata(
 {
     if (image == nullptr || metadata == nullptr || writeImageCallback == nullptr)
     {
-        return VP8_ENC_ERROR_NULL_PARAMETER;
+        return WebPStatus::InvalidParameter;
     }
 
     ScopedWebPMux mux(WebPMuxNew());
     if (mux == nullptr)
     {
-        return VP8_ENC_ERROR_OUT_OF_MEMORY;
+        return WebPStatus::OutOfMemory;
     }
 
-    int encodeError = VP8_ENC_OK;
+    WebPStatus status = WebPStatus::Ok;
 
     WebPData imageData{};
     imageData.bytes = image;
@@ -227,17 +251,17 @@ static int EncodeImageMetadata(
 
             if (muxError == WEBP_MUX_OK)
             {
-                encodeError = writeImageCallback(assembler.GetBuffer(), assembler.GetBufferSize());
+                status = writeImageCallback(assembler.GetBuffer(), assembler.GetBufferSize());
             }
         }
     }
 
-    if (muxError != WEBP_MUX_OK && encodeError == VP8_ENC_OK)
+    if (muxError != WEBP_MUX_OK && status == WebPStatus::Ok)
     {
         switch (muxError)
         {
         case WEBP_MUX_MEMORY_ERROR:
-            encodeError = VP8_ENC_ERROR_OUT_OF_MEMORY;
+            status = WebPStatus::OutOfMemory;
             break;
 
         case WEBP_MUX_NOT_FOUND:
@@ -245,15 +269,15 @@ static int EncodeImageMetadata(
         case WEBP_MUX_BAD_DATA:
         case WEBP_MUX_NOT_ENOUGH_DATA:
         default:
-            encodeError = errMuxEncodeMetadata;
+            status = WebPStatus::MetadataEncoding;
             break;
         }
     }
 
-    return encodeError;
+    return status;
 }
 
-int __stdcall WebPSave(
+WebPStatus __stdcall WebPSave(
     const WriteImageFn writeImageCallback,
     const void* bitmap,
     const int width,
@@ -265,7 +289,7 @@ int __stdcall WebPSave(
 {
     if (writeImageCallback == nullptr || bitmap == nullptr || encodeOptions == nullptr)
     {
-        return VP8_ENC_ERROR_NULL_PARAMETER;
+        return WebPStatus::InvalidParameter;
     }
 
     WebPConfig config;
@@ -274,12 +298,12 @@ int __stdcall WebPSave(
 
     if (pic == nullptr || wrt == nullptr)
     {
-        return VP8_ENC_ERROR_OUT_OF_MEMORY;
+        return WebPStatus::OutOfMemory;
     }
 
     if (!WebPConfigPreset(&config, static_cast<WebPPreset>(encodeOptions->preset), encodeOptions->quality) || !pic.IsInitalized())
     {
-        return errVersionMismatch; // WebP API version mismatch
+        return WebPStatus::ApiVersionMismatch; // WebP API version mismatch
     }
 
     config.method = 6; // 6 is the highest quality encoding
@@ -314,7 +338,7 @@ int __stdcall WebPSave(
     {
         if (WebPPictureImportBGRA(pic.Get(), reinterpret_cast<const uint8_t*>(bitmap), stride) == 0)
         {
-            return VP8_ENC_ERROR_OUT_OF_MEMORY;
+            return WebPStatus::OutOfMemory;
         }
     }
     else
@@ -322,7 +346,7 @@ int __stdcall WebPSave(
         // If the image does not have any transparency import using the BGRX method which will ignore the alpha channel.
         if (WebPPictureImportBGRX(pic.Get(), reinterpret_cast<const uint8_t*>(bitmap), stride) == 0)
         {
-            return VP8_ENC_ERROR_OUT_OF_MEMORY;
+            return WebPStatus::OutOfMemory;
         }
     }
 
@@ -332,22 +356,58 @@ int __stdcall WebPSave(
         pic->progress_hook = ProgressReport;
     }
 
-    int error = VP8_ENC_OK;
+    WebPStatus status = WebPStatus::Ok;
     if (WebPEncode(&config, pic.Get()) != 0) // C-style Boolean
     {
         if (metadata != nullptr)
         {
-            error = EncodeImageMetadata(wrt.GetBuffer(), wrt.GetBufferSize(), metadata, writeImageCallback);
+            status = EncodeImageMetadata(wrt.GetBuffer(), wrt.GetBufferSize(), metadata, writeImageCallback);
         }
         else
         {
-            error = writeImageCallback(wrt.GetBuffer(), wrt.GetBufferSize());
+            status = writeImageCallback(wrt.GetBuffer(), wrt.GetBufferSize());
         }
     }
     else
     {
-        error = static_cast<int>(pic->error_code);
+        switch (pic->error_code)
+        {
+        case VP8_ENC_OK:
+            status = WebPStatus::Ok;
+            break;
+        case VP8_ENC_ERROR_OUT_OF_MEMORY:
+        case VP8_ENC_ERROR_BITSTREAM_OUT_OF_MEMORY:
+            status = WebPStatus::OutOfMemory;
+            break;
+        case VP8_ENC_ERROR_NULL_PARAMETER:
+            status = WebPStatus::InvalidParameter;
+            break;
+        case VP8_ENC_ERROR_INVALID_CONFIGURATION:
+            status = WebPStatus::InvalidEncoderConfiguration;
+            break;
+        case VP8_ENC_ERROR_BAD_DIMENSION:
+            status = WebPStatus::BadDimension;
+            break;
+        case VP8_ENC_ERROR_PARTITION0_OVERFLOW:
+            status = WebPStatus::PartitionZeroOverflow;
+            break;
+        case VP8_ENC_ERROR_PARTITION_OVERFLOW:
+            status = WebPStatus::PartitionOverflow;
+            break;
+        case VP8_ENC_ERROR_BAD_WRITE:
+            status = WebPStatus::BadWrite;
+            break;
+        case VP8_ENC_ERROR_FILE_TOO_BIG:
+            status = WebPStatus::FileTooBig;
+            break;
+        case VP8_ENC_ERROR_USER_ABORT:
+            status = WebPStatus::UserAbort;
+            break;
+        default:
+            status = WebPStatus::UnknownError;
+            break;
+        }
     }
 
-    return error;
+    return status;
 }

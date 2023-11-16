@@ -67,7 +67,7 @@ namespace WebPFileType
         /// </exception>
         internal static unsafe void WebPGetImageInfo(byte[] data, out ImageInfo info)
         {
-            VP8StatusCode status;
+            WebPStatus status;
 
             fixed (byte* ptr = data)
             {
@@ -85,18 +85,17 @@ namespace WebPFileType
                 }
             }
 
-            if (status != VP8StatusCode.Ok)
+            if (status != WebPStatus.Ok)
             {
                 switch (status)
                 {
-                    case VP8StatusCode.OutOfMemory:
+                    case WebPStatus.OutOfMemory:
                         throw new OutOfMemoryException();
-                    case VP8StatusCode.InvalidParam:
+                    case WebPStatus.InvalidParameter:
                         throw new WebPException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidParameterFormat, nameof(WebPGetImageInfo)));
-                    case VP8StatusCode.UnsupportedFeature:
+                    case WebPStatus.UnsupportedFeature:
                         throw new WebPException(Resources.UnsupportedWebPFeature);
-                    case VP8StatusCode.BitStreamError:
-                    case VP8StatusCode.NotEnoughData:
+                    case WebPStatus.InvalidImage:
                     default:
                         throw new WebPException(Resources.InvalidWebPImage);
                 }
@@ -154,7 +153,7 @@ namespace WebPFileType
         /// </exception>
         internal static unsafe void WebPLoad(byte[] webpBytes, Surface output)
         {
-            VP8StatusCode status;
+            WebPStatus status;
 
             fixed (byte* ptr = webpBytes)
             {
@@ -175,18 +174,16 @@ namespace WebPFileType
                 }
             }
 
-            if (status != VP8StatusCode.Ok)
+            if (status != WebPStatus.Ok)
             {
                 switch (status)
                 {
-                    case VP8StatusCode.OutOfMemory:
+                    case WebPStatus.OutOfMemory:
                         throw new OutOfMemoryException();
-                    case VP8StatusCode.InvalidParam:
+                    case WebPStatus.InvalidParameter:
                         throw new WebPException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidParameterFormat, nameof(WebPLoad)));
-                    case VP8StatusCode.UnsupportedFeature:
+                    case WebPStatus.UnsupportedFeature:
                         throw new WebPException(Resources.UnsupportedWebPFeature);
-                    case VP8StatusCode.BitStreamError:
-                    case VP8StatusCode.NotEnoughData:
                     default:
                         throw new WebPException(Resources.InvalidWebPImage);
                 }
@@ -221,7 +218,7 @@ namespace WebPFileType
             StreamIOHandler handler = new(output);
             WebPWriteImage writeImageCallback = handler.WriteImageCallback;
 
-            WebPEncodingError retVal = WebPEncodingError.Ok;
+            WebPStatus retVal = WebPStatus.Ok;
 
             if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
             {
@@ -238,32 +235,31 @@ namespace WebPFileType
 
             GC.KeepAlive(writeImageCallback);
 
-            if (retVal != WebPEncodingError.Ok)
+            if (retVal != WebPStatus.Ok)
             {
                 switch (retVal)
                 {
-                    case WebPEncodingError.OutOfMemory:
-                    case WebPEncodingError.BitStreamOutOfMemory:
+                    case WebPStatus.OutOfMemory:
                         throw new OutOfMemoryException(Resources.InsufficientMemoryOnSave);
-                    case WebPEncodingError.FileTooBig:
+                    case WebPStatus.FileTooBig:
                         throw new WebPException(Resources.EncoderFileTooBig);
-                    case WebPEncodingError.ApiVersionMismatch:
+                    case WebPStatus.ApiVersionMismatch:
                         throw new WebPException(Resources.ApiVersionMismatch);
-                    case WebPEncodingError.MetadataEncoding:
+                    case WebPStatus.MetadataEncoding:
                         throw new WebPException(Resources.EncoderMetadataError);
-                    case WebPEncodingError.UserAbort:
+                    case WebPStatus.UserAbort:
                         throw new OperationCanceledException();
-                    case WebPEncodingError.BadDimension:
+                    case WebPStatus.BadDimension:
                         throw new WebPException(Resources.InvalidImageDimensions);
-                    case WebPEncodingError.NullParameter:
+                    case WebPStatus.InvalidParameter:
                         throw new WebPException(Resources.EncoderNullParameter);
-                    case WebPEncodingError.InvalidConfiguration:
+                    case WebPStatus.InvalidConfiguration:
                         throw new WebPException(Resources.EncoderInvalidConfiguration);
-                    case WebPEncodingError.PartitionZeroOverflow:
+                    case WebPStatus.PartitionZeroOverflow:
                         throw new WebPException(Resources.EncoderPartitionZeroOverflow);
-                    case WebPEncodingError.PartitionOverflow:
+                    case WebPStatus.PartitionOverflow:
                         throw new WebPException(Resources.EncoderPartitionOverflow);
-                    case WebPEncodingError.BadWrite:
+                    case WebPStatus.BadWrite:
                         if (handler.WriteException != null)
                         {
                             throw new IOException(Resources.EncoderBadWrite, handler.WriteException);

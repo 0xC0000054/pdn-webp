@@ -12,15 +12,22 @@
 
 namespace WebPFileType.Interop
 {
-    internal enum VP8StatusCode : int
+    internal enum WebPStatus : int
     {
         Ok = 0,
         OutOfMemory,
-        InvalidParam,
-        BitStreamError,
+        InvalidParameter,
         UnsupportedFeature,
-        Suspended,
+        InvalidImage,
+        InvalidConfiguration,   // configuration is invalid
+        BadDimension,           // picture has invalid width/height
+        PartitionZeroOverflow,     // partition is bigger than 512k
+        PartitionOverflow,      // partition is bigger than 16M
+        BadWrite,               // error while flushing bytes
+        FileTooBig,            // file is bigger than 4G
         UserAbort,
-        NotEnoughData,
+        MetadataEncoding,
+        ApiVersionMismatch,
+        UnknownError,
     }
 }
