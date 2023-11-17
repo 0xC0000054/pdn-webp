@@ -10,7 +10,10 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+using System.Runtime.InteropServices;
+
 namespace WebPFileType.Interop
 {
+    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     internal unsafe delegate void* WebPCreateImage(int width, int height, out nuint outDataSize, out int outStride);
 }
