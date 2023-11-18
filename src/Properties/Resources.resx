@@ -130,7 +130,7 @@
     <value>The total file size must be less than 4GB.</value>
   </data>
   <data name="EncoderGenericError" xml:space="preserve">
-    <value>An error occurred when encoding the WebP file.</value>
+    <value>An unspecified error occurred when encoding the WebP file.</value>
   </data>
   <data name="InsufficientMemoryOnSave" xml:space="preserve">
     <value>Insufficient memory to save the image.</value>
@@ -197,6 +197,6 @@
     <value>Lossless</value>
   </data>
   <data name="DecoderGenericError" xml:space="preserve">
-    <value>An error occurred when decoding the WebP file.</value>
+    <value>An unspecified error occurred when decoding the WebP file.</value>
   </data>
 </root>
