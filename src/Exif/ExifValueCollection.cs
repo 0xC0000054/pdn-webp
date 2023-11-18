@@ -32,9 +32,9 @@ namespace WebPFileType.Exif
 
         public int Count => exifMetadata.Count;
 
-        public ExifValue GetAndRemoveValue(ExifPropertyPath key)
+        public ExifValue? GetAndRemoveValue(ExifPropertyPath key)
         {
-            return exifMetadata.Remove(key, out ExifValue value) ? value : null;
+            return exifMetadata.Remove(key, out ExifValue? value) ? value : null;
         }
 
         public IEnumerator<KeyValuePair<ExifPropertyPath, ExifValue>> GetEnumerator()

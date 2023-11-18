@@ -46,7 +46,7 @@ namespace WebPFileType
         {
             get
             {
-                return typeof(PluginSupportInfo).Assembly.GetName().Version;
+                return typeof(PluginSupportInfo).Assembly.GetName().Version!;
             }
         }
 

@@ -37,7 +37,7 @@ namespace WebPFileType.Interop
                                                   int height,
                                                   int stride,
                                                   in EncoderOptions options,
-                                                  in EncoderMetadata metadata,
-                                                  WebPReportProgress callback);
+                                                  in EncoderMetadata? metadata,
+                                                  WebPReportProgress? callback);
     }
 }

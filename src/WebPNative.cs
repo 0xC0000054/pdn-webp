@@ -108,10 +108,10 @@ namespace WebPFileType
                     case WebPStatus.UnsupportedFeature:
                         throw new WebPException(Resources.UnsupportedWebPFeature);
                     case WebPStatus.CreateImageCallbackFailed:
-                        createImage.CallbackErrorInfo.Throw();
+                        createImage.CallbackErrorInfo!.Throw();
                         break;
                     case WebPStatus.SetMetadataCallbackFailed:
-                        nativeDecoderMetadata.CallbackError.Throw();
+                        nativeDecoderMetadata.CallbackError!.Throw();
                         break;
                     case WebPStatus.DecodeFailed:
                         throw new WebPException(Resources.DecoderGenericError);
@@ -122,7 +122,7 @@ namespace WebPFileType
                 }
             }
 
-            return (createImage.GetSurface(), metadata);
+            return (createImage.GetSurface()!, metadata);
         }
 
         /// <summary>
@@ -142,8 +142,8 @@ namespace WebPFileType
             Surface input,
             Stream output,
             EncoderOptions options,
-            EncoderMetadata metadata,
-            WebPReportProgress callback)
+            EncoderMetadata? metadata,
+            WebPReportProgress? callback)
         {
             if (input == null)
             {

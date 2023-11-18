@@ -25,7 +25,7 @@ namespace WebPFileType.Interop
             this.output = output ?? throw new ArgumentNullException(nameof(output));
         }
 
-        public Exception WriteException { get; private set; }
+        public Exception? WriteException { get; private set; }
 
         public WebPStatus WriteImageCallback(IntPtr image, UIntPtr imageSize)
         {

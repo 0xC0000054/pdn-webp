@@ -19,11 +19,11 @@ namespace WebPFileType.Interop
 {
     internal sealed class DecoderMetadata : IDecoderMetadataNative
     {
-        private byte[] iccProfile;
-        private byte[] exif;
-        private byte[] xmp;
-        private ExceptionDispatchInfo callbackErrorInfo;
-        private readonly Lazy<ExifValueCollection> parsedExifData;
+        private byte[]? iccProfile;
+        private byte[]? exif;
+        private byte[]? xmp;
+        private ExceptionDispatchInfo? callbackErrorInfo;
+        private readonly Lazy<ExifValueCollection?> parsedExifData;
 
         public DecoderMetadata()
         {
@@ -31,7 +31,7 @@ namespace WebPFileType.Interop
             exif = null;
             xmp = null;
             callbackErrorInfo = null;
-            parsedExifData = new Lazy<ExifValueCollection>(ParseExifData);
+            parsedExifData = new Lazy<ExifValueCollection?>(ParseExifData);
         }
 
         unsafe bool IDecoderMetadataNative.SetDecoderMetadata(nint data, nuint size, MetadataType type)
@@ -70,18 +70,18 @@ namespace WebPFileType.Interop
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        ExceptionDispatchInfo IDecoderMetadataNative.CallbackError => callbackErrorInfo;
+        ExceptionDispatchInfo IDecoderMetadataNative.CallbackError => callbackErrorInfo!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        public ExifValueCollection Exif => parsedExifData.Value;
+        public ExifValueCollection? Exif => parsedExifData.Value;
 
-        public byte[] GetColorProfileBytes() => iccProfile;
+        public byte[]? GetColorProfileBytes() => iccProfile;
 
-        public byte[] GetXmpBytes() => xmp;
+        public byte[]? GetXmpBytes() => xmp;
 
-        private ExifValueCollection ParseExifData()
+        private ExifValueCollection? ParseExifData()
         {
-            ExifValueCollection data = null;
+            ExifValueCollection? data = null;
 
             if (exif != null)
             {

@@ -31,16 +31,16 @@ namespace WebPFileType.Exif
         /// A collection containing the EXIF properties.
         /// </returns>
         /// <exception cref="ArgumentNullException"><paramref name="exifBytes"/> is null.</exception>
-        internal static ExifValueCollection Parse(byte[] exifBytes)
+        internal static ExifValueCollection? Parse(byte[] exifBytes)
         {
             if (exifBytes == null)
             {
                 throw new ArgumentNullException(nameof(exifBytes));
             }
 
-            ExifValueCollection exifValues = null;
+            ExifValueCollection? exifValues = null;
 
-            MemoryStream stream = null;
+            MemoryStream? stream = null;
             try
             {
                 stream = new MemoryStream(exifBytes);
@@ -109,7 +109,7 @@ namespace WebPFileType.Exif
             {
                 ParserIFDEntry entry = entries[i];
 
-                byte[] propertyData;
+                byte[]? propertyData;
                 if (entry.OffsetFieldContainsValue)
                 {
                     propertyData = entry.GetValueBytesFromOffset();
@@ -361,7 +361,7 @@ namespace WebPFileType.Exif
 
             public ExifSection Section { get; }
 
-            public unsafe byte[] GetValueBytesFromOffset()
+            public unsafe byte[]? GetValueBytesFromOffset()
             {
                 if (!OffsetFieldContainsValue)
                 {

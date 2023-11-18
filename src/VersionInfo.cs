@@ -30,6 +30,6 @@ namespace WebPFileType
             => WebPNative.GetLibWebPVersion().ToString();
 
         private static string GetPluginVersion()
-            => typeof(VersionInfo).Assembly.GetName().Version.ToString();
+            => typeof(VersionInfo).Assembly.GetName().Version!.ToString();
     }
 }

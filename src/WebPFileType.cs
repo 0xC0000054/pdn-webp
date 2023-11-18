@@ -39,7 +39,7 @@ namespace WebPFileType
         }
 
         private readonly IWebPStringResourceManager strings;
-        private readonly IServiceProvider serviceProvider;
+        private readonly IServiceProvider? serviceProvider;
 
         public WebPFileType(IFileTypeHost host)
             : base("WebP",
@@ -51,7 +51,7 @@ namespace WebPFileType
         {
             if (host != null)
             {
-                strings = new PdnLocalizedStringResourceManager(host.Services.GetService<PaintDotNet.WebP.IWebPFileTypeStrings>());
+                strings = new PdnLocalizedStringResourceManager(host.Services.GetService<PaintDotNet.WebP.IWebPFileTypeStrings>()!);
                 serviceProvider = host.Services;
             }
             else
@@ -70,11 +70,11 @@ namespace WebPFileType
         {
             (Surface surface, DecoderMetadata metadata) = WebPFile.Load(bytes);
 
-            ExifValueCollection exif = metadata.Exif;
+            ExifValueCollection? exif = metadata.Exif;
 
             if (exif != null)
             {
-                ExifValue orientationProperty = exif.GetAndRemoveValue(ExifPropertyKeys.Image.Orientation.Path);
+                ExifValue? orientationProperty = exif.GetAndRemoveValue(ExifPropertyKeys.Image.Orientation.Path);
                 if (orientationProperty != null)
                 {
                     MetadataHelpers.ApplyOrientationTransform(orientationProperty, ref surface);
@@ -89,7 +89,7 @@ namespace WebPFileType
             byte[] bytes = new byte[input.Length];
 
             input.ReadExactly(bytes, 0, (int)input.Length);
-            Document doc = null;
+            Document? doc = null;
 
             if (FormatDetection.HasWebPFileSignature(bytes))
             {
@@ -100,7 +100,7 @@ namespace WebPFileType
                 {
                     doc = new Document(surface.Width, surface.Height);
 
-                    byte[] colorProfileBytes = metadata.GetColorProfileBytes();
+                    byte[]? colorProfileBytes = metadata.GetColorProfileBytes();
                     if (colorProfileBytes != null)
                     {
                         doc.Metadata.AddExifPropertyItem(ExifSection.Image,
@@ -109,12 +109,12 @@ namespace WebPFileType
                                                                        colorProfileBytes));
                     }
 
-                    ExifValueCollection exifMetadata = metadata.Exif;
+                    ExifValueCollection? exifMetadata = metadata.Exif;
                     if (exifMetadata != null && exifMetadata.Count > 0)
                     {
-                        ExifValue xResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.XResolution.Path);
-                        ExifValue yResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.YResolution.Path);
-                        ExifValue resUnitProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.ResolutionUnit.Path);
+                        ExifValue? xResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.XResolution.Path);
+                        ExifValue? yResProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.YResolution.Path);
+                        ExifValue? resUnitProperty = exifMetadata.GetAndRemoveValue(ExifPropertyKeys.Image.ResolutionUnit.Path);
 
                         if (xResProperty != null && yResProperty != null && resUnitProperty != null)
                         {
@@ -149,10 +149,10 @@ namespace WebPFileType
                         }
                     }
 
-                    byte[] xmpBytes = metadata.GetXmpBytes();
+                    byte[]? xmpBytes = metadata.GetXmpBytes();
                     if (xmpBytes != null)
                     {
-                        XmpPacket xmpPacket = XmpPacket.TryParse(xmpBytes);
+                        XmpPacket? xmpPacket = XmpPacket.TryParse(xmpBytes);
                         if (xmpPacket != null)
                         {
                             doc.Metadata.SetXmpPacket(xmpPacket);
@@ -173,7 +173,7 @@ namespace WebPFileType
             else
             {
                 // The file may be a JPEG or PNG that has the wrong file extension.
-                IFileTypeInfo fileTypeInfo = FormatDetection.TryGetFileTypeInfo(bytes, serviceProvider);
+                IFileTypeInfo? fileTypeInfo = FormatDetection.TryGetFileTypeInfo(bytes, serviceProvider);
 
                 if (fileTypeInfo != null)
                 {
@@ -218,9 +218,9 @@ namespace WebPFileType
         {
             ControlInfo info = CreateDefaultSaveConfigUI(props);
 
-            PropertyControlInfo presetPCI = info.FindControlForPropertyName(PropertyNames.Preset);
+            PropertyControlInfo presetPCI = info.FindControlForPropertyName(PropertyNames.Preset)!;
 
-            presetPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = GetString("Preset_DisplayName");
+            presetPCI.ControlProperties[ControlInfoPropertyNames.DisplayName]!.Value = GetString("Preset_DisplayName");
             presetPCI.SetValueDisplayName(WebPPreset.Default, GetString("Preset_Default_DisplayName"));
             presetPCI.SetValueDisplayName(WebPPreset.Drawing, GetString("Preset_Drawing_DisplayName"));
             presetPCI.SetValueDisplayName(WebPPreset.Icon, GetString("Preset_Icon_DisplayName"));
@@ -230,36 +230,36 @@ namespace WebPFileType
 
             info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, GetString("Quality_DisplayName"));
 
-            PropertyControlInfo losslessPCI = info.FindControlForPropertyName(PropertyNames.Lossless);
-            losslessPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
-            losslessPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = GetString("Lossless_Description");
+            PropertyControlInfo losslessPCI = info.FindControlForPropertyName(PropertyNames.Lossless)!;
+            losslessPCI.ControlProperties[ControlInfoPropertyNames.DisplayName]!.Value = string.Empty;
+            losslessPCI.ControlProperties[ControlInfoPropertyNames.Description]!.Value = GetString("Lossless_Description");
 
-            PropertyControlInfo forumLinkPCI = info.FindControlForPropertyName(PropertyNames.ForumLink);
-            forumLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = GetString("ForumLink_DisplayName");
-            forumLinkPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = GetString("ForumLink_Description");
+            PropertyControlInfo forumLinkPCI = info.FindControlForPropertyName(PropertyNames.ForumLink)!;
+            forumLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName]!.Value = GetString("ForumLink_DisplayName");
+            forumLinkPCI.ControlProperties[ControlInfoPropertyNames.Description]!.Value = GetString("ForumLink_Description");
 
-            PropertyControlInfo githubLinkPCI = info.FindControlForPropertyName(PropertyNames.GitHubLink);
-            githubLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
-            githubLinkPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = "GitHub"; // GitHub is a brand name that should not be localized.
+            PropertyControlInfo githubLinkPCI = info.FindControlForPropertyName(PropertyNames.GitHubLink)!;
+            githubLinkPCI.ControlProperties[ControlInfoPropertyNames.DisplayName]!.Value = string.Empty;
+            githubLinkPCI.ControlProperties[ControlInfoPropertyNames.Description]!.Value = "GitHub"; // GitHub is a brand name that should not be localized.
 
-            PropertyControlInfo pluginVersionPCI = info.FindControlForPropertyName(PropertyNames.PluginVersion);
+            PropertyControlInfo pluginVersionPCI = info.FindControlForPropertyName(PropertyNames.PluginVersion)!;
             pluginVersionPCI.ControlType.Value = PropertyControlType.Label;
-            pluginVersionPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
-            pluginVersionPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = "WebPFileType v" + VersionInfo.PluginVersion;
+            pluginVersionPCI.ControlProperties[ControlInfoPropertyNames.DisplayName]!.Value = string.Empty;
+            pluginVersionPCI.ControlProperties[ControlInfoPropertyNames.Description]!.Value = "WebPFileType v" + VersionInfo.PluginVersion;
 
-            PropertyControlInfo libwebpVersionPCI = info.FindControlForPropertyName(PropertyNames.LibWebPVersion);
+            PropertyControlInfo libwebpVersionPCI = info.FindControlForPropertyName(PropertyNames.LibWebPVersion)!;
             libwebpVersionPCI.ControlType.Value = PropertyControlType.Label;
-            libwebpVersionPCI.ControlProperties[ControlInfoPropertyNames.DisplayName].Value = string.Empty;
-            libwebpVersionPCI.ControlProperties[ControlInfoPropertyNames.Description].Value = "libwebp v" + VersionInfo.LibWebPVersion;
+            libwebpVersionPCI.ControlProperties[ControlInfoPropertyNames.DisplayName]!.Value = string.Empty;
+            libwebpVersionPCI.ControlProperties[ControlInfoPropertyNames.Description]!.Value = "libwebp v" + VersionInfo.LibWebPVersion;
 
             return info;
         }
 
         protected override void OnSaveT(Document input, Stream output, PropertyBasedSaveConfigToken token, Surface scratchSurface, ProgressEventHandler progressCallback)
         {
-            int quality = token.GetProperty<Int32Property>(PropertyNames.Quality).Value;
-            WebPPreset preset = (WebPPreset)token.GetProperty(PropertyNames.Preset).Value;
-            bool lossless = token.GetProperty<BooleanProperty>(PropertyNames.Lossless).Value;
+            int quality = token.GetProperty<Int32Property>(PropertyNames.Quality)!.Value;
+            WebPPreset preset = (WebPPreset)token.GetProperty(PropertyNames.Preset)!.Value!;
+            bool lossless = token.GetProperty<BooleanProperty>(PropertyNames.Lossless)!.Value;
 
             WebPFile.Save(input, output, quality, preset, lossless, scratchSurface, progressCallback);
         }

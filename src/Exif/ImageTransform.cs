@@ -50,7 +50,7 @@ namespace WebPFileType.Exif
 
         internal static unsafe void Rotate90CW(ref Surface surface)
         {
-            Surface temp = null;
+            Surface? temp = null;
             try
             {
                 int newWidth = surface.Height;
@@ -126,7 +126,7 @@ namespace WebPFileType.Exif
         {
             // Rotating 270 degrees clockwise is equivalent to rotating 90 degrees counter-clockwise.
 
-            Surface temp = null;
+            Surface? temp = null;
             try
             {
                 int newWidth = surface.Height;

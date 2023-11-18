@@ -18,6 +18,6 @@ namespace WebPFileType.Interop
     {
         unsafe bool SetDecoderMetadata(nint data, nuint size, MetadataType type);
 
-        ExceptionDispatchInfo CallbackError { get; }
+        ExceptionDispatchInfo? CallbackError { get; }
     }
 }

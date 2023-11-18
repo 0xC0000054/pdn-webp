@@ -84,9 +84,9 @@ namespace WebPFileType
             scratchSurface.Clear();
             input.CreateRenderer().Render(scratchSurface);
 
-            EncoderMetadata metadata = CreateWebPMetadata(input);
+            EncoderMetadata? metadata = CreateWebPMetadata(input);
 
-            WebPReportProgress encProgress = null;
+            WebPReportProgress? encProgress = null;
 
             if (progressCallback != null)
             {
@@ -107,25 +107,25 @@ namespace WebPFileType
             WebPNative.WebPSave(scratchSurface, output, options, metadata, encProgress);
         }
 
-        private static EncoderMetadata CreateWebPMetadata(Document doc)
+        private static EncoderMetadata? CreateWebPMetadata(Document doc)
         {
-            byte[] iccProfileBytes = null;
-            byte[] exifBytes = null;
-            byte[] xmpBytes = null;
+            byte[]? iccProfileBytes = null;
+            byte[]? exifBytes = null;
+            byte[]? xmpBytes = null;
 
-            string colorProfile = doc.Metadata.GetUserValue(WebPMetadataNames.ColorProfile);
+            string? colorProfile = doc.Metadata.GetUserValue(WebPMetadataNames.ColorProfile);
             if (!string.IsNullOrEmpty(colorProfile))
             {
                 iccProfileBytes = Convert.FromBase64String(colorProfile);
             }
 
-            string exif = doc.Metadata.GetUserValue(WebPMetadataNames.EXIF);
+            string? exif = doc.Metadata.GetUserValue(WebPMetadataNames.EXIF);
             if (!string.IsNullOrEmpty(exif))
             {
                 exifBytes = Convert.FromBase64String(exif);
             }
 
-            string xmp = doc.Metadata.GetUserValue(WebPMetadataNames.XMP);
+            string? xmp = doc.Metadata.GetUserValue(WebPMetadataNames.XMP);
             if (!string.IsNullOrEmpty(xmp))
             {
                 xmpBytes = Convert.FromBase64String(xmp);
@@ -133,13 +133,13 @@ namespace WebPFileType
 
             if (iccProfileBytes == null || exifBytes == null)
             {
-                Dictionary<ExifPropertyPath, ExifValue> propertyItems = GetMetadataFromDocument(doc);
+                Dictionary<ExifPropertyPath, ExifValue>? propertyItems = GetMetadataFromDocument(doc);
 
                 if (propertyItems != null)
                 {
                     ExifColorSpace exifColorSpace = ExifColorSpace.Srgb;
 
-                    if (propertyItems.TryGetValue(ExifPropertyKeys.Photo.ColorSpace.Path, out ExifValue value))
+                    if (propertyItems.TryGetValue(ExifPropertyKeys.Photo.ColorSpace.Path, out ExifValue? value))
                     {
                         propertyItems.Remove(ExifPropertyKeys.Photo.ColorSpace.Path);
 
@@ -157,7 +157,7 @@ namespace WebPFileType
                     {
                         ExifPropertyPath iccProfileKey = ExifPropertyKeys.Image.InterColorProfile.Path;
 
-                        if (propertyItems.TryGetValue(iccProfileKey, out ExifValue iccProfileItem))
+                        if (propertyItems.TryGetValue(iccProfileKey, out ExifValue? iccProfileItem))
                         {
                             iccProfileBytes = iccProfileItem.Data.ToArrayEx();
                             propertyItems.Remove(iccProfileKey);
@@ -179,7 +179,7 @@ namespace WebPFileType
 
             if (xmpBytes == null)
             {
-                XmpPacket xmpPacket = doc.Metadata.TryGetXmpPacket();
+                XmpPacket? xmpPacket = doc.Metadata.TryGetXmpPacket();
 
                 if (xmpPacket != null)
                 {
@@ -197,9 +197,9 @@ namespace WebPFileType
             return null;
         }
 
-        private static Dictionary<ExifPropertyPath, ExifValue> GetMetadataFromDocument(Document doc)
+        private static Dictionary<ExifPropertyPath, ExifValue>? GetMetadataFromDocument(Document doc)
         {
-            Dictionary<ExifPropertyPath, ExifValue> items = null;
+            Dictionary<ExifPropertyPath, ExifValue>? items = null;
 
             Metadata metadata = doc.Metadata;
             ExifPropertyItem[] exifProperties = metadata.GetExifPropertyItems();

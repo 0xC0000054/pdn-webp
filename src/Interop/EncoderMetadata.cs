@@ -23,7 +23,7 @@ namespace WebPFileType.Interop
         public ReadOnlyMemory<byte> exif;
         public ReadOnlyMemory<byte> xmp;
 
-        public EncoderMetadata(byte[] iccProfileBytes, byte[] exifBytes, byte[] xmpBytes)
+        public EncoderMetadata(byte[]? iccProfileBytes, byte[]? exifBytes, byte[]? xmpBytes)
         {
             iccProfile = iccProfileBytes;
             exif = exifBytes;

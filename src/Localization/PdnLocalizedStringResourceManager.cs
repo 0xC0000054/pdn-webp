@@ -42,11 +42,11 @@ namespace WebPFileType
         {
             if (pdnLocalizedStringMap.TryGetValue(name, out WebPFileTypeStringNames value))
             {
-                return strings?.TryGetString(value) ?? Resources.ResourceManager.GetString(name);
+                return strings?.TryGetString(value) ?? Resources.ResourceManager.GetString(name)!;
             }
             else
             {
-                return Resources.ResourceManager.GetString(name);
+                return Resources.ResourceManager.GetString(name)!;
             }
         }
     }

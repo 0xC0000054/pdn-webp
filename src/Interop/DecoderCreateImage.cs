@@ -19,7 +19,7 @@ namespace WebPFileType.Interop
 {
     internal sealed class DecoderCreateImage
     {
-        private Surface surface;
+        private Surface? surface;
 
         public DecoderCreateImage()
         {
@@ -27,7 +27,7 @@ namespace WebPFileType.Interop
             CallbackErrorInfo = null;
         }
 
-        public ExceptionDispatchInfo CallbackErrorInfo { get; private set; }
+        public ExceptionDispatchInfo? CallbackErrorInfo { get; private set; }
 
         public unsafe void* CreateImage(int width, int height, out nuint dataSize, out int stride)
         {
@@ -49,6 +49,6 @@ namespace WebPFileType.Interop
             }
         }
 
-        public Surface GetSurface() => Interlocked.Exchange(ref surface, null);
+        public Surface? GetSurface() => Interlocked.Exchange(ref surface, null);
     }
 }

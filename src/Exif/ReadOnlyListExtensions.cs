@@ -25,7 +25,7 @@ namespace WebPFileType.Exif
                 ExceptionUtil.ThrowArgumentNullException(nameof(items));
             }
 
-            T[] asArray = items as T[];
+            T[]? asArray = items as T[];
 
             if (asArray is not null)
             {

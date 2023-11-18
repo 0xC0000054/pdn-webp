@@ -19,7 +19,7 @@ namespace WebPFileType
     {
         public string GetString(string name)
         {
-            return Resources.ResourceManager.GetString(name);
+            return Resources.ResourceManager.GetString(name)!;
         }
     }
 }
