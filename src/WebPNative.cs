@@ -115,8 +115,6 @@ namespace WebPFileType
                         break;
                     case WebPStatus.DecodeFailed:
                         throw new WebPException(Resources.DecoderGenericError);
-                    case WebPStatus.AnimatedImagesNotSupported:
-                        throw new WebPException(Resources.AnimatedWebPNotSupported);
                     default:
                         throw new WebPException(Resources.InvalidWebPImage);
                 }

@@ -48,7 +48,6 @@ enum class WebPStatus : int32_t
     CreateImageCallbackFailed,
     SetMetadataCallbackFailed,
     DecodeFailed,
-    AnimatedImagesNotSupported,
 };
 
 // The progress callback function.

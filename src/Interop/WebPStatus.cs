@@ -32,6 +32,5 @@ namespace WebPFileType.Interop
         CreateImageCallbackFailed,
         SetMetadataCallbackFailed,
         DecodeFailed,
-        AnimatedImagesNotSupported,
     }
 }

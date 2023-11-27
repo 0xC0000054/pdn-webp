@@ -165,13 +165,6 @@ WebPStatus __stdcall WebPLoad(
         return WebPStatus::InvalidImage;
     }
 
-    const uint32_t frameCount = WebPDemuxGetI(demux.get(), WEBP_FF_FRAME_COUNT);
-
-    if (frameCount > 1)
-    {
-        return WebPStatus::AnimatedImagesNotSupported;
-    }
-
     const uint32_t canvasWidth = WebPDemuxGetI(demux.get(), WEBP_FF_CANVAS_WIDTH);
     const uint32_t canvasHeight = WebPDemuxGetI(demux.get(), WEBP_FF_CANVAS_HEIGHT);
 

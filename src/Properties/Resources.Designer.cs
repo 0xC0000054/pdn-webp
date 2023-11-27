@@ -61,15 +61,6 @@ namespace WebPFileType.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Animated WebP images are not supported..
-        /// </summary>
-        internal static string AnimatedWebPNotSupported {
-            get {
-                return ResourceManager.GetString("AnimatedWebPNotSupported", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to WebP encoder API version mismatch..
         /// </summary>
         internal static string ApiVersionMismatch {

@@ -187,9 +187,6 @@
   <data name="ForumLink_DisplayName" xml:space="preserve">
     <value>More Info</value>
   </data>
-  <data name="AnimatedWebPNotSupported" xml:space="preserve">
-    <value>Animated WebP images are not supported.</value>
-  </data>
   <data name="UnsupportedWebPFeature" xml:space="preserve">
     <value>The image uses a WebP feature that is not supported.</value>
   </data>
