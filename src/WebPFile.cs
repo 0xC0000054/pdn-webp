@@ -11,7 +11,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
-using PaintDotNet.Collections;
 using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
@@ -159,7 +158,7 @@ namespace WebPFileType
 
                         if (propertyItems.TryGetValue(iccProfileKey, out ExifValue? iccProfileItem))
                         {
-                            iccProfileBytes = iccProfileItem.Data.ToArrayEx();
+                            iccProfileBytes = [.. iccProfileItem.Data];
                             propertyItems.Remove(iccProfileKey);
                             exifColorSpace = ExifColorSpace.Uncalibrated;
                         }
