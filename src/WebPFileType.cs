@@ -38,6 +38,8 @@ namespace WebPFileType
             LibWebPVersion
         }
 
+        private static readonly IReadOnlyList<string> FileExtensions = [".webp"];
+
         private readonly IWebPStringResourceManager strings;
         private readonly IServiceProvider? serviceProvider;
 
@@ -45,8 +47,8 @@ namespace WebPFileType
             : base("WebP",
                   new FileTypeOptions
                   {
-                      LoadExtensions = new string[] { ".webp" },
-                      SaveExtensions = new string[] { ".webp" }
+                      LoadExtensions = FileExtensions,
+                      SaveExtensions = FileExtensions
                   })
         {
             if (host != null)
