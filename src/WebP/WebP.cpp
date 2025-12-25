@@ -372,6 +372,7 @@ WebPStatus __stdcall WebPSave(
     if (encodeOptions->lossless)
     {
         config.lossless = 1;
+        config.exact = 1; // Preserve color values of invisible/transparent pixels like the built-in PNG output of PDN
         pic->use_argb = 1;
 
         switch (encodeOptions->preset)
