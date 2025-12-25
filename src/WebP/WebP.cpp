@@ -367,6 +367,7 @@ WebPStatus __stdcall WebPSave(
     }
 
     config.method = 6; // 6 is the highest quality encoding
+    config.use_sharp_yuv = 1; // Activates SharpYUV for lossy encoding, which is described as a slower but "more accurate and sharper RGB->YUV conversion". NOTE: in some rare'ish cases this can cause some colors to be more red then they should be however the tradeoff is well worth it overall. "config.preprocessing = 4;" is the old/alternative way to activate this
     config.thread_level = 1;
 
     if (encodeOptions->lossless)
