@@ -19,12 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="scoped.h" />
     <ClInclude Include="WebP.h" />
+    <ClInclude Include="WebPDecoder.h" />
+    <ClInclude Include="WebPEncoder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WebP.cpp" />
+    <ClCompile Include="WebPDecoder.cpp" />
+    <ClCompile Include="WebPEncoder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
