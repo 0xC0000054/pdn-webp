@@ -143,10 +143,7 @@ namespace WebPFileType
             EncoderMetadata? metadata,
             WebPReportProgress? callback)
         {
-            if (input == null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
+            ArgumentNullException.ThrowIfNull(input);
 
             StreamIOHandler handler = new(output);
             WebPWriteImage writeImageCallback = handler.WriteImageCallback;

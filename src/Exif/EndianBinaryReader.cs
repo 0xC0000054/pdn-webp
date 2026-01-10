@@ -103,10 +103,7 @@ namespace WebPFileType.Exif
             }
             set
             {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value));
-                }
+                ArgumentOutOfRangeException.ThrowIfNegative(value);
                 VerifyNotDisposed();
 
                 long current = Position;
@@ -145,14 +142,8 @@ namespace WebPFileType.Exif
         /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         public int Read(byte[] bytes, int offset, int count)
         {
-            if (bytes == null)
-            {
-                throw new ArgumentNullException(nameof(bytes));
-            }
-            if (count < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count));
-            }
+            ArgumentNullException.ThrowIfNull(bytes);
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
             VerifyNotDisposed();
 
             if (count == 0)
@@ -217,10 +208,7 @@ namespace WebPFileType.Exif
         /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         public byte[] ReadBytes(int count)
         {
-            if (count < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
             VerifyNotDisposed();
 
             if (count == 0)
@@ -449,10 +437,7 @@ namespace WebPFileType.Exif
         /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         public string ReadAsciiString(int length)
         {
-            if (length < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(length));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(length);
             VerifyNotDisposed();
 
             if (length == 0)
@@ -537,10 +522,7 @@ namespace WebPFileType.Exif
         /// <exception cref="ObjectDisposedException">The object has been disposed.</exception>
         private void VerifyNotDisposed()
         {
-            if (IsDisposed)
-            {
-                throw new ObjectDisposedException(nameof(EndianBinaryReader));
-            }
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
         }
     }
 }

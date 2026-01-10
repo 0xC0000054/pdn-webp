@@ -33,10 +33,7 @@ namespace WebPFileType.Exif
         /// <exception cref="ArgumentNullException"><paramref name="exifBytes"/> is null.</exception>
         internal static ExifValueCollection? Parse(byte[] exifBytes)
         {
-            if (exifBytes == null)
-            {
-                throw new ArgumentNullException(nameof(exifBytes));
-            }
+            ArgumentNullException.ThrowIfNull(exifBytes);
 
             ExifValueCollection? exifValues = null;
 

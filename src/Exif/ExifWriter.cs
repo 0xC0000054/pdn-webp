@@ -511,10 +511,7 @@ namespace WebPFileType.Exif
         {
             public IFDEntryInfo(List<IFDEntry> ifdEntries, long startOffset, long nextAvailableOffset)
             {
-                if (ifdEntries is null)
-                {
-                    throw new ArgumentNullException(nameof(ifdEntries));
-                }
+                ArgumentNullException.ThrowIfNull(ifdEntries);
 
                 IFDEntries = ifdEntries;
                 StartOffset = startOffset;
@@ -532,10 +529,7 @@ namespace WebPFileType.Exif
         {
             public IFDInfo(Dictionary<ExifSection, IFDEntryInfo> entries, long exifDataLength)
             {
-                if (entries is null)
-                {
-                    throw new ArgumentNullException(nameof(entries));
-                }
+                ArgumentNullException.ThrowIfNull(entries);
 
                 IFDEntries = entries;
                 EXIFDataLength = exifDataLength;
