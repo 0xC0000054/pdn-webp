@@ -19,7 +19,7 @@ namespace WebPFileType
     {
         public FileType[] GetFileTypeInstances(IFileTypeHost host)
         {
-            return new FileType[] { new WebPFileType(host) };
+            return [new WebPFileType(host)];
         }
     }
 }

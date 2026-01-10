@@ -23,8 +23,8 @@ namespace WebPFileType.Exif
     {
         private const int FirstIFDOffset = 8;
 
-        private static readonly HashSet<ushort> supportedImageSectionTagsForWriting = new()
-        {
+        private static readonly HashSet<ushort> supportedImageSectionTagsForWriting =
+        [
             // The tags related to storing offsets are included for reference,
             // but are not written to the EXIF blob.
 
@@ -65,7 +65,7 @@ namespace WebPFileType.Exif
             305, // Software
             315, // Artist
             33432 // Copyright
-        };
+        ];
 
         private readonly Dictionary<ExifSection, Dictionary<ushort, ExifValue>> metadata;
 
@@ -410,10 +410,10 @@ namespace WebPFileType.Exif
                 switch (exifColorSpace)
                 {
                     case ExifColorSpace.Srgb:
-                        interoperabilityIndexData = new byte[] { (byte)'R', (byte)'9', (byte)'8', 0 };
+                        interoperabilityIndexData = [(byte)'R', (byte)'9', (byte)'8', 0];
                         break;
                     case ExifColorSpace.AdobeRgb:
-                        interoperabilityIndexData = new byte[] { (byte)'R', (byte)'0', (byte)'3', 0 };
+                        interoperabilityIndexData = [(byte)'R', (byte)'0', (byte)'3', 0];
                         break;
                     default:
                         throw new InvalidOperationException("Unsupported ExifColorSpace value.");
@@ -428,7 +428,7 @@ namespace WebPFileType.Exif
                     {
                         ExifPropertyKeys.Interop.InteroperabilityVersion.Path.TagID,
                         new ExifValue(ExifValueType.Undefined,
-                                      new byte[] { (byte)'0', (byte)'1', (byte)'0', (byte)'0' })
+                                      [(byte)'0', (byte)'1', (byte)'0', (byte)'0'])
 
                     }
                 };
@@ -480,7 +480,7 @@ namespace WebPFileType.Exif
                     exifItems.Add(
                         ExifPropertyKeys.Photo.ExifVersion.Path.TagID,
                         new ExifValue(ExifValueType.Undefined,
-                                      new byte[] { (byte)'0', (byte)'2', (byte)'3', (byte)'0' }));
+                                      [(byte)'0', (byte)'2', (byte)'3', (byte)'0']));
                 }
             }
 
@@ -491,7 +491,7 @@ namespace WebPFileType.Exif
                     gpsItems.Add(
                         ExifPropertyKeys.GpsInfo.GPSVersionID.Path.TagID,
                         new ExifValue(ExifValueType.Byte,
-                                      new byte[] { 2, 3, 0, 0 }));
+                                      [2, 3, 0, 0]));
                 }
             }
 
@@ -502,7 +502,7 @@ namespace WebPFileType.Exif
                     interopItems.Add(
                         ExifPropertyKeys.Interop.InteroperabilityVersion.Path.TagID,
                         new ExifValue(ExifValueType.Undefined,
-                                      new byte[] { (byte)'0', (byte)'1', (byte)'0', (byte)'0' }));
+                                      [(byte)'0', (byte)'1', (byte)'0', (byte)'0']));
                 }
             }
         }

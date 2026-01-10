@@ -197,8 +197,8 @@ namespace WebPFileType
 
         public override PropertyCollection OnCreateSavePropertyCollection()
         {
-            List<Property> props = new()
-            {
+            List<Property> props =
+            [
                 StaticListChoiceProperty.CreateForEnum(PropertyNames.Preset, WebPPreset.Photo, false),
                 new Int32Property(PropertyNames.Quality, 95, 0, 100, false),
                 new BooleanProperty(PropertyNames.Lossless, false),
@@ -206,12 +206,12 @@ namespace WebPFileType
                 new UriProperty(PropertyNames.GitHubLink, new Uri("https://github.com/0xC0000054/pdn-webp")),
                 new StringProperty(PropertyNames.PluginVersion),
                 new StringProperty(PropertyNames.LibWebPVersion),
-            };
+            ];
 
-            List<PropertyCollectionRule> rules = new()
-            {
+            List<PropertyCollectionRule> rules =
+            [
                 new ReadOnlyBoundToBooleanRule(PropertyNames.Quality, PropertyNames.Lossless, false)
-            };
+            ];
 
             return new PropertyCollection(props, rules);
         }

@@ -177,7 +177,7 @@ namespace WebPFileType.Exif
 
         private static List<ParserIFDEntry> ParseDirectories(EndianBinaryReader reader, uint firstIFDOffset)
         {
-            List<ParserIFDEntry> items = new();
+            List<ParserIFDEntry> items = [];
 
             bool foundExif = false;
             bool foundGps = false;

@@ -19,23 +19,23 @@ namespace WebPFileType
 {
     internal static class FormatDetection
     {
-        private static ReadOnlySpan<byte> BmpFileSignature => new byte[] { 0x42, 0x4D };
+        private static ReadOnlySpan<byte> BmpFileSignature => [0x42, 0x4D];
 
-        private static ReadOnlySpan<byte> Gif87aFileSignature => new byte[] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 };
+        private static ReadOnlySpan<byte> Gif87aFileSignature => [0x47, 0x49, 0x46, 0x38, 0x37, 0x61];
 
-        private static ReadOnlySpan<byte> Gif89aFileSignature => new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 };
+        private static ReadOnlySpan<byte> Gif89aFileSignature => [0x47, 0x49, 0x46, 0x38, 0x39, 0x61];
 
-        private static ReadOnlySpan<byte> JpegFileSignature => new byte[] { 0xff, 0xd8, 0xff };
+        private static ReadOnlySpan<byte> JpegFileSignature => [0xff, 0xd8, 0xff];
 
-        private static ReadOnlySpan<byte> PngFileSignature => new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 };
+        private static ReadOnlySpan<byte> PngFileSignature => [137, 80, 78, 71, 13, 10, 26, 10];
 
-        private static ReadOnlySpan<byte> RiffSignature => new byte[] { (byte)'R', (byte)'I', (byte)'F', (byte)'F' };
+        private static ReadOnlySpan<byte> RiffSignature => [(byte)'R', (byte)'I', (byte)'F', (byte)'F'];
 
-        private static ReadOnlySpan<byte> RiffWebPSignature => new byte[] { (byte)'W', (byte)'E', (byte)'B', (byte)'P' };
+        private static ReadOnlySpan<byte> RiffWebPSignature => [(byte)'W', (byte)'E', (byte)'B', (byte)'P'];
 
-        private static ReadOnlySpan<byte> TiffBigEndianFileSignature => new byte[] { 0x4d, 0x4d, 0x00, 0x2a };
+        private static ReadOnlySpan<byte> TiffBigEndianFileSignature => [0x4d, 0x4d, 0x00, 0x2a];
 
-        private static ReadOnlySpan<byte> TiffLittleEndianFileSignature => new byte[] { 0x49, 0x49, 0x2a, 0x00 };
+        private static ReadOnlySpan<byte> TiffLittleEndianFileSignature => [0x49, 0x49, 0x2a, 0x00];
 
         /// <summary>
         /// Determines whether the specified file has a WebP file signature.
