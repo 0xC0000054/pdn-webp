@@ -70,7 +70,7 @@ BEGIN
             VALUE "CompanyName", "null54"
             VALUE "FileDescription", "WebP IO library"
             VALUE "FileVersion", "1.6.0.0"
-            VALUE "LegalCopyright", "Copyright (C) 2011-2025 Nicholas Hayes"
+            VALUE "LegalCopyright", "Copyright (C) 2011-2026 Nicholas Hayes"
             VALUE "ProductName", "WebPIO"
             VALUE "ProductVersion", "1.6.0.0"
         END
