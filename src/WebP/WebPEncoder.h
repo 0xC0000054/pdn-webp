@@ -26,6 +26,7 @@ typedef WebPStatus(__stdcall* WriteImageFn)(const uint8_t* image, const size_t i
 typedef struct EncoderOptions
 {
     float quality;
+    int effort;
     int preset;
     bool lossless;
 }EncoderOptions;

@@ -18,6 +18,7 @@ namespace WebPFileType.Interop
     internal sealed partial class EncoderOptions
     {
         public float quality;
+        public int effort;
         public WebPPreset preset;
         public bool lossless;
     }

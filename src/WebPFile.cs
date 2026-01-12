@@ -48,6 +48,7 @@ namespace WebPFileType
         /// <param name="input">The input Document.</param>
         /// <param name="output">The output Stream.</param>
         /// <param name="quality">The WebP save quality.</param>
+        /// <param name="effort">The WebP encoding effort.</param>
         /// <param name="preset">The WebP encoding preset.</param>
         /// <param name="lossless">
         /// <see langword="true"/> if lossless encoding should be used; otherwise, <see langword="false"/>.
@@ -61,6 +62,7 @@ namespace WebPFileType
             Document input,
             Stream output,
             int quality,
+            int effort,
             WebPPreset preset,
             bool lossless,
             Surface scratchSurface,
@@ -73,9 +75,8 @@ namespace WebPFileType
 
             EncoderOptions options = new()
             {
-                // When using lossless compression the quality value controls the compression speed, a
-                // value of 100 will produce the smallest files.
-                quality = lossless ? 100 : quality,
+                quality = quality,
+                effort = effort,
                 preset = preset,
                 lossless = lossless
             };

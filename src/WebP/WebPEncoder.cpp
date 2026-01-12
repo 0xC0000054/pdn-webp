@@ -164,12 +164,11 @@ WebPStatus WebPEncoder::Encode(
         return WebPStatus::ApiVersionMismatch; // WebP API version mismatch
     }
 
-    config.method = 6; // 6 is the highest quality encoding
     config.thread_level = 1;
 
     if (encodeOptions->lossless)
     {
-        config.lossless = 1;
+        WebPConfigLosslessPreset(&config, encodeOptions->effort);
         config.exact = 1; // Preserve color values of invisible/transparent pixels like the built-in PNG output of PDN
         pic->use_argb = 1;
 
@@ -183,6 +182,48 @@ WebPStatus WebPEncoder::Encode(
             break;
         case WEBP_PRESET_DRAWING:
             config.image_hint = WEBP_HINT_GRAPH;
+            break;
+        }
+    }
+    else
+    {
+        switch (encodeOptions->effort)
+        {
+        case 0:
+            config.method = 0;
+            break;
+        case 1:
+            config.method = 1;
+            break;
+        case 2:
+            config.method = 2;
+            break;
+        case 3:
+            config.method = 3;
+            break;
+        case 4:
+            config.method = 4;
+            break;
+        case 5:
+            config.method = 5;
+            break;
+        case 6:
+            config.method = 6;
+            break;
+        case 7:
+            config.method = 6;
+            config.use_sharp_yuv = 1;
+            break;
+        case 8:
+            config.method = 6;
+            config.use_sharp_yuv = 1;
+            config.autofilter = 1;
+            break;
+        case 9:
+            config.method = 6;
+            config.use_sharp_yuv = 1;
+            config.autofilter = 1;
+            config.alpha_filtering = 2; // best
             break;
         }
     }

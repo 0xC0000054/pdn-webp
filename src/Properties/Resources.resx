@@ -196,4 +196,7 @@
   <data name="DecoderGenericError" xml:space="preserve">
     <value>An unspecified error occurred when decoding the WebP file.</value>
   </data>
+  <data name="Effort_DisplayName" xml:space="preserve">
+    <value>Effort</value>
+  </data>
 </root>

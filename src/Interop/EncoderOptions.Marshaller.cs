@@ -25,6 +25,7 @@ namespace WebPFileType.Interop
             public struct Native
             {
                 public float quality;
+                public int effort;
                 public int preset;
                 public byte lossless;
             }
@@ -34,6 +35,7 @@ namespace WebPFileType.Interop
                 return new Native
                 {
                     quality = managed.quality,
+                    effort = managed.effort,
                     preset = (int)managed.preset,
                     lossless = (byte)(managed.lossless ? 1 : 0)
                 };

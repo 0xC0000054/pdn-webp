@@ -35,7 +35,8 @@ namespace WebPFileType
             GitHubLink,
             Lossless,
             PluginVersion,
-            LibWebPVersion
+            LibWebPVersion,
+            Effort,
         }
 
         private static readonly IReadOnlyList<string> FileExtensions = [".webp"];
@@ -201,6 +202,7 @@ namespace WebPFileType
             [
                 StaticListChoiceProperty.CreateForEnum(PropertyNames.Preset, WebPPreset.Photo, false),
                 new Int32Property(PropertyNames.Quality, 95, 0, 100, false),
+                new Int32Property(PropertyNames.Effort, 7, 0, 9, false),
                 new BooleanProperty(PropertyNames.Lossless, false),
                 new UriProperty(PropertyNames.ForumLink, new Uri("https://forums.getpaint.net/topic/21773-webp-filetype/")),
                 new UriProperty(PropertyNames.GitHubLink, new Uri("https://github.com/0xC0000054/pdn-webp")),
@@ -231,6 +233,7 @@ namespace WebPFileType
             presetPCI.SetValueDisplayName(WebPPreset.Text, GetString("Preset_Text_DisplayName"));
 
             info.SetPropertyControlValue(PropertyNames.Quality, ControlInfoPropertyNames.DisplayName, GetString("Quality_DisplayName"));
+            info.SetPropertyControlValue(PropertyNames.Effort, ControlInfoPropertyNames.DisplayName, GetString("Effort_DisplayName"));
 
             PropertyControlInfo losslessPCI = info.FindControlForPropertyName(PropertyNames.Lossless)!;
             losslessPCI.ControlProperties[ControlInfoPropertyNames.DisplayName]!.Value = string.Empty;
@@ -260,10 +263,11 @@ namespace WebPFileType
         protected override void OnSaveT(Document input, Stream output, PropertyBasedSaveConfigToken token, Surface scratchSurface, ProgressEventHandler progressCallback)
         {
             int quality = token.GetProperty<Int32Property>(PropertyNames.Quality)!.Value;
+            int effort = token.GetProperty<Int32Property>(PropertyNames.Effort)!.Value;
             WebPPreset preset = (WebPPreset)token.GetProperty(PropertyNames.Preset)!.Value!;
             bool lossless = token.GetProperty<BooleanProperty>(PropertyNames.Lossless)!.Value;
 
-            WebPFile.Save(input, output, quality, preset, lossless, scratchSurface, progressCallback);
+            WebPFile.Save(input, output, quality, effort, preset, lossless, scratchSurface, progressCallback);
         }
     }
 }
