@@ -290,3 +290,6 @@ __pycache__/
 # Local repository files
 
 vendor/
+
+# Include the compiled lib files
+!/3rd-party/libwebp/lib/**/
