@@ -128,7 +128,7 @@ namespace WebPFileType
         /// The WebP save function.
         /// </summary>
         /// <param name="writeImageCallback">The callback used to write the WebP image.</param>
-        /// <param name="input">The input surface.</param>
+        /// <param name="input">The input bitmap.</param>
         /// <param name="options">The encode parameters.</param>
         /// <param name="metadata">The image metadata.</param>
         /// <param name="callback">The progress callback.</param>
