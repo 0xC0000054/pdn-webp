@@ -72,7 +72,7 @@ namespace WebPFileType
             return strings.GetString(name);
         }
 
-        private static (IBitmap<ColorBgra32>, DecoderMetadata) GetOrientedSurface(byte[] bytes)
+        private static (IBitmap<ColorBgra32>, DecoderMetadata) GetOrientedBitmap(byte[] bytes)
         {
             (IBitmap<ColorBgra32> bitmap, DecoderMetadata metadata) = WebPFile.Load(bytes);
 
@@ -111,7 +111,7 @@ namespace WebPFileType
 
                 if (FormatDetection.HasWebPFileSignature(bytes))
                 {
-                    (IBitmap<ColorBgra32> bitmap, DecoderMetadata metadata) = GetOrientedSurface(bytes);
+                    (IBitmap<ColorBgra32> bitmap, DecoderMetadata metadata) = GetOrientedBitmap(bytes);
                     IFileTypeDocument<ColorBgra32>? doc = context.Factory.CreateDocument<ColorBgra32>(bitmap.Size);
 
                     byte[]? colorProfileBytes = metadata.GetColorProfileBytes();
