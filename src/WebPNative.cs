@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
+using PaintDotNet.Imaging;
 using System;
 using System.Globalization;
 using System.IO;
@@ -65,7 +66,7 @@ namespace WebPFileType
         /// -or-
         /// A native API parameter is invalid.
         /// </exception>
-        internal static unsafe (Surface, DecoderMetadata) WebPLoad(byte[] webpBytes)
+        internal static unsafe (IBitmap<ColorBgra32>, DecoderMetadata) WebPLoad(byte[] webpBytes)
         {
             ArgumentNullException.ThrowIfNull(webpBytes, nameof(webpBytes));
 
@@ -120,14 +121,14 @@ namespace WebPFileType
                 }
             }
 
-            return (createImage.GetSurface()!, metadata);
+            return (createImage.GetBitmap()!, metadata);
         }
 
         /// <summary>
         /// The WebP save function.
         /// </summary>
         /// <param name="writeImageCallback">The callback used to write the WebP image.</param>
-        /// <param name="input">The input surface.</param>
+        /// <param name="input">The input bitmap.</param>
         /// <param name="options">The encode parameters.</param>
         /// <param name="metadata">The image metadata.</param>
         /// <param name="callback">The progress callback.</param>
@@ -136,14 +137,17 @@ namespace WebPFileType
         /// <paramref name="input"/> is null.</exception>
         /// <exception cref="OutOfMemoryException">Insufficient memory to save the image.</exception>
         /// <exception cref="WebPException">The encoder returned a non-memory related error.</exception>
-        internal static void WebPSave(
-            Surface input,
+        internal static unsafe void WebPSave(
+            RegionPtr<ColorBgra32> input,
             Stream output,
             EncoderOptions options,
             EncoderMetadata? metadata,
             WebPReportProgress? callback)
         {
-            ArgumentNullException.ThrowIfNull(input);
+            if (input.IsEmpty)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
 
             StreamIOHandler handler = new(output);
             WebPWriteImage writeImageCallback = handler.WriteImageCallback;
@@ -152,11 +156,11 @@ namespace WebPFileType
 
             if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
             {
-                retVal = WebP_x64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, options, metadata, callback);
+                retVal = WebP_x64.WebPSave(writeImageCallback, input.Ptr, input.Width, input.Height, input.Stride, options, metadata, callback);
             }
             else if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
             {
-                retVal = WebP_ARM64.WebPSave(writeImageCallback, input.Scan0.Pointer, input.Width, input.Height, input.Stride, options, metadata, callback);
+                retVal = WebP_ARM64.WebPSave(writeImageCallback, input.Ptr, input.Width, input.Height, input.Stride, options, metadata, callback);
             }
             else
             {

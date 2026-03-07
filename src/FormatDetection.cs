@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
+using PaintDotNet.FileTypes;
 using System;
 
 #nullable enable
@@ -74,57 +75,47 @@ namespace WebPFileType
         /// </remarks>
         internal static IFileTypeInfo? TryGetFileTypeInfo(ReadOnlySpan<byte> file, IServiceProvider? serviceProvider)
         {
-            string name = TryGetFileTypeName(file);
-
-            IFileTypeInfo? fileTypeInfo = null;
-
-            if (!string.IsNullOrEmpty(name))
+            string? ext = TryGetFileTypeExtension(file);
+            if (string.IsNullOrEmpty(ext))
             {
-                IFileTypesService? fileTypesService = serviceProvider?.GetService<IFileTypesService>();
-
-                if (fileTypesService != null)
-                {
-                    foreach (IFileTypeInfo item in fileTypesService.FileTypes)
-                    {
-                        if (item.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
-                            && item.Options.SupportsLoading)
-                        {
-                            fileTypeInfo = item;
-                            break;
-                        }
-                    }
-                }
+                return null;
             }
 
-            return fileTypeInfo;
+            IFileTypesService? fileTypesService = serviceProvider?.GetService<IFileTypesService>();
+            if (fileTypesService != null)
+            {
+                return fileTypesService.FindFileTypeForLoadingExtension(ext);
+            }
+
+            return null;
         }
 
-        private static string TryGetFileTypeName(ReadOnlySpan<byte> file)
+        private static string? TryGetFileTypeExtension(ReadOnlySpan<byte> file)
         {
-            string name = string.Empty;
+            string? ext = null;
 
             if (FileSignatureMatches(file, JpegFileSignature))
             {
-                name = "JPEG";
+                ext = ".jpg";
             }
             else if (FileSignatureMatches(file, PngFileSignature))
             {
-                name = "PNG";
+                ext = ".png";
             }
             else if (FileSignatureMatches(file, BmpFileSignature))
             {
-                name = "BMP";
+                ext = ".bmp";
             }
             else if (IsGifFileSignature(file))
             {
-                name = "GIF";
+                ext = ".gif";
             }
             else if (IsTiffFileSignature(file))
             {
-                name = "TIFF";
+                ext = ".tif";
             }
 
-            return name;
+            return ext;
         }
 
         private static bool FileSignatureMatches(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)

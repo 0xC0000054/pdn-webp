@@ -10,7 +10,7 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-using PaintDotNet;
+using PaintDotNet.Imaging;
 using System;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -19,11 +19,12 @@ namespace WebPFileType.Interop
 {
     internal sealed class DecoderCreateImage
     {
-        private Surface? surface;
+        private IBitmap<ColorBgra32>? bitmap;
+        private IBitmapLock<ColorBgra32>? bitmapLock;
 
         public DecoderCreateImage()
         {
-            surface = null;
+            bitmap = null;
             CallbackErrorInfo = null;
         }
 
@@ -36,11 +37,13 @@ namespace WebPFileType.Interop
 
             try
             {
-                surface = new Surface(width, height);
-                stride = surface.Stride;
-                dataSize = (nuint)surface.Scan0.Length;
+                using IImagingFactory imagingFactory = ImagingFactory.CreateRef();
+                bitmap = imagingFactory.CreateBitmap<ColorBgra32>(width, height);
+                bitmapLock = bitmap.Lock(BitmapLockOptions.ReadWrite);
+                stride = bitmapLock.BufferStride;
+                dataSize = (nuint)bitmapLock.BufferSize;
 
-                return surface.Scan0.VoidStar;
+                return bitmapLock.Buffer;
             }
             catch (Exception ex)
             {
@@ -49,6 +52,12 @@ namespace WebPFileType.Interop
             }
         }
 
-        public Surface? GetSurface() => Interlocked.Exchange(ref surface, null);
+        public IBitmap<ColorBgra32>? GetBitmap()
+        {
+            IBitmap<ColorBgra32>? bitmap = Interlocked.Exchange(ref this.bitmap, null);
+            IBitmapLock<ColorBgra32>? bitmapLock = Interlocked.Exchange(ref this.bitmapLock, null);
+            bitmapLock?.Dispose();
+            return bitmap;
+        }
     }
 }
