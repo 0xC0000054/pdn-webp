@@ -32,7 +32,7 @@ namespace WebPFileType.Interop
         [LibraryImport("WebP_x64.dll", EntryPoint = "WebPSave")]
         [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]
         public static partial WebPStatus WebPSave(WebPWriteImage writeImageCallback,
-                                                  IntPtr scan0,
+                                                  void* scan0,
                                                   int width,
                                                   int height,
                                                   int stride,

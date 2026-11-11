@@ -10,14 +10,14 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-using PaintDotNet;
+using PaintDotNet.FileTypes;
 
 namespace WebPFileType
 {
     public sealed class WebPFileTypeFactory :
-        IFileTypeFactory2
+        IFileTypeFactory
     {
-        public FileType[] GetFileTypeInstances(IFileTypeHost host)
+        public IFileType[] CreateFileTypes(IFileTypeHost host)
         {
             return [new WebPFileType(host)];
         }

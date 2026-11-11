@@ -18,47 +18,60 @@ namespace WebPFileType.Exif
 {
     internal static class MetadataHelpers
     {
-        internal static void ApplyOrientationTransform(ExifValue entry, ref Surface surface)
+        internal static void ApplyOrientationTransform<TPixel>(ExifValue entry, ref IBitmap<TPixel> bitmap)
+            where TPixel : unmanaged, INaturalPixelInfo
         {
             if (TryDecodeShort(entry, out ushort exifValue))
             {
                 if (exifValue >= TiffConstants.Orientation.TopLeft && exifValue <= TiffConstants.Orientation.LeftBottom)
                 {
+                    IBitmapSource<TPixel>? newSource;
+
                     switch (exifValue)
                     {
                         case TiffConstants.Orientation.TopLeft:
                             // Do nothing
+                            newSource = null;
                             break;
                         case TiffConstants.Orientation.TopRight:
                             // Flip horizontally.
-                            ImageTransform.FlipHorizontal(surface);
+                            newSource = bitmap.CreateFlipRotator(BitmapTransformOptions.FlipHorizontal);
                             break;
                         case TiffConstants.Orientation.BottomRight:
                             // Rotate 180 degrees.
-                            ImageTransform.Rotate180(surface);
+                            newSource = bitmap.CreateFlipRotator(BitmapTransformOptions.Rotate180);
                             break;
                         case TiffConstants.Orientation.BottomLeft:
                             // Flip vertically.
-                            ImageTransform.FlipVertical(surface);
+                            newSource = bitmap.CreateFlipRotator(BitmapTransformOptions.FlipVertical);
                             break;
                         case TiffConstants.Orientation.LeftTop:
                             // Rotate 90 degrees clockwise and flip horizontally.
-                            ImageTransform.Rotate90CW(ref surface);
-                            ImageTransform.FlipHorizontal(surface);
+                            newSource = bitmap.CreateFlipRotator(BitmapTransformOptions.Rotate90);
+                            newSource = newSource.CreateFlipRotator(BitmapTransformOptions.FlipHorizontal);
                             break;
                         case TiffConstants.Orientation.RightTop:
                             // Rotate 90 degrees clockwise.
-                            ImageTransform.Rotate90CW(ref surface);
+                            newSource = bitmap.CreateFlipRotator(BitmapTransformOptions.Rotate90);
                             break;
                         case TiffConstants.Orientation.RightBottom:
                             // Rotate 270 degrees clockwise and flip horizontally.
-                            ImageTransform.Rotate270CW(ref surface);
-                            ImageTransform.FlipHorizontal(surface);
+                            newSource = bitmap.CreateFlipRotator(BitmapTransformOptions.Rotate270);
+                            newSource = newSource.CreateFlipRotator(BitmapTransformOptions.FlipHorizontal);
                             break;
                         case TiffConstants.Orientation.LeftBottom:
                             // Rotate 270 degrees clockwise.
-                            ImageTransform.Rotate270CW(ref surface);
+                            newSource = bitmap.CreateFlipRotator(BitmapTransformOptions.Rotate270);
                             break;
+                        default:
+                            // Do nothing
+                            newSource = null;
+                            break;
+                    }
+
+                    if (newSource is not null)
+                    {
+                        bitmap = newSource.ToBitmap();
                     }
                 }
             }

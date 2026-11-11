@@ -11,11 +11,13 @@
 ////////////////////////////////////////////////////////////////////////
 
 using PaintDotNet;
+using PaintDotNet.FileTypes;
 using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using WebPFileType.Exif;
 using WebPFileType.Interop;
 using WebPFileType.Properties;
@@ -40,7 +42,7 @@ namespace WebPFileType
         /// -or-
         /// A native API parameter is invalid.
         /// </exception>
-        internal static unsafe (Surface, DecoderMetadata) Load(byte[] webpBytes) => WebPNative.WebPLoad(webpBytes);
+        internal static (IBitmap<ColorBgra32>, DecoderMetadata) Load(byte[] webpBytes) => WebPNative.WebPLoad(webpBytes);
 
         /// <summary>
         /// The WebP save function.
@@ -53,22 +55,21 @@ namespace WebPFileType
         /// <param name="lossless">
         /// <see langword="true"/> if lossless encoding should be used; otherwise, <see langword="false"/>.
         /// </param>
-        /// <param name="scratchSurface">The scratch surface.</param>
         /// <param name="progressCallback">The progress callback.</param>
         /// <exception cref="FormatException">The image exceeds 16383 pixels in width and/or height.</exception>
         /// <exception cref="OutOfMemoryException">Insufficient memory to save the image.</exception>
         /// <exception cref="WebPException">The encoder returned a non-memory related error.</exception>
         internal static void Save(
-            Document input,
+            IReadOnlyFileTypeDocument input,
             Stream output,
             int quality,
             int effort,
             WebPPreset preset,
             bool lossless,
-            Surface scratchSurface,
-            ProgressEventHandler progressCallback)
+            ProgressEventHandler progressCallback,
+            IImagingFactory imagingFactory)
         {
-            if (input.Width > WebPNative.WebPMaxDimension || input.Height > WebPNative.WebPMaxDimension)
+            if (input.Size.Width > WebPNative.WebPMaxDimension || input.Size.Height > WebPNative.WebPMaxDimension)
             {
                 throw new FormatException(Resources.InvalidImageDimensions);
             }
@@ -81,10 +82,10 @@ namespace WebPFileType
                 lossless = lossless
             };
 
-            scratchSurface.Clear();
-            input.CreateRenderer().Render(scratchSurface);
+            using IFileTypeCompositeBitmap<ColorBgra32> docComposite = input.GetCompositeBitmap<ColorBgra32>();
+            using IFileTypeBitmapLock<ColorBgra32> docCompositeLock = docComposite.Lock();
 
-            EncoderMetadata? metadata = CreateWebPMetadata(input);
+            EncoderMetadata? metadata = CreateWebPMetadata(input.Size, input.Metadata);
 
             WebPReportProgress? encProgress = null;
 
@@ -104,28 +105,28 @@ namespace WebPFileType
                 };
             }
 
-            WebPNative.WebPSave(scratchSurface, output, options, metadata, encProgress);
+            WebPNative.WebPSave(docCompositeLock.AsRegionPtr(), output, options, metadata, encProgress);
         }
 
-        private static EncoderMetadata? CreateWebPMetadata(Document doc)
+        private static EncoderMetadata? CreateWebPMetadata(SizeInt32 docSize, IReadOnlyFileTypeDocumentMetadata metadata)
         {
             byte[]? iccProfileBytes = null;
             byte[]? exifBytes = null;
             byte[]? xmpBytes = null;
 
-            string? colorProfile = doc.Metadata.GetUserValue(WebPMetadataNames.ColorProfile);
+            metadata.Custom.TryGetValue(WebPMetadataNames.ColorProfile, out string? colorProfile);
             if (!string.IsNullOrEmpty(colorProfile))
             {
                 iccProfileBytes = Convert.FromBase64String(colorProfile);
             }
 
-            string? exif = doc.Metadata.GetUserValue(WebPMetadataNames.EXIF);
+            metadata.Custom.TryGetValue(WebPMetadataNames.EXIF, out string? exif);
             if (!string.IsNullOrEmpty(exif))
             {
                 exifBytes = Convert.FromBase64String(exif);
             }
 
-            string? xmp = doc.Metadata.GetUserValue(WebPMetadataNames.XMP);
+            metadata.Custom.TryGetValue(WebPMetadataNames.XMP, out string? xmp);
             if (!string.IsNullOrEmpty(xmp))
             {
                 xmpBytes = Convert.FromBase64String(xmp);
@@ -133,7 +134,7 @@ namespace WebPFileType
 
             if (iccProfileBytes == null || exifBytes == null)
             {
-                Dictionary<ExifPropertyPath, ExifValue>? propertyItems = GetMetadataFromDocument(doc);
+                Dictionary<ExifPropertyPath, ExifValue>? propertyItems = GetExifMetadata(metadata.Exif);
 
                 if (propertyItems != null)
                 {
@@ -173,13 +174,13 @@ namespace WebPFileType
                         propertyItems.Remove(ExifPropertyKeys.Interop.InteroperabilityVersion.Path);
                     }
 
-                    exifBytes ??= new ExifWriter(doc, propertyItems, exifColorSpace).CreateExifBlob();
+                    exifBytes ??= new ExifWriter(docSize, propertyItems, exifColorSpace).CreateExifBlob();
                 }
             }
 
             if (xmpBytes == null)
             {
-                XmpPacket? xmpPacket = doc.Metadata.TryGetXmpPacket();
+                XmpPacket? xmpPacket = metadata.Xmp.XmpPacket;
 
                 if (xmpPacket != null)
                 {
@@ -197,12 +198,11 @@ namespace WebPFileType
             return null;
         }
 
-        private static Dictionary<ExifPropertyPath, ExifValue>? GetMetadataFromDocument(Document doc)
+        private static Dictionary<ExifPropertyPath, ExifValue>? GetExifMetadata(IReadOnlyFileTypeExifMetadata exifMetadata)
         {
             Dictionary<ExifPropertyPath, ExifValue>? items = null;
 
-            Metadata metadata = doc.Metadata;
-            ExifPropertyItem[] exifProperties = metadata.GetExifPropertyItems();
+            ExifPropertyItem[] exifProperties = exifMetadata.Items.ToArray();
 
             if (exifProperties.Length > 0)
             {

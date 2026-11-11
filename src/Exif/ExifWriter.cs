@@ -12,6 +12,7 @@
 
 using PaintDotNet;
 using PaintDotNet.Imaging;
+using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -69,9 +70,9 @@ namespace WebPFileType.Exif
 
         private readonly Dictionary<ExifSection, Dictionary<ushort, ExifValue>> metadata;
 
-        public ExifWriter(Document doc, IDictionary<ExifPropertyPath, ExifValue> entries, ExifColorSpace exifColorSpace)
+        public ExifWriter(SizeInt32 docSize, IDictionary<ExifPropertyPath, ExifValue> entries, ExifColorSpace exifColorSpace)
         {
-            metadata = CreateTagDictionary(doc, entries, exifColorSpace);
+            metadata = CreateTagDictionary(docSize, entries, exifColorSpace);
         }
 
         public byte[] CreateExifBlob()
@@ -336,7 +337,7 @@ namespace WebPFileType.Exif
         }
 
         private static Dictionary<ExifSection, Dictionary<ushort, ExifValue>> CreateTagDictionary(
-            Document doc,
+            SizeInt32 docSize,
             IDictionary<ExifPropertyPath, ExifValue> entries,
             ExifColorSpace exifColorSpace)
         {
@@ -374,10 +375,10 @@ namespace WebPFileType.Exif
                 Dictionary<ushort, ExifValue> imageSection = metadataEntries[ExifSection.Image];
                 imageSection.Add(ExifPropertyKeys.Image.ImageWidth.Path.TagID,
                                 new ExifValue(ExifValueType.Long,
-                                              MetadataHelpers.EncodeLong((uint)doc.Width)));
+                                              MetadataHelpers.EncodeLong((uint)docSize.Width)));
                 imageSection.Add(ExifPropertyKeys.Image.ImageLength.Path.TagID,
                                 new ExifValue(ExifValueType.Long,
-                                              MetadataHelpers.EncodeLong((uint)doc.Height)));
+                                              MetadataHelpers.EncodeLong((uint)docSize.Height)));
 
                 // These tags should not be included in uncompressed images.
                 entries.Remove(ExifPropertyKeys.Photo.PixelXDimension.Path);
@@ -388,10 +389,10 @@ namespace WebPFileType.Exif
                 Dictionary<ushort, ExifValue> exifSection = metadataEntries[ExifSection.Photo];
                 exifSection.Add(ExifPropertyKeys.Photo.PixelXDimension.Path.TagID,
                                 new ExifValue(ExifValueType.Long,
-                                              MetadataHelpers.EncodeLong((uint)doc.Width)));
+                                              MetadataHelpers.EncodeLong((uint)docSize.Width)));
                 exifSection.Add(ExifPropertyKeys.Photo.PixelYDimension.Path.TagID,
                                 new ExifValue(ExifValueType.Long,
-                                              MetadataHelpers.EncodeLong((uint)doc.Height)));
+                                              MetadataHelpers.EncodeLong((uint)docSize.Height)));
 
                 // These tags should not be included in compressed images.
                 entries.Remove(ExifPropertyKeys.Image.ImageWidth.Path);
